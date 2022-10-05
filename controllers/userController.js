@@ -5,6 +5,7 @@ const {
   findUserByName,
   findUserById,
   createNewUser,
+  findUserBasic,
 } = require("../models/UserModel");
 let datos;
 let response;
@@ -34,6 +35,13 @@ module.exports = {
       response = JSON.parse(data);
       console.log(data);
       res.status(response.code).send(response);
+    });
+  },
+  getUserBasic: (req, res) => {
+    const promise = findUserBasic();
+    promise.then((data) => {
+      response = JSON.parse(data);
+      res.status(response.code).send(response.data);
     });
   },
 };

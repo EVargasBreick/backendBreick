@@ -38,6 +38,9 @@ const storeRoutes = require("./routes/Store");
 const languajeRoutes = require("./routes/Languaje");
 const rolRoutes = require("./routes/Rol");
 const zoneRoutes = require("./routes/Zona");
+const dayRoutes = require("./routes/Day");
+const clientRoutes = require("./routes/Client");
+const contactRoutes = require("./routes/Contact");
 app.use("/", userRoutes);
 app.use("/", loginRoutes);
 app.use("/", productRoutes);
@@ -45,7 +48,9 @@ app.use("/", storeRoutes);
 app.use("/", languajeRoutes);
 app.use("/", rolRoutes);
 app.use("/", zoneRoutes);
-
+app.use("/", dayRoutes);
+app.use("/", clientRoutes);
+app.use("/", contactRoutes);
 app.listen(serverConfig.port, () => {
   console.log("Server listening on port ", serverConfig.port);
 });

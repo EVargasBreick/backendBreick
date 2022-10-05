@@ -107,7 +107,6 @@ function findUserBasic() {
   var responseObject = {};
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
-      console.log("Query:", query);
       const clients = await dbConnection.executeQuery(queryFind);
       console.log("Respuestita", clients.data);
       if (JSON.stringify(clients.data).length < 5) {
