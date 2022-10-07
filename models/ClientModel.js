@@ -77,9 +77,11 @@ function updateClient(data, params) {
 
 function getClients(params) {
   const queryGetClient = params.search
-    ? `select * from Clientes where razonSocial like ('%${params.search}%') union
-    select * from Clientes where nit='${params.search}'`
-    : `select * from Clientes`;
+    ? `select a.*, b.zona, c.dias from Clientes a, Zonas b, Dias_Frecuencia c where a.razonSocial like ('%${params.search}%') 
+    and a.idZona=b.idZona and a.frecuencia=c.idDiasFrec and a.activo=1 union 
+    select a.*, b.zona, c.dias from Clientes a, Zonas b, Dias_Frecuencia c where a.nit='${params.search}' 
+    and a.idZona=b.idZona and a.frecuencia=c.idDiasFrec and a.activo=1`
+    : `select a.*, b.zona, c.dias from Clientes a, Zonas b, Dias_Frecuencia c where a.idZona=b.idZona and a.frecuencia=c.idDiasFrec and a.activo=1`;
   const responseObject = {};
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
@@ -123,7 +125,7 @@ function getFullClient(params) {
     and c.idUsuario=(select idVendedor from Clientes where idCliente=${params.id})
     and d.idLenguaje=(select lenguaje from Clientes where idCliente=${params.id})
     and e.idDiasFrec=(select frecuencia from Clientes where idCliente=${params.id})
-    
+
     `;
   const responseObject = {};
   return new Promise((resolve, reject) => {
