@@ -144,10 +144,26 @@ function getFullClient(params) {
   });
 }
 
+function getNumberOfClients() {
+  const countQuery = `select count(*) as NumeroClientes from clientes`;
+  return new Promise((resolve) => {
+    setTimeout(async () => {
+      const clients = await dbConnection.executeQuery(countQuery);
+      resolve(
+        JSON.stringify({
+          code: 200,
+          data: clients.data,
+        })
+      );
+    }, 1000);
+  });
+}
+
 module.exports = {
   registerClient,
   getClients,
   getClientById,
   getFullClient,
   updateClient,
+  getNumberOfClients,
 };

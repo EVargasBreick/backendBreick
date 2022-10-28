@@ -5,6 +5,7 @@ const {
   getClientById,
   getFullClient,
   updateClient,
+  getNumberOfClients,
 } = require("../models/ClientModel");
 const sessionParams = require("../server");
 const session = require("express-session");
@@ -51,6 +52,13 @@ module.exports = {
       response = JSON.parse(data);
       console.log(data);
       res.status(response.code).send(response);
+    });
+  },
+  getNumberClients: (req, res) => {
+    const clients = getNumberOfClients();
+    clients.then((response) => {
+      var resp = JSON.parse(response);
+      res.status(resp.code).send(resp);
     });
   },
 };

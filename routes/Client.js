@@ -6,5 +6,6 @@ router.post("/client", controller.createNewClient);
 router.get("/client/rs", controller.getClient);
 router.get("/client", controller.getClientById);
 router.get("/client/full", controller.getFullClient);
+router.get("/client/count", controller.getNumberClients);
 router.put("/client", controller.updateClient);
 module.exports = router;

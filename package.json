@@ -18,6 +18,7 @@
     "encrypt-string": "^1.0.0",
     "express": "^4.18.1",
     "express-session": "^1.17.3",
+    "nodemailer": "^6.8.0",
     "rest-mssql-nodejs": "^1.0.10",
     "sequelize": "^6.21.4",
     "tedious": "^15.1.0"

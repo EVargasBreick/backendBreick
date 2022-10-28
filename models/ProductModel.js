@@ -3,10 +3,10 @@ const dbConnection = require("../server");
 function getProducts(params) {
   console.log("Id producto:", params.id);
   var query;
-  if (params.id) {
-    query = `select * from Productos where idProducto=${params.id}`;
-  } else {
+  if (params.id === "all") {
     query = `select * from Productos`;
+  } else {
+    query = `select * from Productos where idProducto=${params.id}`;
   }
 
   return new Promise((resolve, reject) => {
@@ -17,4 +17,70 @@ function getProducts(params) {
     }, 1000);
   });
 }
-module.exports = getProducts;
+
+function getProductsWithStock(params) {
+  console.log("Id producto:", params.idAlmacen);
+  var query;
+  if (params.id === "all") {
+    query = `select a.idProducto, a.codInterno, a.nombreProducto, b.cant_Actual from Productos a inner join Stock_Bodega b 
+    on a.idProducto=b.idProducto where idBodega='${params.idAlmacen}' union 
+    select  a.idProducto, a.codInterno, a.nombreProducto, b.cant_Actual from Productos a inner join Stock_Agencia b 
+    on a.idProducto=b.idProducto where idAgencia='${params.idAlmacen}' union 
+    select  a.idProducto, a.codInterno, a.nombreProducto, b.cant_Actual from Productos a inner join Stock_Agencia_Movil b 
+    on a.idProducto=b.idProducto where idVehiculo='${params.idAlmacen}'`;
+  } else {
+    query = `select a.codInterno, a.nombreProducto, b.cant_Actual from Productos a inner join Stock_Bodega b 
+    on a.idProducto=b.idProducto where idBodega=${params.idAlmacen} and a.idProducto=${params.id}`;
+  }
+
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      console.log(query);
+      const products = await dbConnection.executeQuery(query);
+      resolve(JSON.stringify(products.data));
+    }, 1000);
+  });
+}
+
+function getAvailableProducts(id) {
+  var queryProds = `select a.*, b.idBodega, b.cant_Actual ,c.idUsuario from Productos a 
+  inner join Stock_Bodega b on a.idProducto=b.idProducto
+  inner join Usuarios c on c.idAlmacen=b.idBodega
+  where c.idUsuario=${id} and b.cant_Actual>0 union
+  select a.*, b.idAgencia, b.cant_Actual ,c.idUsuario from Productos a 
+  inner join Stock_Agencia b on a.idProducto=b.idProducto
+  inner join Usuarios c on c.idAlmacen=b.idAgencia
+  where c.idUsuario=${id} and b.cant_Actual>0  union
+  select a.*, b.idAgencia, b.cant_Actual ,c.idUsuario from Productos a 
+  inner join Stock_Agencia b on a.idProducto=b.idProducto
+  inner join Usuarios c on c.idAlmacen=b.idAgencia
+  where c.idUsuario=${id} and b.cant_Actual>0 order by a.codInterno `;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      const products = await dbConnection.executeQuery(queryProds);
+      resolve(JSON.stringify(products.data));
+    }, 1000);
+  });
+}
+
+function getNumberOfProducts() {
+  const countQuery = `select count(*) as NumeroProductos from Productos`;
+  return new Promise((resolve) => {
+    setTimeout(async () => {
+      const prods = await dbConnection.executeQuery(countQuery);
+      resolve(
+        JSON.stringify({
+          code: 200,
+          data: prods.data,
+        })
+      );
+    }, 1000);
+  });
+}
+
+module.exports = {
+  getProducts,
+  getNumberOfProducts,
+  getAvailableProducts,
+  getProductsWithStock,
+};
