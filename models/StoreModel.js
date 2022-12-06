@@ -2,9 +2,9 @@ const dbConnection = require("../server");
 const dateString = require("../services/dateServices");
 
 function getStores() {
-  let storeQuery = `select idAgencia + ' ' + nombre as Nombre from Agencias 
-    union select placa from Vehiculos as Nombre 
-    union select idBodega + ' ' + nombre as Nombre from Bodegas`;
+  let storeQuery = `select idAgencia + ' ' + nombre as Nombre, idAgencia from Agencias 
+    union select placa as Nombre, placa  from Vehiculos 
+    union select idBodega + ' ' + nombre as Nombre, idBodega from Bodegas`;
 
   return new Promise((resolve, reject) => {
     setTimeout(async () => {

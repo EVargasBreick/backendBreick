@@ -4,6 +4,7 @@ const {
   getNumberOfProducts,
   getAvailableProducts,
   getProductsWithStock,
+  getProductsDiscount,
 } = require("../models/ProductModel");
 
 module.exports = {
@@ -53,6 +54,13 @@ module.exports = {
   productsWithStock: (req, res) => {
     const plist = getProductsWithStock(req.query);
     plist.then((response) => {
+      var resp = JSON.parse(response);
+      res.status(200).send(resp);
+    });
+  },
+  productsDiscount: (req, res) => {
+    const pdisc = getProductsDiscount(req.query);
+    pdisc.then((response) => {
       var resp = JSON.parse(response);
       res.status(200).send(resp);
     });

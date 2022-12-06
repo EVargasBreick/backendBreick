@@ -15,4 +15,5 @@ router.put("/pedidos/cancelar", controller.cancelOrder);
 router.post("/pedidos/productos/agregar", controller.addProductToOrder);
 router.put("/pedidos/productos/actualizar", controller.updateProductInOrder);
 router.put("/pedidos/actualizar", controller.updateOrder);
+router.put("/pedidos/productos/borrar", controller.deleteProductOrder);
 module.exports = router;

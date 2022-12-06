@@ -44,6 +44,7 @@ const contactRoutes = require("./routes/Contact");
 const orderRoutes = require("./routes/Order");
 const mailRoutes = require("./routes/NodeMailer");
 const transferRoutes = require("./routes/Transfer");
+const stockRoutes = require("./routes/Stock");
 app.use("/", userRoutes);
 app.use("/", loginRoutes);
 app.use("/", productRoutes);
@@ -57,6 +58,7 @@ app.use("/", contactRoutes);
 app.use("/", orderRoutes);
 app.use("/", mailRoutes);
 app.use("/", transferRoutes);
+app.use("/", stockRoutes);
 app.listen(serverConfig.port, () => {
   console.log("Server listening on port ", serverConfig.port);
 });

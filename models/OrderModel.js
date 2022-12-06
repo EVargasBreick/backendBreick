@@ -1,5 +1,4 @@
 const dbConnection = require("../server");
-const { dateString } = require("../services/dateServices");
 
 function registerOrder(data) {
   console.log("Pedido", data);
@@ -14,6 +13,7 @@ function registerOrder(data) {
         montoTotal,
         tipo,
         descuento,
+        descuentoCalculado,
         notas
     ) values (
         ${data.pedido.idUsuarioCrea},
@@ -25,8 +25,10 @@ function registerOrder(data) {
         '${data.pedido.montoTotal}',
         '${data.pedido.tipo}',
         '${data.pedido.descuento}',
+        '${data.pedido.descCalculado}',
         '${data.pedido.notas}'
     )`;
+  console.log("Creacion pedido query", query);
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       const newOrder = await dbConnection.executeQuery(query);
@@ -41,12 +43,14 @@ function registerOrder(data) {
                 idPedido, 
                 idProducto, 
                 cantidadProducto, 
-                totalProd
+                totalProd,
+                descuentoProducto
             ) values (
                 ${idCreado.data[0][0].idCreado},
                 ${producto.idProducto},
                 '${producto.cantProducto}',
-                ${producto.totalProd}
+                ${producto.totalProd},
+                ${producto.descuentoProd}
             )`;
           setTimeout(async () => {
             const prods = await dbConnection.executeQuery(queryProds);
@@ -180,7 +184,7 @@ function getOrderType() {
 }
 
 function getOrderProductList(params) {
-  var queryList = `select a.*, c.nombreProducto, c.precioDeFabrica, c.codInterno from Pedido_Producto a inner JOIN Pedidos b on a.idPedido=b.idPedido
+  var queryList = `select a.*, c.nombreProducto, c.precioDeFabrica, c.codInterno, c.tipoProducto, c.codigoBarras, c.precioDescuentoFijo from Pedido_Producto a inner JOIN Pedidos b on a.idPedido=b.idPedido
     inner join Productos c on c.idProducto=a.idProducto
     where a.idPedido=${params.id}`;
   return new Promise((resolve) => {
@@ -215,6 +219,7 @@ function deleteOrder(id) {
 }
 
 function cancelOrder(id) {
+  console.log("Pedido a cancelar desde el back", id);
   var queryCancelOrder = `update Pedidos set estado=2 where idPedido=${id}`;
   return new Promise((resolve) => {
     setTimeout(async () => {
@@ -234,8 +239,8 @@ function addProductOrder(body) {
     if (body.productos.length > 0) {
       body.productos.map((pr) => {
         setTimeout(async () => {
-          var queryAdd = `insert into Pedido_Producto (idPedido, idProducto, cantidadProducto, totalProd) 
-          values (${body.idPedido},${pr.idProducto},${pr.cantProducto},${pr.totalProd})`;
+          var queryAdd = `insert into Pedido_Producto (idPedido, idProducto, cantidadProducto, totalProd, descuentoProducto) 
+          values (${body.idPedido},${pr.idProducto},${pr.cantProducto},${pr.totalProd},${pr.descuentoProd})`;
           const addedProduct = await dbConnection.executeQuery(queryAdd);
           if (addedProduct.success) {
             resolve(
@@ -260,22 +265,57 @@ function addProductOrder(body) {
   });
 }
 
+function deleteProductOrder(body) {
+  console.log("Borrando producto....", body);
+  return new Promise((resolve) => {
+    if (body.productos.length > 0) {
+      body.productos.map((pr) => {
+        setTimeout(async () => {
+          var queryDelete = `delete from Pedido_Producto where idPedidoProducto=${pr.idPedidoProducto}`;
+          const deleted = await dbConnection.executeQuery(queryDelete);
+          if (deleted.success) {
+            resolve(
+              JSON.stringify({
+                code: 200,
+                data: deleted.data,
+              })
+            );
+          }
+        }, 100);
+      });
+    } else {
+      setTimeout(() => {
+        resolve(
+          JSON.stringify({
+            code: 200,
+            data: "no product to add",
+          })
+        );
+      }, 100);
+    }
+  });
+}
+
 function updateProductOrder(body) {
   return new Promise((resolve) => {
     if (body.productos.length > 0) {
       body.productos.map((pr) => {
         setTimeout(async () => {
           var queryAdd = `update Pedido_Producto 
-        set idPedido=${body.idPedido}, idProducto=${pr.idProducto}, cantidadProducto=${pr.cantProducto}, totalProd=${pr.totalProd}
+        set idPedido=${body.idPedido}, idProducto=${pr.idProducto}, cantidadProducto=${pr.cantProducto}, totalProd=${pr.totalProd}, descuentoProducto=${pr.descuentoProd}
         where idPedidoProducto=${pr.idPedidoProducto}`;
+          console.log("Query para testear error", queryAdd);
           const addedProduct = await dbConnection.executeQuery(queryAdd);
           if (addedProduct.success) {
+            console.log("Acaaa?", addedProduct);
             resolve(
               JSON.stringify({
                 code: 200,
                 data: addedProduct.data,
               })
             );
+          } else {
+            console.log("Error", addedProduct);
           }
         }, 200);
       });
@@ -300,7 +340,7 @@ function updateOrder(body) {
           [d.getMonth() + 1, d.getDate(), d.getFullYear()].join("/") +
           " " +
           [d.getHours(), d.getMinutes(), d.getSeconds()].join(":");
-      var queryUpdate = `Update Pedidos set montoFacturar=${body.montoFacturar}, montoTotal=${body.montoTotal}, fechaActualizacion='${dformat}' where idPedido=${body.idPedido}`;
+      var queryUpdate = `Update Pedidos set montoFacturar=${body.montoFacturar}, montoTotal=${body.montoTotal}, fechaActualizacion='${dformat}', descuento=${body.descuento}, descuentoCalculado=${body.descCalculado} where idPedido=${body.idPedido}`;
       const updatedOrder = await dbConnection.executeQuery(queryUpdate);
       if (updatedOrder.success) {
         resolve(
@@ -334,4 +374,5 @@ module.exports = {
   updateProductOrder,
   addProductOrder,
   updateOrder,
+  deleteProductOrder,
 };

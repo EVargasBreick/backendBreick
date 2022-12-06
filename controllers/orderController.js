@@ -14,6 +14,7 @@ const {
   addProductOrder,
   updateProductOrder,
   updateOrder,
+  deleteProductOrder,
 } = require("../models/OrderModel");
 
 const app = express();
@@ -70,7 +71,7 @@ module.exports = {
     });
   },
   deleteOrder: (req, res) => {
-    const deleted = deleteOrder(req.params.id);
+    const deleted = deleteOrder(req.params);
     deleted
       .then((dl) => {
         var resp = JSON.parse(dl);
@@ -82,7 +83,7 @@ module.exports = {
       });
   },
   cancelOrder: (req, res) => {
-    const canceled = cancelOrder(req.params.id);
+    const canceled = cancelOrder(req.query.id);
     canceled.then((cld) => {
       var resp = JSON.parse(cld);
       res.status(200).send(resp);
@@ -112,6 +113,17 @@ module.exports = {
       .catch((error) => {
         var resp = JSON.parse(error);
         res.status(400).send(resp);
+      });
+  },
+  deleteProductOrder: (req, res) => {
+    const deleted = deleteProductOrder(req.body);
+    deleted
+      .then((del) => {
+        var resp = JSON.parse(del);
+        res.status(200).send(resp);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
       });
   },
 };

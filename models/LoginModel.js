@@ -2,7 +2,7 @@ const dbConnection = require("../server");
 
 function loginUser(params) {
   console.log("Usuario ingresado:", params);
-  let loginQuery = `select a.idUsuario, a.nombre, a.apPaterno, a.apMaterno, a.cedula, a.correo, a.rol, a.idAlmacen, b.horaEntrada, b.horaSalida, b.turno from Usuarios a 
+  let loginQuery = `select a.idUsuario, a.nombre, a.apPaterno, a.apMaterno, a.cedula, a.correo, a.rol, a.idAlmacen, b.horaEntrada, b.horaSalida, b.turno, a.tipoUsuario from Usuarios a 
   inner join Horarios_Acceso b on a.idUsuario=b.idUsuario where usuario='${params.usuario}' and password='${params.password}'`;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
