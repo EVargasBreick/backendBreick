@@ -64,7 +64,7 @@ function createNewUser(data) {
     factualizacion,
     usuarioCrea,
     idioma,
-    idAlmacen) values 
+    idAlmacen, idDepto, tipoUsuario) values 
     (
       '${data.nombre}',
       '${data.apPaterno}',
@@ -80,7 +80,9 @@ function createNewUser(data) {
       '${data.factualizacion}',
       ${data.usuariocrea},
       ${data.idioma},
-      '${data.idAlmacen}'
+      '${data.idAlmacen}',
+      ${data.idDepto},
+      ${data.tipoUsuario}
     )`;
   return new Promise((resolve, reject) => {
     const responseObject = {};
@@ -89,8 +91,25 @@ function createNewUser(data) {
       const newUser = await dbConnection.executeQuery(addUserQuery);
       console.log(newUser);
       if (newUser.success) {
-        responseObject.code = 201;
-        responseObject.data = "Sucess";
+        const idCreado = await dbConnection.executeQuery(
+          `select IDENT_CURRENT('dbo.Usuarios') as 'idCreado'`
+        );
+        console.log("Id Creado:", idCreado.data[0][0].idCreado);
+        const horarioQuery = `insert into Horarios_acceso (idUsuario, horaEntrada, horaSalida, turno) values (${idCreado.data[0][0].idCreado},'09:00', '22:00', 'completo')`;
+        const workTime = await dbConnection.executeQuery(horarioQuery);
+        if (workTime.success) {
+          responseObject.code = 201;
+          responseObject.data = "Sucess";
+        } else {
+          const queryDelete = `delete from Usuarios where idUsuario=${idCreado.data[0][0].idCreado}`;
+          const deleted = await dbConnection.executeQuery(queryDelete);
+          if (deleted.success) {
+            responseObject.code = 400;
+            responseObject.data = "Error";
+            responseObject.message = workTime.message;
+            console.log("Error en la data", workTime.message);
+          }
+        }
       } else {
         responseObject.code = 400;
         responseObject.data = "Error";

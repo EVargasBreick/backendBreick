@@ -6,6 +6,7 @@ const controller = require("../controllers/orderController");
 router.post("/pedidos", controller.createNewOrder);
 router.get("/pedidos/estado", controller.getOrderStatus);
 router.get("/pedidos/lista", controller.getOrderList);
+router.get("/pedidos/lista/usuario", controller.getUserOrderList);
 router.get("/pedidos/detalle", controller.getOrderDetail);
 router.get("/pedidos/tipo", controller.getOrderType);
 router.put("/pedidos/aprobar", controller.approveOrder);

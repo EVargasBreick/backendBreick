@@ -15,6 +15,7 @@ const {
   updateProductOrder,
   updateOrder,
   deleteProductOrder,
+  getUserOrderList,
 } = require("../models/OrderModel");
 
 const app = express();
@@ -37,6 +38,13 @@ module.exports = {
   },
   getOrderList: (req, res) => {
     const orderList = getOrderList(req.query);
+    orderList.then((list) => {
+      var resp = JSON.parse(list);
+      res.status(resp.code).send(resp);
+    });
+  },
+  getUserOrderList: (req, res) => {
+    const orderList = getUserOrderList(req.query);
     orderList.then((list) => {
       var resp = JSON.parse(list);
       res.status(resp.code).send(resp);

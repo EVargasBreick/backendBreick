@@ -14,7 +14,8 @@ function registerOrder(data) {
         tipo,
         descuento,
         descuentoCalculado,
-        notas
+        notas,
+        facturado
     ) values (
         ${data.pedido.idUsuarioCrea},
         ${data.pedido.idCliente},
@@ -26,7 +27,8 @@ function registerOrder(data) {
         '${data.pedido.tipo}',
         '${data.pedido.descuento}',
         '${data.pedido.descCalculado}',
-        '${data.pedido.notas}'
+        '${data.pedido.notas}',
+        0
     )`;
   console.log("Creacion pedido query", query);
   return new Promise((resolve, reject) => {
@@ -113,7 +115,27 @@ function getOrderList(params) {
     var queryList = `select a.idPedido, substring(b.nombre,1,1) + '' +b.apPaterno+'-'+tipo+'00'+cast(a.idPedido as varchar) as codigoPedido 
     from Pedidos a inner join Usuarios b on a.idUsuarioCrea=b.idUsuario where a.estado=0 and idPedido=${params.id}`;
   }
+  return new Promise((resolve) => {
+    setTimeout(async () => {
+      const orderList = await dbConnection.executeQuery(queryList);
+      resolve(
+        JSON.stringify({
+          code: 200,
+          data: orderList.data,
+        })
+      );
+    }, 1000);
+  });
+}
 
+function getUserOrderList(params) {
+  if (params.id === "") {
+    var queryList = `select a.idPedido, substring(b.nombre,1,1) + '' +b.apPaterno+'-'+tipo+'00'+cast(a.idPedido as varchar) as codigoPedido 
+    from Pedidos a inner join Usuarios b on a.idUsuarioCrea=b.idUsuario`;
+  } else {
+    var queryList = `select a.idPedido, substring(b.nombre,1,1) + '' +b.apPaterno+'-'+tipo+'00'+cast(a.idPedido as varchar) as codigoPedido 
+    from Pedidos a inner join Usuarios b on a.idUsuarioCrea=b.idUsuario where b.idUsuario=${params.id}`;
+  }
   return new Promise((resolve) => {
     setTimeout(async () => {
       const orderList = await dbConnection.executeQuery(queryList);
@@ -144,7 +166,7 @@ function approveOrder(params) {
 
 function getOrderDetails(params) {
   var queryDet = `select top(1)g.nombre as nombreCliente, a.*, b.idProducto, b.cantidadProducto ,c.nombreProducto, 
-    d.nombre+' '+d.apPaterno as nombreVendedor,
+    d.nombre+' '+d.apPaterno as nombreVendedor, e.nit, b.descuentoProducto,
     e.razonSocial,
     substring(d.nombre,1,1) + '' +d.apPaterno+'-'+a.tipo+'00'+cast(a.idPedido as varchar) as codigoPedido,
     f.zona
@@ -375,4 +397,5 @@ module.exports = {
   addProductOrder,
   updateOrder,
   deleteProductOrder,
+  getUserOrderList,
 };

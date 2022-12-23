@@ -8,7 +8,7 @@ function loginUser(params) {
     setTimeout(async () => {
       console.log("Body del login", params.date);
       const login = await dbConnection.executeQuery(loginQuery);
-      console.log("Respuesta loginnnn", login.data[0].length);
+      console.log("Respuesta loginnnn", login.data);
       if (login.data[0][0]) {
         setTimeout(async () => {
           var updateQuery = `update Usuarios set fultimoa=${params.date} where idUsuario=${login.data[0][0].idUsuario}`;
