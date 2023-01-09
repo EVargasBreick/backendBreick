@@ -17,4 +17,7 @@ router.post("/pedidos/productos/agregar", controller.addProductToOrder);
 router.put("/pedidos/productos/actualizar", controller.updateProductInOrder);
 router.put("/pedidos/actualizar", controller.updateOrder);
 router.put("/pedidos/productos/borrar", controller.deleteProductOrder);
+router.get("/pedidos/lista/facturar", controller.ordersToInvoice);
+router.get("/pedidos/detalles/facturar", controller.orderToInvoiceDetails);
+router.put("/pedidos/actualizar/facturar", controller.invoiceOrder);
 module.exports = router;
