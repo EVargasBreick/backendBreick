@@ -16,6 +16,9 @@ const {
   updateOrder,
   deleteProductOrder,
   getUserOrderList,
+  getOrdersToInvoice,
+  getOrderToInvoiceDetails,
+  invoiceOrder,
 } = require("../models/OrderModel");
 
 const app = express();
@@ -128,6 +131,39 @@ module.exports = {
     deleted
       .then((del) => {
         var resp = JSON.parse(del);
+        res.status(200).send(resp);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
+  ordersToInvoice: (req, res) => {
+    const orderList = getOrdersToInvoice(req.query);
+    orderList
+      .then((list) => {
+        var resp = JSON.parse(list);
+        res.status(200).send(resp);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
+  orderToInvoiceDetails: (req, res) => {
+    const orderList = getOrderToInvoiceDetails(req.query);
+    orderList
+      .then((list) => {
+        var resp = JSON.parse(list);
+        res.status(200).send(resp);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
+  invoiceOrder: (req, res) => {
+    const orderList = invoiceOrder(req.query);
+    orderList
+      .then((list) => {
+        var resp = JSON.parse(list);
         res.status(200).send(resp);
       })
       .catch((error) => {
