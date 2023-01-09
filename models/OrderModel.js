@@ -150,7 +150,12 @@ function getUserOrderList(params) {
 }
 
 function approveOrder(params) {
-  var queryUpdate = `update Pedidos set estado=1 where idPedido=${params.id}`;
+  var d = new Date(),
+    dformat =
+      [d.getMonth() + 1, d.getDate(), d.getFullYear()].join("/") +
+      " " +
+      [d.getHours(), d.getMinutes(), d.getSeconds()].join(":");
+  var queryUpdate = `update Pedidos set estado=1, fechaActualizacion='${dformat}' where idPedido=${params.id}`;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       const approved = await dbConnection.executeQuery(queryUpdate);
@@ -241,8 +246,13 @@ function deleteOrder(id) {
 }
 
 function cancelOrder(id) {
+  var d = new Date(),
+    dformat =
+      [d.getMonth() + 1, d.getDate(), d.getFullYear()].join("/") +
+      " " +
+      [d.getHours(), d.getMinutes(), d.getSeconds()].join(":");
   console.log("Pedido a cancelar desde el back", id);
-  var queryCancelOrder = `update Pedidos set estado=2 where idPedido=${id}`;
+  var queryCancelOrder = `update Pedidos set estado=2, fechaActualizacion='${dformat}' where idPedido=${id}`;
   return new Promise((resolve) => {
     setTimeout(async () => {
       const prodList = await dbConnection.executeQuery(queryCancelOrder);
@@ -383,6 +393,111 @@ function updateOrder(body) {
   });
 }
 
+function getOrdersToInvoice() {
+  return new Promise((resolve, reject) => {
+    const query = `select pd.*, cl.razonSocial, cl.nit,SUBSTRING(nombre, 1, 1)+''+apPaterno+'-'+tipo+'00'+cast(pd.idPedido as varchar) as idString from Pedidos pd 
+    inner join Clientes cl on pd.idCliente=cl.idCliente 
+    inner join Usuarios us on pd.idUsuarioCrea=us.idUsuario
+    where  pd.estado=1 and pd.facturado=0 and pd.tipo='normal'`;
+    setTimeout(async () => {
+      const orderList = await dbConnection.executeQuery(query);
+      if (orderList.success) {
+        resolve(
+          JSON.stringify({
+            code: 200,
+            data: orderList,
+          })
+        );
+      } else {
+        reject(
+          JSON.stringify({
+            code: 400,
+            data: orderList,
+          })
+        );
+      }
+    }, 100);
+  });
+}
+
+function getOrderToInvoiceDetails(params) {
+  return new Promise((resolve, reject) => {
+    const query = `select pd.*, pp.*, cl.nit, cl.razonSocial, us.idAlmacen, pr.nombreProducto from Pedidos pd 
+    inner join Pedido_Producto pp on pd.idPedido=pp.idPedido
+    inner join Clientes cl on pd.idCliente=cl.idCliente
+    inner join Usuarios us on pd.idUsuarioCrea=us.idUsuario
+    inner join Productos pr on pr.idProducto=pp.idProducto
+    where pd.idPedido=${params.id}`;
+    setTimeout(async () => {
+      const orderDetails = await dbConnection.executeQuery(query);
+      if (orderDetails.success) {
+        resolve(
+          JSON.stringify({
+            code: 200,
+            response: orderDetails,
+          })
+        );
+      } else {
+        reject(
+          JSON.stringify({
+            code: 400,
+            response: orderDetails,
+          })
+        );
+      }
+    }, 100);
+  });
+}
+
+function invoiceOrder(params) {
+  return new Promise((resolve, reject) => {
+    const query = `update Pedidos set facturado=1, fechaActualizacion='${params.fechaHora}' where idPedido=${params.idPedido}`;
+    setTimeout(async () => {
+      const orderDetails = await dbConnection.executeQuery(query);
+      if (orderDetails.success) {
+        console.log("Query no fallo", query);
+        resolve(
+          JSON.stringify({
+            code: 200,
+            response: orderDetails,
+          })
+        );
+      } else {
+        console.log("Query fallo", query);
+        reject(
+          JSON.stringify({
+            code: 400,
+            response: orderDetails,
+          })
+        );
+      }
+    }, 100);
+  });
+}
+function numberOfInvoiced() {
+  return new Promise((resolve, reject) => {
+    const query = `select count(*) as SinFacturar, (select count(*) from Pedidos where facturado=1) as Facturados from Pedidos where facturado=0`;
+    setTimeout(async () => {
+      const conteo = await dbConnection.executeQuery(query);
+      if (conteo.success) {
+        resolve(
+          JSON.stringify({
+            code: 200,
+            response: conteo,
+          })
+        );
+      } else {
+        reject(
+          JSON.stringify({
+            code: 400,
+            response: conteo,
+          })
+        );
+      }
+    }, 100);
+  });
+}
+
 module.exports = {
   registerOrder,
   getOrderStatus,
@@ -398,4 +513,8 @@ module.exports = {
   updateOrder,
   deleteProductOrder,
   getUserOrderList,
+  getOrdersToInvoice,
+  getOrderToInvoiceDetails,
+  invoiceOrder,
+  numberOfInvoiced,
 };
