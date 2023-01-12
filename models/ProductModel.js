@@ -22,14 +22,14 @@ function getProductsWithStock(params) {
   console.log("Id producto:", params.idAlmacen);
   var query;
   if (params.id === "all") {
-    query = `select a.idProducto, a.codInterno, a.nombreProducto, a.codigoBarras, b.cant_Actual, a.precioDeFabrica, a.tipoProducto, a.precioDescuentoFijo from Productos a inner join Stock_Bodega b 
+    query = `select a.idProducto, a.codInterno, a.nombreProducto, a.codigoBarras, b.cant_Actual, a.precioDeFabrica, a.tipoProducto, a.precioDescuentoFijo, a.unidadDeMedida from Productos a inner join Stock_Bodega b 
     on a.idProducto=b.idProducto where idBodega='${params.idAlmacen}' union 
-    select  a.idProducto, a.codInterno, a.nombreProducto, a.codigoBarras, b.cant_Actual, a.precioDeFabrica, a.tipoProducto, a.precioDescuentoFijo from Productos a inner join Stock_Agencia b 
+    select  a.idProducto, a.codInterno, a.nombreProducto, a.codigoBarras, b.cant_Actual, a.precioDeFabrica, a.tipoProducto, a.precioDescuentoFijo, a.unidadDeMedida from Productos a inner join Stock_Agencia b 
     on a.idProducto=b.idProducto where idAgencia='${params.idAlmacen}' union 
-    select  a.idProducto, a.codInterno, a.nombreProducto, a.codigoBarras, b.cant_Actual, a.precioDeFabrica, a.tipoProducto, a.precioDescuentoFijo from Productos a inner join Stock_Agencia_Movil b 
+    select  a.idProducto, a.codInterno, a.nombreProducto, a.codigoBarras, b.cant_Actual, a.precioDeFabrica, a.tipoProducto, a.precioDescuentoFijo, a.unidadDeMedida from Productos a inner join Stock_Agencia_Movil b 
     on a.idProducto=b.idProducto where idVehiculo='${params.idAlmacen}'`;
   } else {
-    query = `select a.codInterno, a.nombreProducto, a.codigoBarras, b.cant_Actual, a.precioDeFabrica, a.tipoProducto, a.precioDescuentoFijo from Productos a inner join Stock_Bodega b 
+    query = `select a.codInterno, a.nombreProducto, a.codigoBarras, b.cant_Actual, a.precioDeFabrica, a.tipoProducto, a.precioDescuentoFijo, a.unidadDeMedida from Productos a inner join Stock_Bodega b 
     on a.idProducto=b.idProducto where idBodega=${params.idAlmacen} and a.idProducto=${params.id}`;
   }
 
