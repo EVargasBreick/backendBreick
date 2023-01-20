@@ -50,6 +50,8 @@ const saleRoutes = require("./routes/Sale");
 const invoiceRoutes = require("./routes/Invoice");
 const branchRoutes = require("./routes/Branch");
 const reportRoutes = require("./routes/Reports");
+const shortageRoutes = require("./routes/Shortage");
+const xmlRoutes = require("./routes/Xml");
 app.use("/", userRoutes);
 app.use("/", loginRoutes);
 app.use("/", productRoutes);
@@ -69,6 +71,8 @@ app.use("/", saleRoutes);
 app.use("/", invoiceRoutes);
 app.use("/", branchRoutes);
 app.use("/", reportRoutes);
+app.use("/", shortageRoutes);
+app.use("/", xmlRoutes);
 app.listen(serverConfig.port, () => {
   console.log("Server listening on port ", serverConfig.port);
 });

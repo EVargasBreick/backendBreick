@@ -7,7 +7,6 @@ function getZones() {
     setTimeout(async () => {
       const zonas = await dbConnection.executeQuery(rolQuery);
       resolve(JSON.stringify(zonas.data));
-      console.log("Almacenes", JSON.stringify(zonas.data));
     }, 1000);
   });
 }

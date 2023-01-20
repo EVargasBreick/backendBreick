@@ -1,4 +1,5 @@
 const dbConnection = require("../server");
+const dateString = require("../services/dateServices");
 
 function createInvoice(body) {
   const invoiceQuery = `
@@ -17,7 +18,12 @@ function createInvoice(body) {
             estado,
             importeBase,
             debitoFiscal,
-            desembolsada
+            desembolsada,
+            autorizacion,
+            cufd,
+            fechaEmision,
+            nroTransaccion,
+            fechaAnulacion
         ) values (
             '${body.nroFactura}',
             ${body.idSucursal},
@@ -33,7 +39,12 @@ function createInvoice(body) {
             '0',
             '${body.importeBase}',
             '${body.debitoFiscal}',
-             '${body.desembolsada}'
+             '${body.desembolsada}',
+             '${body.autorizacion}',
+             '${body.cufd}',
+             '${body.fechaEmision}',
+             ${body.nroTransaccion},
+             '-'
         )`;
 
   return new Promise((resolve, reject) => {
@@ -71,4 +82,46 @@ function deleteInvoice(id) {
   });
 }
 
-module.exports = { createInvoice, deleteInvoice };
+function getInvoiceProducts(params) {
+  const productsQuery = `select fr.*, pr.idProducto, pr.nombreProducto, sc.idString as idAlmacen, sc.idImpuestos,
+  vp.cantidadProducto as cantProducto, vn.montoFacturar
+  from Facturas fr 
+  inner join ventas vn on vn.idFactura=fr.idFactura 
+  inner join Venta_Productos vp on vp.idVenta=vn.idVenta
+  inner join Productos pr on pr.idProducto=vp.idProducto
+  inner join Sucursales sc on sc.idImpuestos=fr.idSucursal 
+  where sc.idString=${params.idSucursal} and fr.estado=0`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      const invoices = await dbConnection.executeQuery(productsQuery);
+      if (invoices.success) {
+        resolve(invoices);
+      } else {
+        reject(invoices);
+      }
+    }, 100);
+  });
+}
+
+function cancelInvoice(params) {
+  const dateResult = dateString();
+  const cancelQuery = `update Facturas set estado=1, fechaAnulacion='${dateResult}' where idFactura=${params.id}`;
+  console.log("Anulando", cancelQuery);
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      const canceled = await dbConnection.executeQuery(cancelQuery);
+      if (canceled.success) {
+        resolve(canceled);
+      } else {
+        reject(canceled);
+      }
+    }, 100);
+  });
+}
+
+module.exports = {
+  createInvoice,
+  deleteInvoice,
+  getInvoiceProducts,
+  cancelInvoice,
+};

@@ -5,5 +5,5 @@
   "user": "sa",
   "password": "Breick2022",
   "secret": "BreickSecret2022",
-  "urlServer": "http://192.168.1.105:3000"
+  "urlServer": "http://localhost:3006"
 }

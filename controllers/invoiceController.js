@@ -1,7 +1,12 @@
 const express = require("express");
 const sessionParams = require("../server");
 const session = require("express-session");
-const { createInvoice, deleteInvoice } = require("../models/InvoiceModel");
+const {
+  createInvoice,
+  deleteInvoice,
+  getInvoiceProducts,
+  cancelInvoice,
+} = require("../models/InvoiceModel");
 const app = express();
 app.use(session(sessionParams));
 
@@ -26,6 +31,26 @@ module.exports = {
       })
       .catch((err) => {
         res.status(400).send(err);
+      });
+  },
+  getInvoices: (req, res) => {
+    const invoices = getInvoiceProducts(req.query);
+    invoices
+      .then((inv) => {
+        res.status(200).send(inv);
+      })
+      .catch((err) => {
+        res.status(500).send(err);
+      });
+  },
+  cancelInvoice: (req, res) => {
+    const invoices = cancelInvoice(req.query);
+    invoices
+      .then((inv) => {
+        res.status(200).send(inv);
+      })
+      .catch((err) => {
+        res.status(500).send(err);
       });
   },
 };

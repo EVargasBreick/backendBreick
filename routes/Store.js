@@ -7,4 +7,6 @@ router.get("/agencias", controller.getStores);
 router.get("/stockUsuario", controller.getUserStock);
 router.get("/stock/disponible", controller.getProductAvailability);
 router.put("/stock/update", controller.updateProductStock);
+router.put("/stock/full/update", controller.updateFulltStock);
+
 module.exports = router;

@@ -89,12 +89,9 @@ function updateProductStock(body) {
             });
           })
           .catch((error) => {
-            console.log("Error al verificar", error);
             reject({
-              code: 400,
-              data: error,
-              message:
-                "Alguno de los productos no tiene disponible la cantidad solicitada, intente nuevamente",
+              faltantes: error.faltantes,
+              code: 200,
             });
           });
       }
@@ -113,18 +110,36 @@ function updateProductStock(body) {
 
 async function verifyStock(body) {
   return new Promise(async (resolve, reject) => {
+    var faltantes = [];
+    var disponibles = [];
     for (const prod of body.productos) {
+      console.log("Producto", prod);
       const validado = await getStockFromDB(
         prod.idProducto,
         body.idAlmacen,
         prod.cantProducto
       );
-      console.log("Cantidad validada", validado);
-      if (validado < 0) {
-        reject(false);
+      console.log("Cantidad validada", validado.resto);
+      if (validado.resto < 0) {
+        faltantes.push({
+          idProducto: prod.idProducto,
+          idAlmacen: body.idAlmacen,
+          cantProducto: prod.cantProducto,
+          faltante: Math.abs(validado.resto),
+        });
+      } else {
+        disponibles.push({
+          idProducto: prod.idProducto,
+          idAlmacen: body.idAlmacen,
+          cantProducto: prod.cantProducto,
+        });
       }
     }
-    resolve(true);
+    if (faltantes.length > 0) {
+      reject({ faltantes, disponibles });
+    } else {
+      resolve(true);
+    }
   });
 }
 
@@ -132,11 +147,14 @@ async function getStockFromDB(idProducto, idAlmacen, cantProducto) {
   return new Promise((resolve) => {
     console.log(`Getting stock from product ${idProducto}...`);
     setTimeout(async () => {
-      let verifyQuery = `select cant_Actual-${cantProducto} as resto from Stock_Bodega where idBodega='${idAlmacen}' and idProducto=${idProducto} union 
-        select cant_Actual-${cantProducto} as resto from Stock_Agencia where idAgencia='${idAlmacen}' and idProducto=${idProducto} union
-        select cant_Actual-${cantProducto} as resto from Stock_Agencia_Movil where idVehiculo='${idAlmacen}' and idProducto=${idProducto}`;
+      let verifyQuery = `select cant_Actual-${cantProducto} as resto, cant_Actual as disponible from Stock_Bodega where idBodega='${idAlmacen}' and idProducto=${idProducto} union 
+        select cant_Actual-${cantProducto} as resto, cant_Actual as disponible from Stock_Agencia where idAgencia='${idAlmacen}' and idProducto=${idProducto} union
+        select cant_Actual-${cantProducto} as resto, cant_Actual as disponible from Stock_Agencia_Movil where idVehiculo='${idAlmacen}' and idProducto=${idProducto}`;
       const verified = await dbConnection.executeQuery(verifyQuery);
-      resolve(verified.data[0][0].resto);
+      resolve({
+        resto: verified.data[0][0].resto,
+        disponible: verified.data[0][0].disponible,
+      });
     }, 200);
   });
 }
@@ -160,9 +178,33 @@ function verifyAvailability(body) {
   });
 }
 
+function updateFullStock(body) {
+  return new Promise((resolve, reject) => {
+    body.products.map((pr) => {
+      setTimeout(async () => {
+        let updateQuery = `update Stock_Agencia set cant_Anterior=(select cant_Actual from Stock_Agencia 
+          where idProducto=${pd.idProducto} and idAgencia='${body.idAgencia}'), cant_Actual='${pr.cantProducto}', 
+          diferencia=abs(${pr.cantProducto}-cant_Actual) where idProducto=${pr.idProducto} 
+            update Stock_Bodega set cant_Anterior=(select cant_Actual from Stock_Bodega 
+            where idProducto=${pd.idProducto} and idBodega='${body.idAgencia}'), cant_Actual='${pr.cantProducto}', 
+            diferencia=abs(${pr.cantProducto}-cant_Actual) where idProducto=${pr.idProducto} 
+              update Stock_Agencia_Movil set cant_Anterior=(select cant_Actual from Stock_Agencia_Movil 
+              where idProducto=${pd.idProducto} and idVehiculo='${body.idAgencia}'), cant_Actual='${pr.cantProducto}', 
+              diferencia=abs(${pr.cantProducto}-cant_Actual) where idProducto=${pr.idProducto}`;
+        const updated = await dbConnection.executeQuery(updateQuery);
+        resolve({
+          data: updated,
+          code: 200,
+        });
+      }, 100);
+    });
+  });
+}
+
 module.exports = {
   getStores,
   getUserStock,
   verifyAvailability,
   updateProductStock,
+  updateFullStock,
 };

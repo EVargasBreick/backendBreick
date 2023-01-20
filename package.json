@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.2.2",
     "body-parser": "^1.20.0",
     "cors": "^2.8.5",
     "cryptr": "^6.0.3",
@@ -21,7 +22,8 @@
     "nodemailer": "^6.8.0",
     "rest-mssql-nodejs": "^1.0.10",
     "sequelize": "^6.21.4",
-    "tedious": "^15.1.0"
+    "tedious": "^15.1.0",
+    "xml2js": "^0.4.23"
   },
   "devDependencies": {
     "nodemon": "^2.0.19"

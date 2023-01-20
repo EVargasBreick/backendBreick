@@ -7,6 +7,7 @@ const {
   getUserStock,
   verifyAvailability,
   updateProductStock,
+  updateFullStock,
 } = require("../models/StoreModel");
 app.use(session(sessionParams));
 
@@ -31,6 +32,16 @@ module.exports = {
   },
   updateProductStock: (req, res) => {
     const updated = updateProductStock(req.body);
+    updated
+      .then((upd) => {
+        res.status(200).send(upd);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
+  updateFulltStock: (req, res) => {
+    const updated = updateFullStock(req.body);
     updated
       .then((upd) => {
         res.status(200).send(upd);

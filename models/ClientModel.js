@@ -4,7 +4,7 @@ function registerClient(data) {
   console.log("Data cliente", data);
   var queryNewClient = `insert into Clientes (razonSocial, 
     nit, correo, direccion, codPostal, telefono, activo, lenguaje, frecuencia, 
-    notasAdicionales, idZona, tipoPrecio, usuarioCrea, idVendedor, fechaCrea)
+    notasAdicionales, idZona, tipoPrecio, usuarioCrea, idVendedor, fechaCrea, tipoDocumento)
     values (
         '${data.razonSocial}',
         '${data.nit}',
@@ -20,7 +20,8 @@ function registerClient(data) {
         '${data.tipoPrecio}',
         '${data.usuarioCrea}',
         '${data.idVendedor}',
-        '${data.fechaCrea}'
+        '${data.fechaCrea}',
+        ${data.tipoDoc}
     )`;
 
   return new Promise((resolve, reject) => {
@@ -53,7 +54,8 @@ function updateClient(data, params) {
       codPostal='${data.codPostal}', telefono='${data.telefono}', activo= '${data.activo}', 
       lenguaje= '${data.lenguaje}', frecuencia='${data.frecuencia}',
       notasAdicionales='${data.notas}', idZona='${data.idZona}', tipoPrecio= '${data.tipoPrecio}', 
-      usuarioCrea= '${data.usuarioCrea}', idVendedor='${data.idVendedor}', fechaCrea='${data.fechaCrea}'
+      usuarioCrea= '${data.usuarioCrea}', idVendedor='${data.idVendedor}', fechaCrea='${data.fechaCrea}',
+      tipoDocumento=${data.tipoDoc}
       where idCliente=${params.id}`;
 
   return new Promise((resolve, reject) => {
