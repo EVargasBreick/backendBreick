@@ -183,14 +183,14 @@ function updateFullStock(body) {
     body.products.map((pr) => {
       setTimeout(async () => {
         let updateQuery = `update Stock_Agencia set cant_Anterior=(select cant_Actual from Stock_Agencia 
-          where idProducto=${pd.idProducto} and idAgencia='${body.idAgencia}'), cant_Actual='${pr.cantProducto}', 
-          diferencia=abs(${pr.cantProducto}-cant_Actual) where idProducto=${pr.idProducto} 
+          where idProducto=${pr.idProducto} and idAgencia='${body.idAgencia}'), cant_Actual='${pr.cantProducto}', 
+          diferencia=abs(${pr.cantProducto}-cant_Actual), fechaActualizacion='${body.fechaHora}' where idProducto=${pr.idProducto} 
             update Stock_Bodega set cant_Anterior=(select cant_Actual from Stock_Bodega 
-            where idProducto=${pd.idProducto} and idBodega='${body.idAgencia}'), cant_Actual='${pr.cantProducto}', 
-            diferencia=abs(${pr.cantProducto}-cant_Actual) where idProducto=${pr.idProducto} 
+            where idProducto=${pr.idProducto} and idBodega='${body.idAgencia}'), cant_Actual='${pr.cantProducto}', 
+            diferencia=abs(${pr.cantProducto}-cant_Actual), fechaActualizacion='${body.fechaHora}' where idProducto=${pr.idProducto} 
               update Stock_Agencia_Movil set cant_Anterior=(select cant_Actual from Stock_Agencia_Movil 
-              where idProducto=${pd.idProducto} and idVehiculo='${body.idAgencia}'), cant_Actual='${pr.cantProducto}', 
-              diferencia=abs(${pr.cantProducto}-cant_Actual) where idProducto=${pr.idProducto}`;
+              where idProducto=${pr.idProducto} and idVehiculo='${body.idAgencia}'), cant_Actual='${pr.cantProducto}', 
+              diferencia=abs(${pr.cantProducto}-cant_Actual), fechaActualizacion='${body.fechaHora}' where idProducto=${pr.idProducto}`;
         const updated = await dbConnection.executeQuery(updateQuery);
         resolve({
           data: updated,

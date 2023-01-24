@@ -5,6 +5,9 @@ const {
   getAvailableProducts,
   getProductsWithStock,
   getProductsDiscount,
+  createProduct,
+  getInternalAndBarcode,
+  getProdTypes,
 } = require("../models/ProductModel");
 
 module.exports = {
@@ -64,5 +67,35 @@ module.exports = {
       var resp = JSON.parse(response);
       res.status(200).send(resp);
     });
+  },
+  createProduct: (req, res) => {
+    const created = createProduct(req.body);
+    created
+      .then((cr) => {
+        res.status(200).send(cr);
+      })
+      .catch((err) => {
+        res.status(500).send(err);
+      });
+  },
+  getCodes: (req, res) => {
+    const ids = getInternalAndBarcode();
+    ids
+      .then((id) => {
+        res.status(200).send(id);
+      })
+      .catch((err) => {
+        res.status(400).send(err);
+      });
+  },
+  getProdTypes: (req, res) => {
+    const ids = getProdTypes();
+    ids
+      .then((id) => {
+        res.status(200).send(id);
+      })
+      .catch((err) => {
+        res.status(400).send(err);
+      });
   },
 };

@@ -99,10 +99,76 @@ where us.idUsuario=${params.id} order by us.tipoUsuario
   });
 }
 
+function createProduct(body) {
+  const newProdQuery = `insert into Productos (codInterno, nombreProducto, descProducto, gramajeProducto, 
+    precioDeFabrica, codigoBarras, cantCajon, unidadDeMedida, tiempoDeVida, activo, precioPDV, cantDisplay, 
+    aplicaDescuento, tipoProducto, precioDescuentoFijo,actividadEconomica,codigoSin,codigoUnidad) values (
+      '${body.codInterno}',
+      '${body.nombreProducto}',
+      '${body.descProducto}',
+      '${body.gramajeProducto}',
+      ${body.precioDeFabrica},
+      '${body.codigoBarras}',
+      ${body.cantCajon},
+      '${body.unidadDeMedida}',
+      ${body.tiempoDeVida},
+      ${body.activo},
+      ${body.precioPDV},
+      ${body.cantDisplay},
+      '${body.aplicaDescuento}',
+      ${body.tipoProducto},
+      ${body.precioDescuentoFijo},
+      ${body.actividadEconomica},
+      ${body.codigoSin},
+      ${body.codigoUnidad}
+    )`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      const added = await dbConnection.executeQuery(newProdQuery);
+      if (added.success) {
+        resolve(added);
+      } else {
+        reject(added);
+      }
+    }, 100);
+  });
+}
+
+function getInternalAndBarcode() {
+  const getQuery = `select idProducto, nombreProducto, codInterno, codigoBarras from Productos`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      const ids = await dbConnection.executeQuery(getQuery);
+      if (ids.success) {
+        resolve(ids);
+      } else {
+        reject(ids);
+      }
+    }, 100);
+  });
+}
+
+function getProdTypes() {
+  const typeQuery = `select * from Tipos_Producto order by idTiposProducto`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      const ids = await dbConnection.executeQuery(typeQuery);
+      if (ids.success) {
+        resolve(ids);
+      } else {
+        reject(ids);
+      }
+    }, 100);
+  });
+}
+
 module.exports = {
   getProducts,
   getNumberOfProducts,
   getAvailableProducts,
   getProductsWithStock,
   getProductsDiscount,
+  createProduct,
+  getInternalAndBarcode,
+  getProdTypes,
 };
