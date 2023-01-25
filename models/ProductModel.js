@@ -102,7 +102,7 @@ where us.idUsuario=${params.id} order by us.tipoUsuario
 function createProduct(body) {
   const newProdQuery = `insert into Productos (codInterno, nombreProducto, descProducto, gramajeProducto, 
     precioDeFabrica, codigoBarras, cantCajon, unidadDeMedida, tiempoDeVida, activo, precioPDV, cantDisplay, 
-    aplicaDescuento, tipoProducto, precioDescuentoFijo,actividadEconomica,codigoSin,codigoUnidad) values (
+    aplicaDescuento, tipoProducto, precioDescuentoFijo,actividadEconomica,codigoSin,codigoUnidad,origenProducto) values (
       '${body.codInterno}',
       '${body.nombreProducto}',
       '${body.descProducto}',
@@ -120,7 +120,8 @@ function createProduct(body) {
       ${body.precioDescuentoFijo},
       ${body.actividadEconomica},
       ${body.codigoSin},
-      ${body.codigoUnidad}
+      ${body.codigoUnidad},
+      ${body.origenProducto}
     )`;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
@@ -162,6 +163,20 @@ function getProdTypes() {
   });
 }
 
+function getProdOrigin() {
+  const typeQuery = `select * from Origen_Producto order by idOrigenProducto`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      const ids = await dbConnection.executeQuery(typeQuery);
+      if (ids.success) {
+        resolve(ids);
+      } else {
+        reject(ids);
+      }
+    }, 100);
+  });
+}
+
 module.exports = {
   getProducts,
   getNumberOfProducts,
@@ -171,4 +186,5 @@ module.exports = {
   createProduct,
   getInternalAndBarcode,
   getProdTypes,
+  getProdOrigin,
 };

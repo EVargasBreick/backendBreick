@@ -1,19 +1,20 @@
 const express = require("express");
 const session = require("express-session");
 var cors = require("cors");
+require("dotenv").config();
 const serverConfig = require("./config/serverConfig.json");
 const dbConnection = new (require("rest-mssql-nodejs"))({
-  user: serverConfig.user,
-  password: serverConfig.password,
-  server: serverConfig.server, // replace this with your IP Serve
-  database: serverConfig.database, // this is optional, by default takes the port 1433
+  user: process.env.USERNAME,
+  password: process.env.PASSWORD,
+  server: process.env.SERVER, // replace this with your IP Serve
+  database: process.env.DATABASE_NAME, // this is optional, by default takes the port 1433
   options: {
     encrypt: true,
     enableArithAbort: true,
   },
 });
 var corsOptions = {
-  origin: serverConfig.urlServer,
+  origin: process.env.URL_SERVER,
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204,
 };
 
@@ -52,6 +53,7 @@ const branchRoutes = require("./routes/Branch");
 const reportRoutes = require("./routes/Reports");
 const shortageRoutes = require("./routes/Shortage");
 const xmlRoutes = require("./routes/Xml");
+const packRoutes = require("./routes/Pack");
 app.use("/", userRoutes);
 app.use("/", loginRoutes);
 app.use("/", productRoutes);
@@ -73,6 +75,7 @@ app.use("/", branchRoutes);
 app.use("/", reportRoutes);
 app.use("/", shortageRoutes);
 app.use("/", xmlRoutes);
+app.use("/", packRoutes);
 app.listen(serverConfig.port, () => {
-  console.log("Server listening on port ", serverConfig.port);
+  console.log("Server listening on port ", process.env.PORT);
 });

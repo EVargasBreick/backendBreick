@@ -8,12 +8,19 @@ const {
   verifyAvailability,
   updateProductStock,
   updateFullStock,
+  getOnlyStores,
 } = require("../models/StoreModel");
 app.use(session(sessionParams));
 
 module.exports = {
   getStores: (req, res) => {
     const stores = getStores();
+    stores.then((store) => {
+      res.status(200).send(store);
+    });
+  },
+  getOnlyStores: (req, res) => {
+    const stores = getOnlyStores();
     stores.then((store) => {
       res.status(200).send(store);
     });

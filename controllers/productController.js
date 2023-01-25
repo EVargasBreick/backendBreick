@@ -8,6 +8,7 @@ const {
   createProduct,
   getInternalAndBarcode,
   getProdTypes,
+  getProdOrigin,
 } = require("../models/ProductModel");
 
 module.exports = {
@@ -90,6 +91,16 @@ module.exports = {
   },
   getProdTypes: (req, res) => {
     const ids = getProdTypes();
+    ids
+      .then((id) => {
+        res.status(200).send(id);
+      })
+      .catch((err) => {
+        res.status(400).send(err);
+      });
+  },
+  getProdOrigin: (req, res) => {
+    const ids = getProdOrigin();
     ids
       .then((id) => {
         res.status(200).send(id);
