@@ -213,6 +213,47 @@ function updateFullStock(body) {
   });
 }
 
+function getSalePoints(params) {
+  const pointQuery = `select * from PuntosDeVenta pdv inner join Sucursales sc on sc.idSucursal=pdv.idSucursal 
+  where sc.idString='${params.idAgencia}'`;
+  console.log("Query", pointQuery);
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      const pointList = await dbConnection.executeQuery(pointQuery);
+      console.log("Lista lista", pointList);
+      if (pointList.success) {
+        resolve(pointList);
+      } else {
+        reject(pointList);
+      }
+    }, 100);
+  });
+}
+
+function getSalePointsAndStore(params) {
+  const pointQuery = ` select ag.nombre, pdv.nroPuntoDeVenta from Agencias ag 
+inner join Sucursales sc on ag.idAgencia=sc.idString 
+inner join PuntosDeVenta pdv on pdv.idSucursal=sc.idSucursal
+where sc.idString='${params.idAlmacen}' union 
+select ag.nombre, pdv.nroPuntoDeVenta from Bodegas ag 
+inner join Sucursales sc on ag.idBodega=sc.idString 
+inner join PuntosDeVenta pdv on pdv.idSucursal=sc.idSucursal
+where sc.idString='${params.idAlmacen}'
+`;
+  console.log("Query", pointQuery);
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      const pointList = await dbConnection.executeQuery(pointQuery);
+      console.log("Lista lista", pointList);
+      if (pointList.success) {
+        resolve(pointList);
+      } else {
+        reject(pointList);
+      }
+    }, 100);
+  });
+}
+
 module.exports = {
   getStores,
   getUserStock,
@@ -220,4 +261,6 @@ module.exports = {
   updateProductStock,
   updateFullStock,
   getOnlyStores,
+  getSalePoints,
+  getSalePointsAndStore,
 };

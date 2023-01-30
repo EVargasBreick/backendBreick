@@ -88,4 +88,22 @@ inner join Usuarios us on vn.idUsuarioCrea=us.idUsuario
   });
 }
 
-module.exports = { GeneralSalesReport, ProductsSalesReport };
+function ClosingReport(params) {
+  const generalQuery = `select  fc.idSucursal, fc.puntoDeVenta, fc.idOtroPago, fc.tipoPago, sum(fc.pagado) as totalPagado, sum(fc.cambio) as totalCambio, sum(fc.vale) as totalVale
+ from Facturas fc inner join Sucursales sc on fc.idSucursal=sc.idImpuestos
+ where fc.idSucursal=${params.idSucursal} and fc.puntoDeVenta=${params.idPdv} and convert(date, SUBSTRING(fc.fechaHora,7,4)+'-'+SUBSTRING(fc.fechaHora,4,2)+'-'+SUBSTRING(fc.fechaHora,1,2))=CAST( GETDATE() AS Date )
+ group by fc.idSucursal, fc.puntoDeVenta, fc.idOTroPago, fc.tipoPago `;
+  console.log("Query fechas:", generalQuery);
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      const data = await dbConnection.executeQuery(generalQuery);
+      if (data.success) {
+        resolve(data);
+      } else {
+        reject(data);
+      }
+    }, 200);
+  });
+}
+
+module.exports = { GeneralSalesReport, ProductsSalesReport, ClosingReport };

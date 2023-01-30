@@ -23,7 +23,10 @@ function createInvoice(body) {
             cufd,
             fechaEmision,
             nroTransaccion,
-            fechaAnulacion
+            fechaAnulacion,
+            idOtroPago,
+            vale,
+            puntoDeVenta
         ) values (
             '${body.nroFactura}',
             ${body.idSucursal},
@@ -36,7 +39,7 @@ function createInvoice(body) {
             ${body.cambio},
             '${body.nroTarjeta}',
             '${body.cuf}',
-            '0',
+            '${body.aPagar}',
             '${body.importeBase}',
             '${body.debitoFiscal}',
              '${body.desembolsada}',
@@ -44,7 +47,10 @@ function createInvoice(body) {
              '${body.cufd}',
              '${body.fechaEmision}',
              ${body.nroTransaccion},
-             '-'
+             '-',
+             ${body.idOtroPago},
+             ${body.vale},
+             ${body.puntoDeVenta}
         )`;
 
   return new Promise((resolve, reject) => {
@@ -119,9 +125,24 @@ function cancelInvoice(params) {
   });
 }
 
+function getOtherPayments() {
+  const deleteQuery = `Select * from Otros_Pagos`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      const list = await dbConnection.executeQuery(deleteQuery);
+      if (list.success) {
+        resolve(list);
+      } else {
+        reject(list);
+      }
+    }, 100);
+  });
+}
+
 module.exports = {
   createInvoice,
   deleteInvoice,
   getInvoiceProducts,
   cancelInvoice,
+  getOtherPayments,
 };

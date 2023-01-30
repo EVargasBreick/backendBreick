@@ -21,7 +21,7 @@ function registerClient(data) {
         '${data.usuarioCrea}',
         '${data.idVendedor}',
         '${data.fechaCrea}',
-        ${data.tipoDoc}
+        ${data.tipoDocumento}
     )`;
 
   return new Promise((resolve, reject) => {

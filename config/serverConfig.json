@@ -1,9 +1,9 @@
 {
   "database": "DB_CRMBREICKALT",
   "port": 5200,
-  "server": "localhost",
+  "server": "LOCALHOST",
   "user": "sa",
-  "password": "Breick2022",
+  "password": "breick2023",
   "secret": "BreickSecret2022",
   "urlServer": "http://localhost:3006"
 }

@@ -5,6 +5,7 @@ const app = express();
 const {
   GeneralSalesReport,
   ProductsSalesReport,
+  ClosingReport,
 } = require("../models/ReportsModel");
 app.use(session(sessionParams));
 
@@ -21,6 +22,16 @@ module.exports = {
   },
   productSalesReport: (req, res) => {
     const data = ProductsSalesReport(req.query);
+    data
+      .then((dt) => {
+        res.status(200).send(dt);
+      })
+      .catch((err) => {
+        res.status(400).send(err);
+      });
+  },
+  closingDayReport: (req, res) => {
+    const data = ClosingReport(req.query);
     data
       .then((dt) => {
         res.status(200).send(dt);

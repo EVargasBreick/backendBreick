@@ -9,6 +9,8 @@ const {
   updateProductStock,
   updateFullStock,
   getOnlyStores,
+  getSalePoints,
+  getSalePointsAndStore,
 } = require("../models/StoreModel");
 app.use(session(sessionParams));
 
@@ -49,6 +51,26 @@ module.exports = {
   },
   updateFulltStock: (req, res) => {
     const updated = updateFullStock(req.body);
+    updated
+      .then((upd) => {
+        res.status(200).send(upd);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
+  getSalePoints: (req, res) => {
+    const updated = getSalePoints(req.query);
+    updated
+      .then((upd) => {
+        res.status(200).send(upd);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
+  getSalePointsAndStore: (req, res) => {
+    const updated = getSalePointsAndStore(req.query);
     updated
       .then((upd) => {
         res.status(200).send(upd);

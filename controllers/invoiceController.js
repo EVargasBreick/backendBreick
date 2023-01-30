@@ -6,6 +6,7 @@ const {
   deleteInvoice,
   getInvoiceProducts,
   cancelInvoice,
+  getOtherPayments,
 } = require("../models/InvoiceModel");
 const app = express();
 app.use(session(sessionParams));
@@ -45,6 +46,16 @@ module.exports = {
   },
   cancelInvoice: (req, res) => {
     const invoices = cancelInvoice(req.query);
+    invoices
+      .then((inv) => {
+        res.status(200).send(inv);
+      })
+      .catch((err) => {
+        res.status(500).send(err);
+      });
+  },
+  otherPayments: (req, res) => {
+    const invoices = getOtherPayments();
     invoices
       .then((inv) => {
         res.status(200).send(inv);

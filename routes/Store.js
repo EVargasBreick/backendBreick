@@ -9,5 +9,7 @@ router.get("/stockUsuario", controller.getUserStock);
 router.get("/stock/disponible", controller.getProductAvailability);
 router.put("/stock/update", controller.updateProductStock);
 router.put("/stock/full/update", controller.updateFulltStock);
+router.get("/agencias/puntos", controller.getSalePoints);
+router.get("/agencias/puntos/nombres", controller.getSalePointsAndStore);
 
 module.exports = router;

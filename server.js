@@ -4,7 +4,7 @@ var cors = require("cors");
 require("dotenv").config();
 const serverConfig = require("./config/serverConfig.json");
 const dbConnection = new (require("rest-mssql-nodejs"))({
-  user: process.env.USERNAME,
+  user: process.env.USER_NAME,
   password: process.env.PASSWORD,
   server: process.env.SERVER, // replace this with your IP Serve
   database: process.env.DATABASE_NAME, // this is optional, by default takes the port 1433

@@ -1,7 +1,7 @@
 const axios = require("axios");
 const xml2js = require("xml2js");
-const xmlConfig = require("../config/xmlConfig.json");
 const dbConnection = require("../server");
+require("dotenv").config();
 function xmlLogin(body) {
   return new Promise(async (resolve, reject) => {
     const builder = new xml2js.Builder({
@@ -42,7 +42,7 @@ function xmlLogin(body) {
     const xmlBody = builder.buildObject(jsonBody);
     try {
       const response = await axios.post(
-        `${xmlConfig.xmlUrl}/ws/WSComfiar.asmx`,
+        `${process.env.XML_URL}/ws/WSComfiar.asmx`,
         xmlBody,
         config
       );
@@ -160,7 +160,7 @@ function getLastId(body) {
                 xmlns: "http://comfiar.com.ar/webservice/",
               },
               cuitId: `${body.nit}`,
-              puntoDeVentaId: `${body.puntoDeVentaId}`,
+              puntoDeVentaId: `${(body.puntoDeVentaId * 10000).toFixed(0)}`,
               tipoDeComprobanteId: `${body.tipoComprobante}`,
               token: {
                 SesionId: `${sesionId}`,
@@ -172,7 +172,7 @@ function getLastId(body) {
         const xmlBody = builder.buildObject(jsonBody);
         try {
           const response = await axios.post(
-            `${xmlConfig.xmlUrl}/ws/WSComfiar.asmx`,
+            `${process.env.XML_URL}/ws/WSComfiar.asmx`,
             xmlBody,
             config
           );
@@ -188,7 +188,12 @@ function getLastId(body) {
               const ultimoId =
                 body.UltimoNumeroComprobanteResponse[0]
                   .UltimoNumeroComprobanteResult[0];
-              resolve(ultimoId);
+              console.log("Ultimo comprobante", ultimoId);
+              if (ultimoId > 0) {
+                resolve(ultimoId);
+              } else {
+                resolve("0");
+              }
             }
           });
         } catch (error) {
@@ -199,8 +204,8 @@ function getLastId(body) {
       .catch((err) => {
         console.log("Token pasado, reiniciando sesion", err);
         const newLogin = xmlLogin({
-          email: xmlConfig.comfiarUser,
-          password: xmlConfig.comfiarPassword,
+          email: process.env.COMFIAR_USER,
+          password: process.env.COMFIAR_PASSWORD,
         });
         newLogin
           .then((nl) => {
@@ -263,7 +268,9 @@ function authorizeInvoice(body) {
               },
               XML: `${body.XML}`,
               cuitAProcesar: `${body.nit}`,
-              puntoDeVentaId: `${body.idSucursal}`,
+              puntoDeVentaId: `${parseFloat(body.idSucursal * 10000).toFixed(
+                0
+              )}`,
               tipoDeComprobanteId: `${body.tipoComprobante}`,
               formatoId: body.formatoId,
               token: {
@@ -276,7 +283,7 @@ function authorizeInvoice(body) {
         const xmlBody = builder.buildObject(jsonBody);
         try {
           const response = await axios.post(
-            `${xmlConfig.xmlUrl}/ws/WSComfiar.asmx`,
+            `${process.env.XML_URL}/ws/WSComfiar.asmx`,
             xmlBody,
             config
           );
@@ -304,8 +311,8 @@ function authorizeInvoice(body) {
       .catch((err) => {
         console.log("Token pasado, reiniciando sesion", err);
         const newLogin = xmlLogin({
-          email: xmlConfig.comfiarUser,
-          password: xmlConfig.comfiarPassword,
+          email: process.env.COMFIAR_USER,
+          password: process.env.COMFIAR_PASSWORD,
         });
         newLogin
           .then((nl) => {
@@ -379,7 +386,7 @@ function InvoiceOut(body) {
         const xmlBody = builder.buildObject(jsonBody);
         try {
           const response = await axios.post(
-            `${xmlConfig.xmlUrl}/ws/WSComfiar.asmx`,
+            `${process.env.XML_URL}/ws/WSComfiar.asmx`,
             xmlBody,
             config
           );
@@ -404,8 +411,8 @@ function InvoiceOut(body) {
       .catch((err) => {
         console.log("Token pasado, reiniciando sesion", err);
         const newLogin = xmlLogin({
-          email: xmlConfig.comfiarUser,
-          password: xmlConfig.comfiarPassword,
+          email: process.env.COMFIAR_USER,
+          password: process.env.COMFIAR_PASSWORD,
         });
         newLogin
           .then((nl) => {
@@ -470,10 +477,10 @@ function cancelInvoice(body) {
                 SesionId: `${sesionId}`,
                 FechaVencimiento: `${date2}`,
               },
-              usuarioId: `${xmlConfig.comfiarUser}`,
+              usuarioId: `${process.env.COMFIAR_USER}`,
               transaccionId: body.transaccionId,
               cuitId: `${body.nit}`,
-              puntoDeVentaId: body.puntoDeVentaId,
+              puntoDeVentaId: (body.puntoDeVentaId * 10000).toFixed(0),
               tipoComprobanteId: body.tipoComprobante,
               numeroComprobante: body.numeroComprobante,
               motivoAnulacion: body.motivoAnulacion,
@@ -484,7 +491,7 @@ function cancelInvoice(body) {
         console.log("Body xml", xmlBody);
         try {
           const response = await axios.post(
-            `${xmlConfig.xmlUrl}/ws/WSComfiar.asmx`,
+            `${process.env.XML_URL}/ws/WSComfiar.asmx`,
             xmlBody,
             config
           );
@@ -509,8 +516,8 @@ function cancelInvoice(body) {
       .catch((err) => {
         console.log("Token pasado, reiniciando sesion", err);
         const newLogin = xmlLogin({
-          email: xmlConfig.comfiarUser,
-          password: xmlConfig.comfiarPassword,
+          email: process.env.COMFIAR_USER,
+          password: process.env.COMFIAR_PASSWORD,
         });
         newLogin
           .then((nl) => {
