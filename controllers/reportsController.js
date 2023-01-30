@@ -6,6 +6,7 @@ const {
   GeneralSalesReport,
   ProductsSalesReport,
   ClosingReport,
+  FirstAndLast,
 } = require("../models/ReportsModel");
 app.use(session(sessionParams));
 
@@ -32,6 +33,16 @@ module.exports = {
   },
   closingDayReport: (req, res) => {
     const data = ClosingReport(req.query);
+    data
+      .then((dt) => {
+        res.status(200).send(dt);
+      })
+      .catch((err) => {
+        res.status(400).send(err);
+      });
+  },
+  firstAndLast: (req, res) => {
+    const data = FirstAndLast(req.query);
     data
       .then((dt) => {
         res.status(200).send(dt);

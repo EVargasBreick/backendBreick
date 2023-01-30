@@ -49,7 +49,7 @@ function updateProductStock(body) {
   console.log("Fecha string", dateResult);
   return new Promise((resolve, reject) => {
     if (body.productos.length > 0) {
-      if (body.accion == "add") {
+      if (body.accion === "add") {
         body.productos.map((prod) => {
           setTimeout(async () => {
             let updateStockQuery = `update Stock_Bodega set cant_Anterior=(select cant_Actual from Stock_Bodega where idProducto=${prod.idProducto} and idBodega='${body.idAlmacen}'), 
@@ -61,6 +61,7 @@ function updateProductStock(body) {
           update Stock_Agencia_Movil set cant_Anterior=(select cant_Actual from Stock_Agencia_Movil where idProducto=${prod.idProducto} and idVehiculo='${body.idAlmacen}'), 
           diferencia=${prod.cantProducto}, cant_Actual=(select cant_Actual from Stock_Agencia_Movil where idProducto=${prod.idProducto} and idVehiculo='${body.idAlmacen}') ${operator} ${prod.cantProducto},
           fechaActualizacion='${dateResult}' where idProducto=${prod.idProducto} and idVehiculo='${body.idAlmacen}'`;
+            console.log("Add query", updateStockQuery);
             const updated = await dbConnection.executeQuery(updateStockQuery);
             resolve({
               data: updated,

@@ -57,16 +57,16 @@ function getCurrentProductStock(params) {
   });
 }
 function getCurrentStoreStock(params) {
-  let logQuery = `select b.codInterno,  b.nombreProducto, a.cant_Actual as cantidad , b.precioDeFabrica, c.nombre as NombreAgencia from Stock_Agencia a 
+  let logQuery = `select b.codInterno,  b.nombreProducto, a.cant_Actual as cantidad , b.precioDeFabrica, c.nombre as NombreAgencia, b.idProducto from Stock_Agencia a 
     inner join Productos b on a.idProducto=b.idProducto
     inner join Agencias c on a.idAgencia=c.idAgencia
     where a.idAgencia='${params.idAgencia}' union 
-    select b.codInterno,  b.nombreProducto, a.cant_Actual as cantidad, b.precioDeFabrica, c.nombre as NombreAgencia from Stock_Bodega a 
+    select b.codInterno,  b.nombreProducto, a.cant_Actual as cantidad, b.precioDeFabrica, c.nombre as NombreAgencia, b.idProducto from Stock_Bodega a 
     inner join Productos b on a.idProducto=b.idProducto
     inner join Bodegas c on a.idBodega=c.idBodega
     where a.idBodega='${params.idAgencia}' union 
     select b.codInterno,  b.nombreProducto, a.cant_Actual as cantidad, b.precioDeFabrica, 
-    (select am.marca+' '+am.color+' '+am.placa from Vehiculos am where am.placa=a.idVehiculo) as NombreAgencia 
+    (select am.marca+' '+am.color+' '+am.placa from Vehiculos am where am.placa=a.idVehiculo) as NombreAgencia, b.idProducto
     from Stock_Agencia_Movil a 
     inner join Productos b on a.idProducto=b.idProducto
     where a.idVehiculo='${params.idAgencia}'
@@ -80,9 +80,48 @@ function getCurrentStoreStock(params) {
   });
 }
 
+function initializeStock(body) {
+  const initQuery = `insert into Stock_Agencia (
+    idAgencia, 
+    idProducto, 
+    cant_Anterior, 
+    cant_Actual, 
+    diferencia, 
+    fechaActualizacion 
+  ) select idAgencia, ${body.idProducto}, 0, 0, 0, '${body.fechaHora}' from Agencias
+  insert into Stock_Agencia_Movil(
+    idVehiculo, 
+    idProducto, 
+    cant_Anterior, 
+    cant_Actual, 
+    diferencia, 
+    fechaActualizacion 
+  ) select placa, ${body.idProducto}, 0, 0, 0,'${body.fechaHora}' from Vehiculos
+  insert into Stock_Bodega (
+    idBodega, 
+    idProducto, 
+    cant_Anterior, 
+    cant_Actual, 
+    diferencia, 
+    fechaActualizacion 
+  ) select idBodega,${body.idProducto}, 0, 0, 0, '${body.fechaHora}' from Bodegas`;
+  console.log("Query query", initQuery);
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      const log = await dbConnection.executeQuery(initQuery);
+      if (log.success) {
+        resolve(log);
+      } else {
+        reject(log);
+      }
+    }, 100);
+  });
+}
+
 module.exports = {
   getStockFromDateAndProduct,
   getStockFromDateAndStore,
   getCurrentProductStock,
   getCurrentStoreStock,
+  initializeStock,
 };

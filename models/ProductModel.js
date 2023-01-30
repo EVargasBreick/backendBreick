@@ -127,7 +127,11 @@ function createProduct(body) {
     setTimeout(async () => {
       const added = await dbConnection.executeQuery(newProdQuery);
       if (added.success) {
-        resolve(added);
+        const idCreado = await dbConnection.executeQuery(
+          `select IDENT_CURRENT('dbo.Productos') as 'idCreado'`
+        );
+        const id = idCreado.data[0][0].idCreado;
+        resolve({ added, id: id });
       } else {
         reject(added);
       }

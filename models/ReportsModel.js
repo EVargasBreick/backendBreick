@@ -106,4 +106,26 @@ function ClosingReport(params) {
   });
 }
 
-module.exports = { GeneralSalesReport, ProductsSalesReport, ClosingReport };
+function FirstAndLast(params) {
+  const query = `select  min(fc.nroFactura) as PrimeraFactura, max(fc.nroFactura) as UltimaFactura, count(fc.nroFactura) as CantidadFacturas from Facturas fc 
+  where fc.idSucursal=${params.idSucursal} and fc.puntoDeVenta=${params.idPdv} 
+  and convert(date, SUBSTRING(fc.fechaHora,7,4)+'-'+SUBSTRING(fc.fechaHora,4,2)+'-'+SUBSTRING(fc.fechaHora,1,2))=CAST( GETDATE() AS Date )
+  `;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      const data = await dbConnection.executeQuery(query);
+      if (data.success) {
+        resolve(data);
+      } else {
+        reject(data);
+      }
+    }, 200);
+  });
+}
+
+module.exports = {
+  GeneralSalesReport,
+  ProductsSalesReport,
+  ClosingReport,
+  FirstAndLast,
+};

@@ -1,8 +1,8 @@
 const dbConnection = require("../server");
 
 function registerPack(body) {
-  const packQuery = `insert into Packs (nombrePack,precioPack,descripcionPack,codigoBarras) 
-    values ('${body.nombrePack}',${body.precioPack},'${body.descPack}','-')`;
+  const packQuery = `insert into Packs (nombrePack,precioPack,descripcionPack,codigoBarras, idPackProd) 
+    values ('${body.nombrePack}',${body.precioPack},'${body.descPack}','-',0)`;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       const pack = await dbConnection.executeQuery(packQuery);
@@ -13,7 +13,7 @@ function registerPack(body) {
         const idCreado = idCreadoRes.data[0][0].idCreado;
         body.productos.map((pr) => {
           setTimeout(async () => {
-            const productQuery = `insert into Productos_Pack (idPack, idProducto, cant_Producto) 
+            const productQuery = `insert into Productos_Pack (idPack, idProducto, cantProducto) 
                 values (${idCreado},${pr.idProducto},${pr.cantidadProducto})`;
             const added = await dbConnection.executeQuery(productQuery);
             if (!added.success) {
@@ -39,7 +39,6 @@ function getPacks() {
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       const pack = await dbConnection.executeQuery(packQuery);
-      console.log("Pack", pack.data);
       if (pack.success) {
         resolve(pack);
       } else {
@@ -49,4 +48,18 @@ function getPacks() {
   });
 }
 
-module.exports = { registerPack, getPacks };
+function addIdToPack(params) {
+  const addQuery = `update Packs set idPackProd=${params.idProducto} where idPack=${params.idPack}`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      const pack = await dbConnection.executeQuery(addQuery);
+      if (pack.success) {
+        resolve(pack);
+      } else {
+        reject(pack);
+      }
+    }, 1000);
+  });
+}
+
+module.exports = { registerPack, getPacks, addIdToPack };

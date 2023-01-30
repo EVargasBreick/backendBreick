@@ -1,4 +1,4 @@
-const { registerPack, getPacks } = require("../models/PackModel");
+const { registerPack, getPacks, addIdToPack } = require("../models/PackModel");
 
 module.exports = {
   registerPack: (req, res) => {
@@ -14,8 +14,18 @@ module.exports = {
   getPacks: (req, res) => {
     const list = getPacks();
     list
-      .then((res) => {
-        res.status(200).send(JSON.stringify(res.data));
+      .then((resp) => {
+        res.status(200).send(resp);
+      })
+      .catch((err) => {
+        res.status(500).send(err);
+      });
+  },
+  updatePackId: (req, res) => {
+    const list = addIdToPack(req.query);
+    list
+      .then((resp) => {
+        res.status(200).send(resp);
       })
       .catch((err) => {
         res.status(500).send(err);

@@ -3,6 +3,7 @@ const {
   getStockFromDateAndStore,
   getCurrentProductStock,
   getCurrentStoreStock,
+  initializeStock,
 } = require("../models/StockModel");
 
 module.exports = {
@@ -38,6 +39,16 @@ module.exports = {
   },
   currentStoreStock: (req, res) => {
     const stock = getCurrentStoreStock(req.query);
+    stock
+      .then((resp) => {
+        res.status(200).send(resp);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
+  initializeStock: (req, res) => {
+    const stock = initializeStock(req.body);
     stock
       .then((resp) => {
         res.status(200).send(resp);
