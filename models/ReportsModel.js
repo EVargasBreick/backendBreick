@@ -107,7 +107,7 @@ function ClosingReport(params) {
 }
 
 function FirstAndLast(params) {
-  const query = `select  min(fc.nroFactura) as PrimeraFactura, max(fc.nroFactura) as UltimaFactura, count(fc.nroFactura) as CantidadFacturas from Facturas fc 
+  const query = `select  min(cast(fc.nroFactura as int)) as PrimeraFactura, max(cast(fc.nroFactura as int)) as UltimaFactura, count(fc.nroFactura) as CantidadFacturas from Facturas fc 
   where fc.idSucursal=${params.idSucursal} and fc.puntoDeVenta=${params.idPdv} 
   and convert(date, SUBSTRING(fc.fechaHora,7,4)+'-'+SUBSTRING(fc.fechaHora,4,2)+'-'+SUBSTRING(fc.fechaHora,1,2))=CAST( GETDATE() AS Date )
   `;
