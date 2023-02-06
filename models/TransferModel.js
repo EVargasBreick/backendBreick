@@ -4,8 +4,8 @@ const dateString = require("../services/dateServices");
 function createTransfer(body) {
   const dateResult = dateString();
   console.log("Resultado fecha", dateResult);
-  var queryTransfer = `insert into Traspasos (fechaCrea, fechaActu, idOrigen, idDestino, idUsuario, estado)
-    values ('${dateResult}','','${body.idOrigen}','${body.idDestino}',${body.idUsuario},0)`;
+  var queryTransfer = `insert into Traspasos (fechaCrea, fechaActu, idOrigen, idDestino, idUsuario, estado, movil, listo, impreso)
+    values ('${dateResult}','','${body.idOrigen}','${body.idDestino}',${body.idUsuario},0,${body.movil},0,0)`;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       const newTransfer = await dbConnection.executeQuery(queryTransfer);
@@ -66,8 +66,8 @@ function getTransferList(params) {
     params.crit === "todo"
       ? ``
       : params.crit === "ac"
-      ? `where estado>0`
-      : `where estado=0`;
+      ? `where estado>0 and movil=0`
+      : `where estado=0 and movil=0`;
   var queryGetList = `select a.estado, b.nombre as nombreOrigen, a.idOrigen, a.idDestino,
     (select x.nombre from Agencias x where x.idAgencia=a.idDestino union 
     select x.nombre from Bodegas x where x.idBodega=a.idDestino union 
@@ -136,9 +136,57 @@ function updateTransfer(body) {
     }, 500);
   });
 }
+function printTransfer(params) {
+  const query = `update Traspasos set impreso=1 where idTraspaso=${params.id}`;
+  console.log("Query query", query);
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      const printed = await dbConnection.executeQuery(query);
+      if (printed.success) {
+        resolve(printed);
+      } else {
+        reject(printed);
+      }
+    }, 100);
+  });
+}
+function toRePrintDetails(params) {
+  const query = `select tr.idTraspaso, tr.fechaCrea, us.usuario, pr.codInterno, pr.nombreProducto ,tp.cantidadProducto from Traspasos tr 
+  inner join Traspaso_Producto tp on tr.idTraspaso=tp.idTraspaso
+  inner join Productos pr on pr.idProducto=tp.idProducto 
+  inner join Usuarios us on us.idUsuario=tr.idUsuario
+  where tr.idTraspaso=${params.id}`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      const printed = await dbConnection.executeQuery(query);
+      if (printed.success) {
+        resolve(printed);
+      } else {
+        reject(printed);
+      }
+    }, 100);
+  });
+}
+
+function changeReady(params) {
+  const query = `update Traspasos set listo=${params.listo} where idTraspaso=${params.id}`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      const changed = await dbConnection.executeQuery(query);
+      if (changed.success) {
+        resolve(changed);
+      } else {
+        reject(changed);
+      }
+    }, 100);
+  });
+}
 module.exports = {
   createTransfer,
   getTransferList,
   getTransferProducts,
   updateTransfer,
+  printTransfer,
+  toRePrintDetails,
+  changeReady,
 };

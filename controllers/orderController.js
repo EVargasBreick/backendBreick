@@ -19,6 +19,11 @@ const {
   getOrdersToInvoice,
   getOrderToInvoiceDetails,
   invoiceOrder,
+  getNotPrinted,
+  orderPrinted,
+  orderToReady,
+  toRePrintDetails,
+  changeReady,
 } = require("../models/OrderModel");
 
 const app = express();
@@ -165,6 +170,58 @@ module.exports = {
       .then((list) => {
         var resp = JSON.parse(list);
         res.status(200).send(resp);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
+  notPrinted: (req, res) => {
+    const orderList = getNotPrinted();
+    console.log("Entro hasta aca?");
+    orderList
+      .then((list) => {
+        res.status(200).send(list);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
+  orderPrinted: (req, res) => {
+    const orderList = orderPrinted(req.query);
+    console.log("Entro hasta aca?");
+    orderList
+      .then((list) => {
+        res.status(200).send(list);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
+  orderToReady: (req, res) => {
+    const orderList = orderToReady();
+    orderList
+      .then((list) => {
+        res.status(200).send(list);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
+  toRePrint: (req, res) => {
+    const orderList = toRePrintDetails(req.query);
+    orderList
+      .then((list) => {
+        res.status(200).send(list);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
+  changeReady: (req, res) => {
+    const changed = changeReady(req.query);
+    changed
+      .then((list) => {
+        res.status(200).send(list);
       })
       .catch((error) => {
         res.status(400).send(error);

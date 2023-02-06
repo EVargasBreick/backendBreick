@@ -15,7 +15,9 @@ function registerOrder(data) {
         descuento,
         descuentoCalculado,
         notas,
-        facturado
+        facturado,
+        impreso,
+        listo
     ) values (
         ${data.pedido.idUsuarioCrea},
         ${data.pedido.idCliente},
@@ -28,6 +30,8 @@ function registerOrder(data) {
         '${data.pedido.descuento}',
         '${data.pedido.descCalculado}',
         '${data.pedido.notas}',
+        0,
+        0,
         0
     )`;
   console.log("Creacion pedido query", query);
@@ -110,10 +114,10 @@ function getOrderStatus() {
 function getOrderList(params) {
   if (params.id === "") {
     var queryList = `select a.idPedido, substring(b.nombre,1,1) + '' +b.apPaterno+'-'+tipo+'00'+cast(a.idPedido as varchar) as codigoPedido 
-    from Pedidos a inner join Usuarios b on a.idUsuarioCrea=b.idUsuario where a.estado=0`;
+    from Pedidos a inner join Usuarios b on a.idUsuarioCrea=b.idUsuario where a.estado=0 and a.listo=1`;
   } else {
     var queryList = `select a.idPedido, substring(b.nombre,1,1) + '' +b.apPaterno+'-'+tipo+'00'+cast(a.idPedido as varchar) as codigoPedido 
-    from Pedidos a inner join Usuarios b on a.idUsuarioCrea=b.idUsuario where a.estado=0 and idPedido=${params.id}`;
+    from Pedidos a inner join Usuarios b on a.idUsuarioCrea=b.idUsuario where a.estado=0 and idPedido=${params.id} and a.listo=1`;
   }
   return new Promise((resolve) => {
     setTimeout(async () => {
@@ -131,10 +135,10 @@ function getOrderList(params) {
 function getUserOrderList(params) {
   if (params.id === "") {
     var queryList = `select a.idPedido, substring(b.nombre,1,1) + '' +b.apPaterno+'-'+tipo+'00'+cast(a.idPedido as varchar) as codigoPedido 
-    from Pedidos a inner join Usuarios b on a.idUsuarioCrea=b.idUsuario`;
+    from Pedidos a inner join Usuarios b on a.idUsuarioCrea=b.idUsuario ${params.condition}`;
   } else {
     var queryList = `select a.idPedido, substring(b.nombre,1,1) + '' +b.apPaterno+'-'+tipo+'00'+cast(a.idPedido as varchar) as codigoPedido 
-    from Pedidos a inner join Usuarios b on a.idUsuarioCrea=b.idUsuario where b.idUsuario=${params.id}`;
+    from Pedidos a inner join Usuarios b on a.idUsuarioCrea=b.idUsuario where b.idUsuario=${params.id} ${params.condition}`;
   }
   return new Promise((resolve) => {
     setTimeout(async () => {
@@ -398,7 +402,7 @@ function getOrdersToInvoice() {
     const query = `select pd.*, cl.razonSocial, cl.nit,SUBSTRING(nombre, 1, 1)+''+apPaterno+'-'+tipo+'00'+cast(pd.idPedido as varchar) as idString from Pedidos pd 
     inner join Clientes cl on pd.idCliente=cl.idCliente 
     inner join Usuarios us on pd.idUsuarioCrea=us.idUsuario
-    where  pd.estado=1 and pd.facturado=0 and pd.tipo='normal'`;
+    where  pd.estado=1 and pd.facturado=0 and pd.listo=1 and pd.tipo='normal'`;
     setTimeout(async () => {
       const orderList = await dbConnection.executeQuery(query);
       if (orderList.success) {
@@ -422,7 +426,7 @@ function getOrdersToInvoice() {
 
 function getOrderToInvoiceDetails(params) {
   return new Promise((resolve, reject) => {
-    const query = `select pd.*, pp.*, cl.nit, cl.razonSocial, us.idAlmacen, pr.nombreProducto from Pedidos pd 
+    const query = `select pd.*, pp.*, cl.nit, cl.razonSocial, us.idAlmacen, pr.nombreProducto, pr.codInterno, pr.codigoUnidad, pr.precioDeFabrica from Pedidos pd 
     inner join Pedido_Producto pp on pd.idPedido=pp.idPedido
     inner join Clientes cl on pd.idCliente=cl.idCliente
     inner join Usuarios us on pd.idUsuarioCrea=us.idUsuario
@@ -498,6 +502,106 @@ function numberOfInvoiced() {
   });
 }
 
+function getNotPrinted() {
+  const query = `select pd.idPedido as idOrden, concat(upper(pd.tipo),'0',cast(pd.idPedido as varchar)) as nroOrden, us.usuario, pd.fechaCrea, 
+  pr.codInterno, pr.nombreProducto, pp.cantidadProducto, 'P' as tipo
+  from Pedidos pd
+  inner join Usuarios us on pd.idUsuarioCrea=us.idUsuario 
+  inner join Pedido_Producto pp on pp.idPedido=pd.idPedido
+  inner join Productos pr on pr.idProducto=pp.idProducto
+  where pd.impreso=0 and pd.listo=0 and pd.estado=0
+  union
+  select tp.idTraspaso as idOrden, tp.nroOrden, us.usuario, tp.fechaCrea, pr.codInterno, pr.nombreProducto, tpr.cantidadProducto, 'T' as tipo
+  from Traspasos tp 
+  inner join Usuarios us on us.idUsuario=tp.idUsuario
+  inner join Traspaso_producto tpr on tpr.idTraspaso=tp.idTraspaso
+  inner join Productos pr on tpr.idProducto=pr.idProducto
+  where tp.movil=1 and tp.listo=0 and tp.impreso=0
+  union 
+  select tp.idTraspaso as idOrden, tp.nroOrden, us.usuario, tp.fechaCrea, pr.codInterno, pr.nombreProducto, tpr.cantidadProducto, 'T' as tipo
+  from Traspasos tp 
+  inner join Usuarios us on us.idUsuario=tp.idUsuario
+  inner join Traspaso_producto tpr on tpr.idTraspaso=tp.idTraspaso
+  inner join Productos pr on tpr.idProducto=pr.idProducto
+  where tp.movil=0 and tp.listo=0 and tp.impreso=0 and tp.estado=1 and tp.idOrigen='AL001'
+  `;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      const notPrinted = await dbConnection.executeQuery(query);
+      if (notPrinted) {
+        resolve(notPrinted);
+      } else {
+        reject(notPrinted);
+      }
+    }, 100);
+  });
+}
+
+function orderPrinted(params) {
+  const query = `update Pedidos set impreso=1 where idPedido=${params.id}`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      const printed = await dbConnection.executeQuery(query);
+      if (printed.success) {
+        resolve(printed);
+      } else {
+        reject(printed);
+      }
+    }, 100);
+  });
+}
+
+function orderToReady() {
+  const query = `
+  select pd.idPedido as idOrden, concat(upper(pd.tipo),'0',cast(pd.idPedido as varchar)) as nroOrden, pd.fechaCrea,'P' as tipo, us.usuario
+  from Pedidos pd inner join Usuarios us on us.idUsuario=pd.idUsuarioCrea where pd.impreso=1 and pd.listo=0
+  union
+  select tp.idTraspaso as idOrden, tp.nroOrden, tp.fechaCrea, 'T' as tipo, us.usuario
+  from Traspasos tp inner join Usuarios us on us.idUsuario=tp.idUsuario where tp.impreso=1 and tp.listo=0`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      const printed = await dbConnection.executeQuery(query);
+      if (printed.success) {
+        resolve(printed);
+      } else {
+        reject(printed);
+      }
+    }, 100);
+  });
+}
+
+function toRePrintDetails(params) {
+  const query = `select pd.idPedido, pd.fechaCrea,concat(upper(pd.tipo),'0',cast(pd.idPedido as varchar)) as nroOrden, us.usuario, pr.codInterno, pr.nombreProducto ,tp.cantidadProducto from Pedidos pd
+  inner join Pedido_Producto tp on pd.idPedido=tp.idPedido
+  inner join Productos pr on pr.idProducto=tp.idProducto 
+  inner join Usuarios us on us.idUsuario=pd.idUsuarioCrea
+  where pd.idPedido=${params.id}`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      const printed = await dbConnection.executeQuery(query);
+      if (printed.success) {
+        resolve(printed);
+      } else {
+        reject(printed);
+      }
+    }, 100);
+  });
+}
+
+function changeReady(params) {
+  const query = `update Pedidos set listo=${params.listo} where idPedido=${params.id}`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      const changed = await dbConnection.executeQuery(query);
+      if (changed.success) {
+        resolve(changed);
+      } else {
+        reject(changed);
+      }
+    }, 100);
+  });
+}
+
 module.exports = {
   registerOrder,
   getOrderStatus,
@@ -517,4 +621,9 @@ module.exports = {
   getOrderToInvoiceDetails,
   invoiceOrder,
   numberOfInvoiced,
+  getNotPrinted,
+  orderPrinted,
+  orderToReady,
+  toRePrintDetails,
+  changeReady,
 };

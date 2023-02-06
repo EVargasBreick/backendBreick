@@ -3,6 +3,9 @@ const {
   getTransferList,
   getTransferProducts,
   updateTransfer,
+  printTransfer,
+  toRePrintDetails,
+  changeReady,
 } = require("../models/transferModel");
 
 module.exports = {
@@ -33,5 +36,35 @@ module.exports = {
     update.then((resp) => {
       res.status(200).send(resp);
     });
+  },
+  transferPrinted: (req, res) => {
+    const update = printTransfer(req.query);
+    update
+      .then((resp) => {
+        res.status(200).send(resp);
+      })
+      .catch((err) => {
+        res.status(400).send(err);
+      });
+  },
+  toRePrint: (req, res) => {
+    const orderList = toRePrintDetails(req.query);
+    orderList
+      .then((list) => {
+        res.status(200).send(list);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
+  changeReady: (req, res) => {
+    const changed = changeReady(req.query);
+    changed
+      .then((list) => {
+        res.status(200).send(list);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
   },
 };

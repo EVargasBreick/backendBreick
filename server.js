@@ -54,6 +54,7 @@ const reportRoutes = require("./routes/Reports");
 const shortageRoutes = require("./routes/Shortage");
 const xmlRoutes = require("./routes/Xml");
 const packRoutes = require("./routes/Pack");
+const rejectedRoutes = require("./routes/Rejected");
 app.use("/", userRoutes);
 app.use("/", loginRoutes);
 app.use("/", productRoutes);
@@ -76,6 +77,7 @@ app.use("/", reportRoutes);
 app.use("/", shortageRoutes);
 app.use("/", xmlRoutes);
 app.use("/", packRoutes);
+app.use("/", rejectedRoutes);
 app.listen(serverConfig.port, () => {
   console.log("Server listening on port ", process.env.PORT);
 });

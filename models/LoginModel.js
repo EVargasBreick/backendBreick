@@ -12,7 +12,6 @@ function loginUser(params) {
       if (login.data[0][0]) {
         setTimeout(async () => {
           var updateQuery = `update Usuarios set fultimoa=${params.date} where idUsuario=${login.data[0][0].idUsuario}`;
-
           const updateAcces = await dbConnection.executeQuery(updateQuery);
           console.log("Updae access", updateAcces);
           if (updateAcces.success) {
