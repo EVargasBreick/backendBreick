@@ -174,18 +174,17 @@ function approveOrder(params) {
 }
 
 function getOrderDetails(params) {
-  var queryDet = `select top(1)g.nombre as nombreCliente, a.*, b.idProducto, b.cantidadProducto ,c.nombreProducto, 
-    d.nombre+' '+d.apPaterno as nombreVendedor, e.nit, b.descuentoProducto,
-    e.razonSocial,
-    substring(d.nombre,1,1) + '' +d.apPaterno+'-'+a.tipo+'00'+cast(a.idPedido as varchar) as codigoPedido,
-    f.zona
-    from Pedidos a inner join Pedido_Producto b on a.idPedido = b.idPedido
-    inner join Productos c on b.idProducto=c.idProducto 
-    inner join Usuarios d on d.idUsuario=a.idUsuarioCrea
-    inner join Clientes e on e.idCliente=a.idCliente
-    inner join Zonas f on f.idZona=e.idZona
-    inner join Contactos_Cliente g on g.idCliente=e.idCliente
-    where a.idPedido=${params.id}`;
+  var queryDet = `select a.*, b.idProducto, b.cantidadProducto ,c.nombreProducto, 
+  d.nombre+' '+d.apPaterno as nombreVendedor, e.nit, b.descuentoProducto,
+  e.razonSocial,
+  substring(d.nombre,1,1) + '' +d.apPaterno+'-'+a.tipo+'00'+cast(a.idPedido as varchar) as codigoPedido,
+  f.zona
+  from Pedidos a inner join Pedido_Producto b on a.idPedido = b.idPedido
+  inner join Productos c on b.idProducto=c.idProducto 
+  inner join Usuarios d on d.idUsuario=a.idUsuarioCrea
+  inner join Clientes e on e.idCliente=a.idCliente
+  inner join Zonas f on f.idZona=e.idZona
+ where a.idPedido=${params.id}`;
   return new Promise((resolve) => {
     setTimeout(async () => {
       const orderDetail = await dbConnection.executeQuery(queryDet);
@@ -376,7 +375,8 @@ function updateOrder(body) {
           [d.getMonth() + 1, d.getDate(), d.getFullYear()].join("/") +
           " " +
           [d.getHours(), d.getMinutes(), d.getSeconds()].join(":");
-      var queryUpdate = `Update Pedidos set montoFacturar=${body.montoFacturar}, montoTotal=${body.montoTotal}, fechaActualizacion='${dformat}', descuento=${body.descuento}, descuentoCalculado=${body.descCalculado} where idPedido=${body.idPedido}`;
+      var queryUpdate = `Update Pedidos set montoFacturar=${body.montoFacturar}, montoTotal=${body.montoTotal}, fechaActualizacion='${dformat}', descuento=${body.descuento}, descuentoCalculado=${body.descCalculado}, listo=${body.listo}, impreso=${body.impreso} where idPedido=${body.idPedido}`;
+      console.log("Query ACTUALIZAR", queryUpdate);
       const updatedOrder = await dbConnection.executeQuery(queryUpdate);
       if (updatedOrder.success) {
         resolve(
