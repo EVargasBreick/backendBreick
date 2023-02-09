@@ -3,6 +3,7 @@ const dbConnection = require("../server");
 function createDrop(body) {
   const queryBaja = `insert into Bajas (motivo, fechaBaja, idUsuario, idAlmacen) 
     values ('${body.motivo}', '${body.fechaBaja}', ${body.idUsuario},'${body.idAlmacen}')`;
+  console.log("query baja", queryBaja);
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       const newDrop = await dbConnection.executeQuery(queryBaja);
@@ -18,7 +19,8 @@ function createDrop(body) {
           setTimeout(async () => {
             const added = await dbConnection.executeQuery(queryProd);
             if (added.success) {
-              resolve(idCreado);
+              console.log("Todo bien al agregar productos", idCreado);
+              resolve({ added, id: idCreado });
             } else {
               const del = dbConnection.executeQuery(
                 `delete from Bajas where idBaja=${idCreado}`
@@ -29,6 +31,7 @@ function createDrop(body) {
           }, 100);
         });
       } else {
+        console.log("error al crear la baja", newDrop);
         reject("Error al crear la baja");
       }
     }, 100);
