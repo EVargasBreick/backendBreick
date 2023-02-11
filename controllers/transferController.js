@@ -6,6 +6,10 @@ const {
   printTransfer,
   toRePrintDetails,
   changeReady,
+  addProductToTransfer,
+  deleteProductFromTransfer,
+  updateProductInTransfer,
+  updateChangedTransfer,
 } = require("../models/transferModel");
 
 module.exports = {
@@ -22,7 +26,7 @@ module.exports = {
   getTransferList: (req, res) => {
     const fetchedList = getTransferList(req.query);
     fetchedList.then((resp) => {
-      res.status(200).send(resp);
+      res.status(200).send(JSON.stringify(resp.response.data));
     });
   },
   getTransferProducts: (req, res) => {
@@ -59,6 +63,46 @@ module.exports = {
   },
   changeReady: (req, res) => {
     const changed = changeReady(req.query);
+    changed
+      .then((list) => {
+        res.status(200).send(list);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
+  addProduct: (req, res) => {
+    const changed = addProductToTransfer(req.body);
+    changed
+      .then((list) => {
+        res.status(200).send(list);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
+  deleteProduct: (req, res) => {
+    const changed = deleteProductFromTransfer(req.body);
+    changed
+      .then((list) => {
+        res.status(200).send(list);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
+  updateProduct: (req, res) => {
+    const changed = updateProductInTransfer(req.body);
+    changed
+      .then((list) => {
+        res.status(200).send(list);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
+  updateChangedTransfer: (req, res) => {
+    const changed = updateChangedTransfer(req.body);
     changed
       .then((list) => {
         res.status(200).send(list);

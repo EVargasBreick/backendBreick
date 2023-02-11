@@ -4,9 +4,11 @@ const dateString = require("../services/dateServices");
 function createTransfer(body) {
   const dateResult = dateString();
   console.log("Resultado fecha", dateResult);
+  const movil = body.movil ? body.movil : 0;
   var queryTransfer = `insert into Traspasos (fechaCrea, fechaActu, idOrigen, idDestino, idUsuario, estado, movil, listo, impreso)
-    values ('${dateResult}','','${body.idOrigen}','${body.idDestino}',${body.idUsuario},0,${body.movil},0,0)`;
+    values ('${dateResult}','','${body.idOrigen}','${body.idDestino}',${body.idUsuario},0,${movil},0,0)`;
   return new Promise((resolve, reject) => {
+    console.log("Query traspaso", queryTransfer);
     setTimeout(async () => {
       const newTransfer = await dbConnection.executeQuery(queryTransfer);
       if (newTransfer.success) {
@@ -16,6 +18,7 @@ function createTransfer(body) {
         body.productos.map((productos) => {
           var queryProds = `insert into Traspaso_Producto (idTraspaso, idProducto, cantidadProducto, cantidadRestante) 
                     values (${idCreado.data[0][0].idCreado},${productos.idProducto},${productos.cantProducto},${productos.cantidadRestante})`;
+          console.log("Query productos", queryProds);
           setTimeout(async () => {
             const addedProd = await dbConnection.executeQuery(queryProds);
             if (addedProd.success) {
@@ -68,7 +71,7 @@ function getTransferList(params) {
       : params.crit === "ac"
       ? `where estado>0 and movil=0`
       : `where estado=0 and movil=0`;
-  var queryGetList = `select a.estado, b.nombre as nombreOrigen, a.idOrigen, a.idDestino,
+  var queryGetList = `select a.estado, a.impreso, a.listo, a.idUsuario, b.nombre as nombreOrigen, a.idOrigen, a.idDestino,
     (select x.nombre from Agencias x where x.idAgencia=a.idDestino union 
     select x.nombre from Bodegas x where x.idBodega=a.idDestino union 
     select 'Agencia Movil '+x.placa from Vehiculos x where x.placa=a.idDestino) 
@@ -79,7 +82,7 @@ function getTransferList(params) {
     inner join Usuarios f on a.idUsuario=f.idUsuario
     ${criteria}
     union
-    select a.estado, b.nombre as nombreOrigen, a.idOrigen, a.idDestino,
+    select a.estado, a.impreso, a.listo, a.idUsuario, b.nombre as nombreOrigen, a.idOrigen, a.idDestino,
     (select x.nombre from Agencias x where x.idAgencia=a.idDestino union 
     select x.nombre from Bodegas x where x.idBodega=a.idDestino union 
     select 'Agencia Movil '+x.placa from Vehiculos x where x.placa=a.idDestino) 
@@ -90,7 +93,7 @@ function getTransferList(params) {
     inner join Usuarios f on a.idUsuario=f.idUsuario
     ${criteria}
     union 
-    select a.estado, 'Agencia movil '+b.placa as nombreOrigen, a.idOrigen, a.idDestino,
+    select a.estado, a.impreso, a.listo, a.idUsuario,'Agencia movil '+b.placa as nombreOrigen, a.idOrigen, a.idDestino,
     (select x.nombre from Agencias x where x.idAgencia=a.idDestino union 
     select x.nombre from Bodegas x where x.idBodega=a.idDestino union 
     select 'Agencia Movil '+x.placa from Vehiculos x where x.placa=a.idDestino) 
@@ -181,6 +184,78 @@ function changeReady(params) {
     }, 100);
   });
 }
+
+function addProductToTransfer(body) {
+  return new Promise((resolve, reject) => {
+    if (body.productos.length < 1) {
+      resolve("no products to add");
+    } else {
+      body.productos.map((pr) => {
+        setTimeout(async () => {
+          const query = `insert into Traspaso_Producto (idTraspaso, idProducto, cantidadProducto, cantidadRestante) values 
+          ( ${body.idTraspaso}, ${pr.idProducto}, ${pr.cantProducto}, ${pr.cantidadRestante} )`;
+          const added = await dbConnection.executeQuery(query);
+          if (added.success) {
+            resolve(added);
+          } else {
+            reject(added);
+          }
+        }, 100);
+      });
+    }
+  });
+}
+
+function deleteProductFromTransfer(body) {
+  return new Promise((resolve, reject) => {
+    if (body.productos.length < 1) {
+      resolve("no products to add");
+    } else {
+      body.productos.map((pr) => {
+        setTimeout(async () => {
+          const query = `delete from Traspaso_Productos where idTraspaso=${body.idTraspaso} and idProducto=${pr.idProducto}`;
+          const added = await dbConnection.executeQuery(query);
+          if (added.success) {
+            resolve(added);
+          } else {
+            reject(added);
+          }
+        }, 100);
+      });
+    }
+  });
+}
+
+function updateProductInTransfer(body) {
+  return new Promise((resolve, reject) => {
+    body.productos.map((pr) => {
+      setTimeout(async () => {
+        const query = `update Traspaso_Productos set cantidadProducto=${pr.cantProducto}, cantidadRestante=${pr.cantidadRestante} where idTraspaso=${body.idTraspaso} and idProducto=${pr.idProducto}`;
+        const added = await dbConnection.executeQuery(query);
+        if (added.success) {
+          resolve(added);
+        } else {
+          reject(added);
+        }
+      }, 100);
+    });
+  });
+}
+
+function updateChangedTransfer(body) {
+  const query = `update Traspasos set fechaActu='${body.fechaActualizacion}', listo=0, impreso=0, estado=0 where idTraspaso=${body.idTraspaso}`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      const updated = await dbConnection.executeQuery(query);
+      if (updated.success) {
+        resolve(updated);
+      } else {
+        reject(updated);
+      }
+    }, 100);
+  });
+}
+
 module.exports = {
   createTransfer,
   getTransferList,
@@ -189,4 +264,8 @@ module.exports = {
   printTransfer,
   toRePrintDetails,
   changeReady,
+  addProductToTransfer,
+  deleteProductFromTransfer,
+  updateProductInTransfer,
+  updateChangedTransfer,
 };
