@@ -10,6 +10,8 @@ const {
   deleteProductFromTransfer,
   updateProductInTransfer,
   updateChangedTransfer,
+  getTransitTransfers,
+  acceptTransfer,
 } = require("../models/transferModel");
 
 module.exports = {
@@ -82,7 +84,7 @@ module.exports = {
       });
   },
   deleteProduct: (req, res) => {
-    const changed = deleteProductFromTransfer(req.body);
+    const changed = deleteProductFromTransfer(req.query);
     changed
       .then((list) => {
         res.status(200).send(list);
@@ -103,6 +105,26 @@ module.exports = {
   },
   updateChangedTransfer: (req, res) => {
     const changed = updateChangedTransfer(req.body);
+    changed
+      .then((list) => {
+        res.status(200).send(list);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
+  transitTransfers: (req, res) => {
+    const changed = getTransitTransfers(req.query);
+    changed
+      .then((list) => {
+        res.status(200).send(list);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
+  acceptTransfer: (req, res) => {
+    const changed = acceptTransfer(req.query);
     changed
       .then((list) => {
         res.status(200).send(list);

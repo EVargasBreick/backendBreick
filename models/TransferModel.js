@@ -3,10 +3,10 @@ const dateString = require("../services/dateServices");
 
 function createTransfer(body) {
   const dateResult = dateString();
-  console.log("Resultado fecha", dateResult);
+  console.log("body del traspaso", body);
   const movil = body.movil ? body.movil : 0;
-  var queryTransfer = `insert into Traspasos (fechaCrea, fechaActu, idOrigen, idDestino, idUsuario, estado, movil, listo, impreso)
-    values ('${dateResult}','','${body.idOrigen}','${body.idDestino}',${body.idUsuario},0,${movil},0,0)`;
+  var queryTransfer = `insert into Traspasos (fechaCrea, fechaActu, idOrigen, idDestino, idUsuario, estado, movil, listo, impreso, transito)
+    values ('${dateResult}','','${body.idOrigen}','${body.idDestino}',${body.idUsuario},0,${movil},0,0,${body.transito})`;
   return new Promise((resolve, reject) => {
     console.log("Query traspaso", queryTransfer);
     setTimeout(async () => {
@@ -186,6 +186,7 @@ function changeReady(params) {
 }
 
 function addProductToTransfer(body) {
+  console.log("Body", body);
   return new Promise((resolve, reject) => {
     if (body.productos.length < 1) {
       resolve("no products to add");
@@ -206,14 +207,18 @@ function addProductToTransfer(body) {
   });
 }
 
-function deleteProductFromTransfer(body) {
+function deleteProductFromTransfer(params) {
+  console.log("Parameters", params);
+  const body = JSON.parse(params.body);
+  console.log("Llego hasta aca, model", body);
   return new Promise((resolve, reject) => {
     if (body.productos.length < 1) {
       resolve("no products to add");
     } else {
       body.productos.map((pr) => {
         setTimeout(async () => {
-          const query = `delete from Traspaso_Productos where idTraspaso=${body.idTraspaso} and idProducto=${pr.idProducto}`;
+          const query = `delete from Traspaso_Producto where idTraspaso=${body.idTraspaso} and idProducto=${pr.idProducto}`;
+          console.log("Query deleteo", query);
           const added = await dbConnection.executeQuery(query);
           if (added.success) {
             resolve(added);
@@ -230,7 +235,7 @@ function updateProductInTransfer(body) {
   return new Promise((resolve, reject) => {
     body.productos.map((pr) => {
       setTimeout(async () => {
-        const query = `update Traspaso_Productos set cantidadProducto=${pr.cantProducto}, cantidadRestante=${pr.cantidadRestante} where idTraspaso=${body.idTraspaso} and idProducto=${pr.idProducto}`;
+        const query = `update Traspaso_Producto set cantidadProducto=${pr.cantProducto}, cantidadRestante=${pr.cantidadRestante} where idTraspaso=${body.idTraspaso} and idProducto=${pr.idProducto}`;
         const added = await dbConnection.executeQuery(query);
         if (added.success) {
           resolve(added);
@@ -256,6 +261,39 @@ function updateChangedTransfer(body) {
   });
 }
 
+function getTransitTransfers(params) {
+  const query = `select tr.*, tp.cantidadProducto, pr.nombreProducto, pr.codInterno, pr.idProducto, us.usuario from Traspasos tr
+  inner join Traspaso_Producto tp on tp.idTraspaso=tr.idTraspaso
+  inner join Productos pr on pr.idProducto=tp.idProducto
+  inner join Usuarios us on us.idUsuario=tr.idUsuario
+  where tr.transito=0 and  ((tr.listo=1) or (tr.estado=1)) and tr.idDestino='${params.storeId}'`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      const list = await dbConnection.executeQuery(query);
+      if (list.success) {
+        resolve(list);
+      } else {
+        reject(list);
+      }
+    }, 100);
+  });
+}
+
+function acceptTransfer(params) {
+  const query = `update Traspasos set transito=1 where idTraspaso=${params.id}`;
+
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      const updated = await dbConnection.executeQuery(query);
+      if (updated.success) {
+        resolve(updated);
+      } else {
+        reject(updated);
+      }
+    }, 100);
+  });
+}
+
 module.exports = {
   createTransfer,
   getTransferList,
@@ -268,4 +306,6 @@ module.exports = {
   deleteProductFromTransfer,
   updateProductInTransfer,
   updateChangedTransfer,
+  getTransitTransfers,
+  acceptTransfer,
 };
