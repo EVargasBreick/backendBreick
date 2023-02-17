@@ -1,3 +1,4 @@
+const { client } = require("../postgressConn");
 const dbConnection = require("../server");
 
 function getDays() {
@@ -10,4 +11,20 @@ function getDays() {
     }, 1000);
   });
 }
-module.exports = getDays;
+
+function getDaysPos() {
+  let rolQuery = "select * from Dias_Frecuencia";
+
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      try {
+        const dias = await client.query(rolQuery);
+        resolve(JSON.stringify(dias.rows));
+      } catch (err) {
+        reject(JSON.stringify(err));
+      }
+    }, 1000);
+  });
+}
+
+module.exports = { getDays, getDaysPos };

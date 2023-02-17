@@ -7,13 +7,18 @@ const {
   getInvoiceProducts,
   cancelInvoice,
   getOtherPayments,
+  createInvoicePos,
+  deleteInvoicePos,
+  getInvoiceProductsPos,
+  cancelInvoicePos,
+  getOtherPaymentsPos,
 } = require("../models/InvoiceModel");
 const app = express();
 app.use(session(sessionParams));
 
 module.exports = {
   createNewInvoice: (req, res) => {
-    const promise = createInvoice(req.body);
+    const promise = createInvoicePos(req.body);
     promise
       .then((data) => {
         var resp = data;
@@ -25,7 +30,7 @@ module.exports = {
       });
   },
   deleteInvoice: (req, res) => {
-    const deleted = deleteInvoice(req.query.id);
+    const deleted = deleteInvoicePos(req.query.id);
     deleted
       .then((del) => {
         res.status(200).send(del);
@@ -35,7 +40,7 @@ module.exports = {
       });
   },
   getInvoices: (req, res) => {
-    const invoices = getInvoiceProducts(req.query);
+    const invoices = getInvoiceProductsPos(req.query);
     invoices
       .then((inv) => {
         res.status(200).send(inv);
@@ -45,7 +50,7 @@ module.exports = {
       });
   },
   cancelInvoice: (req, res) => {
-    const invoices = cancelInvoice(req.query);
+    const invoices = cancelInvoicePos(req.query);
     invoices
       .then((inv) => {
         res.status(200).send(inv);
@@ -55,7 +60,7 @@ module.exports = {
       });
   },
   otherPayments: (req, res) => {
-    const invoices = getOtherPayments();
+    const invoices = getOtherPaymentsPos();
     invoices
       .then((inv) => {
         res.status(200).send(inv);

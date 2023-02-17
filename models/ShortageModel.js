@@ -6,7 +6,7 @@ function logShortage(body) {
 
     body.products.map((product) => {
       setTimeout(async () => {
-        const queryLog = `insert into Faltantes (idPedido, fecha, idUsuarioCrea, idProducto, faltante, idAgencia, idString, solicitado)
+        const queryLog = `insert into Faltantes (idPedido, fecha, idUsuarioCrea, idProucto, faltante, idAgencia, idString, solicitado)
                 values (${body.idPedido},'${body.fecha}',${body.idUsuarioCrea},${product.idProducto}, ${product.faltante}, '${body.idAgencia}', '${body.idString}', ${product.cantProducto})`;
         console.log("Query de loggeo", queryLog);
         const added = await dbConnection.executeQuery(queryLog);

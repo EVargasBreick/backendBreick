@@ -8,7 +8,7 @@ app.use(session(sessionParams));
 
 module.exports = {
   getDepartamenos: (req, res) => {
-    const roles = getDepartamentos();
+    const roles = getDepartamentos.getDepartamentosPos();
     roles.then((rol) => {
       res.status(200).send(JSON.parse(rol));
     });

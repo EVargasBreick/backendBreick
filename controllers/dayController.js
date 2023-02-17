@@ -7,7 +7,7 @@ app.use(session(sessionParams));
 
 module.exports = {
   getDias: (req, res) => {
-    const dias = getDays();
+    const dias = getDays.getDaysPos();
     dias.then((dia) => {
       res.status(200).send(dia);
     });

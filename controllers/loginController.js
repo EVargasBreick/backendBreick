@@ -7,11 +7,12 @@ app.use(session(sessionParams));
 
 module.exports = {
   loginUser: (req, res) => {
-    const userPromise = loginUser(req.query);
+    const userPromise = loginUser.loginUserPos(req.query);
     var responseObject = {};
     userPromise.then((userData) => {
       userResponse = JSON.parse(userData);
-      if (userResponse[0][0]) {
+      console.log("Respuesta del login en el controlador", userResponse);
+      if (userResponse.length > 0) {
         req.session.nombre = userResponse.nombre;
         req.session.rol = userResponse.rol;
         console.log(req.session.nombre);

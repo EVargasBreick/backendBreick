@@ -1,3 +1,4 @@
+const { client } = require("../postgressConn");
 const dbConnection = require("../server");
 
 function registerPack(body) {
@@ -62,4 +63,37 @@ function addIdToPack(params) {
   });
 }
 
-module.exports = { registerPack, getPacks, addIdToPack };
+//ACA EMPIEZA LO DE POSTGRES
+
+function registerPackPos(body) {
+  const packQuery = `insert into Packs ("nombrePack","precioPack","descripcionPack","codigoBarras", "idPackProd") 
+    values ('${body.nombrePack}',${body.precioPack},'${body.descPack}','-',0) returning "idPack"`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      try {
+        const pack = await client.query(packQuery);
+        const idCreado = pack.rows[0].idpack;
+        body.productos.map((pr) => {
+          setTimeout(async () => {
+            const productQuery = `insert into Productos_Pack ("idPack", "idProducto", "cantProducto") 
+                values (${idCreado},${pr.idProducto},${pr.cantidadProducto})`;
+            try {
+              const added = await client.query(productQuery);
+              resolve({ id: idCreado });
+            } catch (err) {
+              const deleteQuery = `delete from Packs where "idPack"=${idCreado}`;
+              try {
+                const deleted = await client.query(deleteQuery);
+                reject(added);
+              } catch {}
+            }
+          }, 100);
+        });
+      } catch (err) {
+        reject(err);
+      }
+    }, 100);
+  });
+}
+
+module.exports = { registerPack, getPacks, addIdToPack, registerPackPos };

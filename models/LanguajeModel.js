@@ -1,3 +1,4 @@
+const { client } = require("../postgressConn");
 const dbConnection = require("../server");
 
 function getLang() {
@@ -11,4 +12,19 @@ function getLang() {
     }, 1000);
   });
 }
-module.exports = getLang;
+
+function getLangPos() {
+  let storeQuery = "select * from Lenguajes";
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      try {
+        const leng = await client.query(storeQuery);
+        resolve(JSON.stringify(leng.rows));
+      } catch (err) {
+        reject(err);
+      }
+    }, 100);
+  });
+}
+
+module.exports = { getLang, getLangPos };

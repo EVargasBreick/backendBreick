@@ -1,3 +1,4 @@
+const { client } = require("../postgressConn");
 const dbConnection = require("../server");
 
 function registerSale(data) {
@@ -92,4 +93,92 @@ function registerSale(data) {
   });
 }
 
-module.exports = { registerSale };
+function registerSalePos(data) {
+  console.log("Ventas", data);
+  const idPedido = data.pedido.idPedido != "" ? data.pedido.idPedido : 0;
+  var query = `insert into Ventas 
+      (
+          "idUsuarioCrea",
+          "idCliente",
+          "fechaCrea",
+          "fechaActualizacion",
+          "montoTotal",
+          "descuentoCalculado",
+          descuento,
+          "montoFacturar",
+          "idPedido",
+          "idFactura"
+      ) values (
+          ${data.pedido.idUsuarioCrea},
+          ${data.pedido.idCliente},
+          '${data.pedido.fechaCrea}',
+          '${data.pedido.fechaActualizacion}',
+          '${data.pedido.montoTotal}',
+          '${data.pedido.descCalculado}',
+          '${data.pedido.descuento}',
+          '${data.pedido.montoFacturar}',
+          '${idPedido}',
+          '${data.pedido.idFactura}'
+      ) returning "idVenta"`;
+  console.log("Creacion pedido query", query);
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      try {
+        const newOrder = await client.query(query);
+        const idCreado = newOrder.rows[0].idVenta;
+        data.productos.map((producto) => {
+          var queryProds = `insert into Venta_Productos
+              (
+                 "idVenta", 
+                  "idProducto", 
+                  "cantidadProducto", 
+                  "totalProd",
+                  "descuentoProducto"
+              ) values (
+                  ${idCreado},
+                  ${producto.idProducto},
+                  '${producto.cantProducto}',
+                  ${producto.total},
+                  ${producto.descuentoProd}
+              )`;
+          setTimeout(async () => {
+            try {
+              const prods = await client.query(queryProds);
+              resolve(
+                JSON.stringify({
+                  code: 201,
+                  data: {
+                    idCreado: idCreado,
+                  },
+                })
+              );
+            } catch (err) {
+              const del = client.query(
+                `delete from Ventas where "idVenta"=${idCreado}`
+              );
+              del.then(() => {
+                resolve(
+                  JSON.stringify({
+                    code: 400,
+                    data: "Error",
+                    message: "Products: " + err,
+                  })
+                );
+              });
+            }
+          }, 1000);
+        });
+      } catch (err) {
+        resolve(
+          JSON.stringify({
+            code: 400,
+            data: "Error",
+            message: "Pedido: " + err,
+          })
+        );
+      }
+    }, 1000);
+  });
+}
+
+module.exports = { registerSale, registerSalePos };

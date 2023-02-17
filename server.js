@@ -1,5 +1,6 @@
 const express = require("express");
 const session = require("express-session");
+
 var cors = require("cors");
 require("dotenv").config();
 const serverConfig = require("./config/serverConfig.json");
@@ -13,6 +14,7 @@ const dbConnection = new (require("rest-mssql-nodejs"))({
     enableArithAbort: true,
   },
 });
+
 var corsOptions = {
   origin: process.env.URL_SERVER,
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204,
@@ -29,6 +31,7 @@ const sessionParams = {
   maxAge: maxAge,
 };
 (module.exports = dbConnection), sessionParams, corsOptions;
+
 app.use(session(sessionParams));
 app.use(bodyParser.json());
 app.use(cors(corsOptions));

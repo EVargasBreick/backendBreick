@@ -1,3 +1,4 @@
+const { client } = require("../postgressConn");
 const dbConnection = require("../server");
 
 function getRoles() {
@@ -11,4 +12,18 @@ function getRoles() {
     }, 1000);
   });
 }
-module.exports = getRoles;
+
+function getRolesPos() {
+  let rolQuery = "select * from Categorias";
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      try {
+        const roles = await client.query(rolQuery);
+        resolve(JSON.stringify(roles.rows));
+        console.log("Almacenes", JSON.stringify(roles.rows));
+      } catch {}
+    }, 100);
+  });
+}
+
+module.exports = { getRoles, getRolesPos };

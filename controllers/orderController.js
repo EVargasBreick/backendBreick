@@ -24,13 +24,35 @@ const {
   orderToReady,
   toRePrintDetails,
   changeReady,
+  registerOrderPos,
+  getOrderStatusPos,
+  getOrderListPos,
+  getUserOrderListPos,
+  getOrderDetailsPos,
+  getOrderTypePos,
+  approveOrderPos,
+  getOrderProductListPos,
+  deleteOrderPos,
+  cancelOrderPos,
+  addProductOrderPos,
+  updateProductOrderPos,
+  updateOrderPos,
+  deleteProductOrderPos,
+  getOrdersToInvoicePos,
+  getOrderToInvoiceDetailsPos,
+  invoiceOrderPos,
+  getNotPrintedPos,
+  orderPrintedPos,
+  orderToReadyPos,
+  toRePrintDetailsPos,
+  changeReadyPos,
 } = require("../models/OrderModel");
 
 const app = express();
 app.use(session(sessionParams));
 module.exports = {
   createNewOrder: (req, res) => {
-    const promise = registerOrder(req.body);
+    const promise = registerOrderPos(req.body);
     promise.then((data) => {
       var resp = JSON.parse(data);
       console.log(data);
@@ -38,56 +60,56 @@ module.exports = {
     });
   },
   getOrderStatus: (req, res) => {
-    const orderStatus = getOrderStatus();
+    const orderStatus = getOrderStatusPos();
     orderStatus.then((stats) => {
       var resp = JSON.parse(stats);
       res.status(resp.code).send(resp);
     });
   },
   getOrderList: (req, res) => {
-    const orderList = getOrderList(req.query);
+    const orderList = getOrderListPos(req.query);
     orderList.then((list) => {
       var resp = JSON.parse(list);
       res.status(resp.code).send(resp);
     });
   },
   getUserOrderList: (req, res) => {
-    const orderList = getUserOrderList(req.query);
+    const orderList = getUserOrderListPos(req.query);
     orderList.then((list) => {
       var resp = JSON.parse(list);
       res.status(resp.code).send(resp);
     });
   },
   getOrderDetail: (req, res) => {
-    const orderDetail = getOrderDetails(req.query);
+    const orderDetail = getOrderDetailsPos(req.query);
     orderDetail.then((order) => {
       var jsonOrder = JSON.parse(order);
       res.status(jsonOrder.code).send(jsonOrder);
     });
   },
   getOrderType: (req, res) => {
-    const orderType = getOrderType();
+    const orderType = getOrderTypePos();
     orderType.then((type) => {
       var resp = JSON.parse(type);
       res.status(resp.code).send(resp);
     });
   },
   approveOrder: (req, res) => {
-    const approvedOrder = approveOrder(req.query);
+    const approvedOrder = approveOrderPos(req.query);
     approvedOrder.then((ao) => {
       var resp = JSON.parse(ao);
       res.status(resp.code).send(resp);
     });
   },
   orderProdList: (req, res) => {
-    const prodList = getOrderProductList(req.query);
+    const prodList = getOrderProductListPos(req.query);
     prodList.then((pl) => {
       var resp = JSON.parse(pl);
       res.status(resp.code).send(resp);
     });
   },
   deleteOrder: (req, res) => {
-    const deleted = deleteOrder(req.params);
+    const deleted = deleteOrderPos(req.params);
     deleted
       .then((dl) => {
         var resp = JSON.parse(dl);
@@ -99,28 +121,28 @@ module.exports = {
       });
   },
   cancelOrder: (req, res) => {
-    const canceled = cancelOrder(req.query.id);
+    const canceled = cancelOrderPos(req.query.id);
     canceled.then((cld) => {
       var resp = JSON.parse(cld);
       res.status(200).send(resp);
     });
   },
   addProductToOrder: (req, res) => {
-    const added = addProductOrder(req.body);
+    const added = addProductOrderPos(req.body);
     added.then((add) => {
       var resp = JSON.parse(add);
       res.status(200).send(resp);
     });
   },
   updateProductInOrder: (req, res) => {
-    const updated = updateProductOrder(req.body);
+    const updated = updateProductOrderPos(req.body);
     updated.then((upd) => {
       var resp = JSON.parse(upd);
       res.status(200).send(resp);
     });
   },
   updateOrder: (req, res) => {
-    const updated = updateOrder(req.body);
+    const updated = updateOrderPos(req.body);
     updated
       .then((upt) => {
         var resp = JSON.parse(upt);
@@ -132,7 +154,7 @@ module.exports = {
       });
   },
   deleteProductOrder: (req, res) => {
-    const deleted = deleteProductOrder(req.body);
+    const deleted = deleteProductOrderPos(req.body);
     deleted
       .then((del) => {
         var resp = JSON.parse(del);
@@ -143,7 +165,7 @@ module.exports = {
       });
   },
   ordersToInvoice: (req, res) => {
-    const orderList = getOrdersToInvoice(req.query);
+    const orderList = getOrdersToInvoicePos(req.query);
     orderList
       .then((list) => {
         var resp = JSON.parse(list);
@@ -154,7 +176,7 @@ module.exports = {
       });
   },
   orderToInvoiceDetails: (req, res) => {
-    const orderList = getOrderToInvoiceDetails(req.query);
+    const orderList = getOrderToInvoiceDetailsPos(req.query);
     orderList
       .then((list) => {
         var resp = JSON.parse(list);
@@ -165,7 +187,7 @@ module.exports = {
       });
   },
   invoiceOrder: (req, res) => {
-    const orderList = invoiceOrder(req.query);
+    const orderList = invoiceOrderPos(req.query);
     orderList
       .then((list) => {
         var resp = JSON.parse(list);
@@ -176,7 +198,7 @@ module.exports = {
       });
   },
   notPrinted: (req, res) => {
-    const orderList = getNotPrinted();
+    const orderList = getNotPrintedPos();
     console.log("Entro hasta aca?");
     orderList
       .then((list) => {
@@ -187,7 +209,7 @@ module.exports = {
       });
   },
   orderPrinted: (req, res) => {
-    const orderList = orderPrinted(req.query);
+    const orderList = orderPrintedPos(req.query);
     console.log("Entro hasta aca?");
     orderList
       .then((list) => {
@@ -198,7 +220,7 @@ module.exports = {
       });
   },
   orderToReady: (req, res) => {
-    const orderList = orderToReady();
+    const orderList = orderToReadyPos();
     orderList
       .then((list) => {
         res.status(200).send(list);
@@ -208,7 +230,7 @@ module.exports = {
       });
   },
   toRePrint: (req, res) => {
-    const orderList = toRePrintDetails(req.query);
+    const orderList = toRePrintDetailsPos(req.query);
     orderList
       .then((list) => {
         res.status(200).send(list);
@@ -218,7 +240,7 @@ module.exports = {
       });
   },
   changeReady: (req, res) => {
-    const changed = changeReady(req.query);
+    const changed = changeReadyPos(req.query);
     changed
       .then((list) => {
         res.status(200).send(list);

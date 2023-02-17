@@ -5,13 +5,16 @@ const {
   registerContact,
   getMainContact,
   updateContact,
+  registerContactPos,
+  updateContactPos,
+  getMainContactPos,
 } = require("../models/ContactsModel");
 const app = express();
 app.use(session(sessionParams));
 module.exports = {
   createNewContact: (req, res) => {
     console.log("Body en controller:", req.body);
-    const promise = registerContact(req.body);
+    const promise = registerContactPos(req.body);
     promise.then((data) => {
       response = JSON.parse(data);
       console.log(data);
@@ -20,7 +23,7 @@ module.exports = {
   },
   updateContact: (req, res) => {
     console.log("Body en controller:", req.body);
-    const promise = updateContact(req.body, req.query);
+    const promise = updateContactPos(req.body, req.query);
     promise.then((data) => {
       response = JSON.parse(data);
       console.log(data);
@@ -28,7 +31,7 @@ module.exports = {
     });
   },
   getContactsByUser: (req, res) => {
-    const promise = getMainContact(req.query);
+    const promise = getMainContactPos(req.query);
     promise.then((data) => {
       response = JSON.parse(data);
       console.log(data);
