@@ -303,7 +303,7 @@ function updateProductStockPos(body) {
           update Stock_Agencia_Movil set "cant_Anterior"=(select "cant_Actual" from Stock_Agencia_Movil where "idProducto"=${prod.idProducto} and "idVehiculo"='${body.idAlmacen}'), 
           diferencia=${prod.cantProducto}, "cant_Actual"=(select "cant_Actual" from Stock_Agencia_Movil where "idProducto"=${prod.idProducto} and "idVehiculo"='${body.idAlmacen}') ${operator} ${prod.cantProducto},
           "fechaActualizacion"='${dateResult}' where "idProducto"=${prod.idProducto} and "idVehiculo"='${body.idAlmacen}';`;
-
+            console.log("Query de updateo para AGREGAR", updateStockQuery);
             const updated = await client.query(updateStockQuery);
             resolve({
               data: updated.rows,

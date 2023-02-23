@@ -117,13 +117,16 @@ function verifyTokenPos() {
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       try {
-        const isValid = await client(queryToken);
+        const isValid = await client.query(queryToken);
         const stringToken = isValid.rows[0].stringToken;
         const databaseDateString = isValid.rows[0].fechaHora;
         const databaseDate = new Date(databaseDateString);
         const currentDate = new Date();
+        const newString = databaseDateString.substring(0, 23);
+        console.log("NEW STRING", newString);
         if (databaseDate.getTime() > currentDate.getTime()) {
-          resolve({ fecha: databaseDateString, sesionId: stringToken });
+          console.log("Token valido");
+          resolve({ fecha: newString, sesionId: stringToken });
         } else {
           console.log("Token pasado");
           reject(false);

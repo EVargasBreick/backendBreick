@@ -211,11 +211,11 @@ function getProductsWithStockPos(params) {
     select  a.*, b."cant_Actual" from Productos a inner join Stock_Agencia b 
     on a."idProducto"=b."idProducto" where "idAgencia"='${params.idAlmacen}' union 
     select  a.*, b."cant_Actual" from Productos a inner join Stock_Agencia_Movil b 
-    on a."idProducto"=b."idProducto" where "idVehiculo"='${params.idAlmacen}'`;
+    on a."idProducto"=b."idProducto" where "idVehiculo"='${params.idAlmacen}' order by "nombreProducto"`;
   } else {
     query = `select a."codInterno", a."nombreProducto", a."codigoBarras", b."cant_Actual", a."precioDeFabrica", 
     a."tipoProducto", a."precioDescuentoFijo", a."unidadDeMedida" from Productos a inner join Stock_Bodega b 
-    on a."idProducto"=b."idProducto" where "idBodega"=${params.idAlmacen} and a."idProducto"=${params.id}`;
+    on a."idProducto"=b."idProducto" where "idBodega"=${params.idAlmacen} and a."idProducto"=${params.id} order by "nombreProducto"`;
   }
 
   return new Promise((resolve, reject) => {

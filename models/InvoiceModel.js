@@ -227,8 +227,8 @@ function deleteInvoicePos(id) {
 }
 
 function getInvoiceProductsPos(params) {
-  const productsQuery = `select fr.*, pr."idProducto", pr."nombreProducto", sc."idString" as idAlmacen, sc."idImpuestos",
-  vp."cantidadProducto" as cantProducto, vn."montoFacturar"
+  const productsQuery = `select fr.*, pr."idProducto", pr."nombreProducto", sc."idString" as "idAlmacen", sc."idImpuestos",
+  vp."cantidadProducto" as "cantProducto", vn."montoFacturar"
   from Facturas fr 
   inner join ventas vn on vn."idFactura"=fr."idFactura" 
   inner join Venta_Productos vp on vp."idVenta"=vn."idVenta"
