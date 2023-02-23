@@ -11,36 +11,44 @@ const {
   getOnlyStores,
   getSalePoints,
   getSalePointsAndStore,
+  updateFullStockPos,
+  getStoresPos,
+  getOnlyStoresPos,
+  getUserStockPos,
+  verifyAvailabilityPos,
+  updateProductStockPos,
+  getSalePointsPos,
+  getSalePointsAndStorePos,
 } = require("../models/StoreModel");
 app.use(session(sessionParams));
 
 module.exports = {
   getStores: (req, res) => {
-    const stores = getStores();
+    const stores = getStoresPos();
     stores.then((store) => {
       res.status(200).send(store);
     });
   },
   getOnlyStores: (req, res) => {
-    const stores = getOnlyStores();
+    const stores = getOnlyStoresPos();
     stores.then((store) => {
       res.status(200).send(store);
     });
   },
   getUserStock: (req, res) => {
-    const stock = getUserStock(req.query);
+    const stock = getUserStockPos(req.query);
     stock.then((st) => {
       res.status(200).send(JSON.parse(st));
     });
   },
   getProductAvailability: (req, res) => {
-    const available = verifyAvailability(req.body);
+    const available = verifyAvailabilityPos(req.body);
     available.then((ava) => {
       res.status(200).send(ava);
     });
   },
   updateProductStock: (req, res) => {
-    const updated = updateProductStock(req.body);
+    const updated = updateProductStockPos(req.body);
     updated
       .then((upd) => {
         res.status(200).send(upd);
@@ -50,7 +58,7 @@ module.exports = {
       });
   },
   updateFulltStock: (req, res) => {
-    const updated = updateFullStock(req.body);
+    const updated = updateFullStockPos(req.body);
     updated
       .then((upd) => {
         res.status(200).send(upd);
@@ -60,7 +68,7 @@ module.exports = {
       });
   },
   getSalePoints: (req, res) => {
-    const updated = getSalePoints(req.query);
+    const updated = getSalePointsPos(req.query);
     updated
       .then((upd) => {
         res.status(200).send(upd);
@@ -70,7 +78,7 @@ module.exports = {
       });
   },
   getSalePointsAndStore: (req, res) => {
-    const updated = getSalePointsAndStore(req.query);
+    const updated = getSalePointsAndStorePos(req.query);
     updated
       .then((upd) => {
         res.status(200).send(upd);

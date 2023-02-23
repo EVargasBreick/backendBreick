@@ -2,11 +2,14 @@ const {
   logRejectedOrder,
   getRejected,
   revisedRejected,
+  logRejectedOrderPos,
+  getRejectedPos,
+  revisedRejectedPos,
 } = require("../models/RejectedModel");
 
 module.exports = {
   logRejected: (req, res) => {
-    const rej = logRejectedOrder(req.body);
+    const rej = logRejectedOrderPos(req.body);
     rej
       .then((id) => {
         res.status(200).send(id);
@@ -16,7 +19,7 @@ module.exports = {
       });
   },
   getRejected: (req, res) => {
-    const rej = getRejected();
+    const rej = getRejectedPos();
     rej
       .then((id) => {
         res.status(200).send(id);
@@ -26,7 +29,7 @@ module.exports = {
       });
   },
   reviseRejected: (req, res) => {
-    const rej = revisedRejected(req.query);
+    const rej = revisedRejectedPos(req.query);
     rej
       .then((id) => {
         res.status(200).send(id);

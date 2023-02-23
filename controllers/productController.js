@@ -9,15 +9,25 @@ const {
   getInternalAndBarcode,
   getProdTypes,
   getProdOrigin,
+  getNumberOfProductsPos,
+  getProductsWithStockPos,
+  getProductsDiscountPos,
+  createProductPos,
+  getInternalAndBarcodePos,
+  getProdTypesPos,
+  getProdOriginPos,
+  getAvailableProductsPos,
+  getProductsPos,
 } = require("../models/ProductModel");
 
 module.exports = {
   findProduct: (req, res) => {
-    const productPromise = getProducts(req.query);
+    const productPromise = getProductsPos(req.query);
     var responseObject = {};
     productPromise.then((productData) => {
       productResponse = JSON.parse(productData);
-      if (productData[0]) {
+      console.log("productResponse", productResponse);
+      if (productData.length > 0) {
         responseObject.data = productResponse;
         responseObject.message = "Producto Encontrado";
         responseObject.code = 200;
@@ -31,11 +41,12 @@ module.exports = {
     });
   },
   getAvailableProduct: (req, res) => {
-    const products = getAvailableProducts(req.query.id);
+    const products = getAvailableProductsPos(req.query.id);
     var responseObject = {};
     products.then((productData) => {
       productResponse = JSON.parse(productData);
-      if (productResponse[0][0]) {
+      console.log("Product response", productData);
+      if (productResponse[0]) {
         responseObject.data = productResponse;
         responseObject.message = "Producto Encontrado";
         responseObject.code = 200;
@@ -49,28 +60,28 @@ module.exports = {
     });
   },
   numberOfProducts: (req, res) => {
-    const number = getNumberOfProducts();
+    const number = getNumberOfProductsPos();
     number.then((response) => {
       var resp = JSON.parse(response);
       res.status(resp.code).send(resp);
     });
   },
   productsWithStock: (req, res) => {
-    const plist = getProductsWithStock(req.query);
+    const plist = getProductsWithStockPos(req.query);
     plist.then((response) => {
       var resp = JSON.parse(response);
       res.status(200).send(resp);
     });
   },
   productsDiscount: (req, res) => {
-    const pdisc = getProductsDiscount(req.query);
+    const pdisc = getProductsDiscountPos(req.query);
     pdisc.then((response) => {
       var resp = JSON.parse(response);
       res.status(200).send(resp);
     });
   },
   createProduct: (req, res) => {
-    const created = createProduct(req.body);
+    const created = createProductPos(req.body);
     created
       .then((cr) => {
         res.status(200).send(cr);
@@ -80,7 +91,7 @@ module.exports = {
       });
   },
   getCodes: (req, res) => {
-    const ids = getInternalAndBarcode();
+    const ids = getInternalAndBarcodePos();
     ids
       .then((id) => {
         res.status(200).send(id);
@@ -90,7 +101,7 @@ module.exports = {
       });
   },
   getProdTypes: (req, res) => {
-    const ids = getProdTypes();
+    const ids = getProdTypesPos();
     ids
       .then((id) => {
         res.status(200).send(id);
@@ -100,7 +111,7 @@ module.exports = {
       });
   },
   getProdOrigin: (req, res) => {
-    const ids = getProdOrigin();
+    const ids = getProdOriginPos();
     ids
       .then((id) => {
         res.status(200).send(id);

@@ -1,3 +1,4 @@
+const { client } = require("../postgressConn");
 const dbConnection = require("../server");
 
 function findUserByName(nombre) {
@@ -141,4 +142,153 @@ function findUserBasic() {
     }, 1000);
   });
 }
-module.exports = { findUserByName, findUserById, createNewUser, findUserBasic };
+
+//POSTGRES
+
+function findUserByNamePos(nombre) {
+  var queryAll = `select * from Usuarios where nombre='${nombre}'`;
+  var queryFind = "select * from Usuarios";
+
+  var query = nombre === undefined ? queryFind : queryAll;
+  var responseObject = {};
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      console.log("Query:", query);
+      const clients = await client.query(query);
+      console.log("Respuestita", clients.rows);
+      if (JSON.stringify(clients.rows).length < 1) {
+        (responseObject.code = 404),
+          (responseObject.message = "Not Found"),
+          (responseObject.data = "Not found");
+      } else {
+        (responseObject.code = 200),
+          (responseObject.data = clients.rows),
+          (responseObject.message = "success");
+      }
+      resolve(JSON.stringify(responseObject));
+    }, 100);
+  });
+}
+
+function findUserByIdPos(id) {
+  var queryAll = `select * from Usuarios where "idUsuario"='${id}'`;
+  var queryFind = "select * from Usuarios";
+  var query = id === undefined ? queryFind : queryAll;
+  var responseObject = {};
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      console.log("Query:", query);
+      const clients = await client.query(query);
+      console.log("Respuestita", clients.rows);
+      if (JSON.stringify(clients.rows).length < 1) {
+        (responseObject.code = 404),
+          (responseObject.message = "Not Found"),
+          (responseObject.data = "Not found");
+      } else {
+        (responseObject.code = 200),
+          (responseObject.data = clients.rows),
+          (responseObject.message = "success");
+      }
+      resolve(JSON.stringify(responseObject));
+    }, 100);
+  });
+}
+
+function createNewUserPos(data) {
+  console.log("Body:", data);
+  var addUserQuery = `insert into Usuarios (
+    nombre, 
+    "apPaterno", 
+    "apMaterno",
+    cedula,
+    correo,
+    acceso,
+    rol,
+    usuario,
+    password,
+    fultimoa,
+    fcreacion,
+    factualizacion,
+    "usuarioCrea",
+    idioma,
+    "idAlmacen", "idDepto", "tipoUsuario") values 
+    (
+      '${data.nombre}',
+      '${data.apPaterno}',
+      '${data.apMaterno}',
+      '${data.cedula}',
+      '${data.correo}',
+      ${data.acceso},
+      ${data.rol},
+      '${data.usuario}',
+      '${data.password}',
+      '${data.fultimoa}',
+      '${data.fcreacion}',
+      '${data.factualizacion}',
+      ${data.usuariocrea},
+      ${data.idioma},
+      '${data.idAlmacen}',
+      ${data.idDepto},
+      ${data.tipoUsuario}
+    ) returning "idUsuario"`;
+  return new Promise((resolve, reject) => {
+    const responseObject = {};
+    setTimeout(async () => {
+      console.log(addUserQuery);
+      try {
+        const newUser = await client.query(addUserQuery);
+        const idCreado = newUser.rows[0].idUsuario;
+        const horarioQuery = `insert into Horarios_acceso ("idUsuario", "horaEntrada", "horaSalida", turno) values (${idCreado},'09:00', '22:00', 'completo')`;
+        try {
+          const workTime = await client.query(horarioQuery);
+          responseObject.code = 201;
+          responseObject.data = "Sucess";
+        } catch (err) {
+          const queryDelete = `delete from Usuarios where idUsuario=${idCreado}`;
+          const deleted = await dbConnection.executeQuery(queryDelete);
+          if (deleted.success) {
+            responseObject.code = 400;
+            responseObject.data = "Error";
+            responseObject.message = err;
+          }
+        }
+      } catch (err) {
+        responseObject.code = 400;
+        responseObject.data = "Error";
+        responseObject.message = err;
+      }
+      resolve(JSON.stringify(responseObject));
+    }, 100);
+  });
+}
+
+function findUserBasicPos() {
+  var queryFind = `select "idUsuario", nombre || ' ' || "apPaterno" || ' ' || "apMaterno" as nombre from Usuarios ORDER by nombre`;
+  var responseObject = {};
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      const clients = await client.query(queryFind);
+      if (JSON.stringify(clients.rows).length < 1) {
+        (responseObject.code = 404),
+          (responseObject.message = "Not Found"),
+          (responseObject.data = "Not found");
+      } else {
+        (responseObject.code = 200),
+          (responseObject.data = clients.rows),
+          (responseObject.message = "success");
+      }
+      resolve(JSON.stringify(responseObject));
+    }, 1000);
+  });
+}
+
+module.exports = {
+  findUserByName,
+  findUserById,
+  createNewUser,
+  findUserBasic,
+  findUserByNamePos,
+  findUserByIdPos,
+  createNewUserPos,
+  findUserBasicPos,
+};

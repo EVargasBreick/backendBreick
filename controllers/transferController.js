@@ -12,11 +12,24 @@ const {
   updateChangedTransfer,
   getTransitTransfers,
   acceptTransfer,
+  getTransferListPos,
+  createTransferPos,
+  getTransferProductsPos,
+  updateTransferPos,
+  printTransferPos,
+  changeReadyPos,
+  toRePrintDetailsPos,
+  addProductToTransferPos,
+  deleteProductFromTransferPos,
+  updateProductInTransferPos,
+  updateChangedTransferPos,
+  getTransitTransfersPos,
+  acceptTransferPos,
 } = require("../models/transferModel");
 
 module.exports = {
   createTransfer: (req, res) => {
-    const newTransfer = createTransfer(req.body);
+    const newTransfer = createTransferPos(req.body);
     newTransfer
       .then((resp) => {
         res.status(200).send(resp);
@@ -26,25 +39,25 @@ module.exports = {
       });
   },
   getTransferList: (req, res) => {
-    const fetchedList = getTransferList(req.query);
+    const fetchedList = getTransferListPos(req.query);
     fetchedList.then((resp) => {
-      res.status(200).send(JSON.stringify(resp.response.data));
+      res.status(200).send(JSON.stringify(resp.response));
     });
   },
   getTransferProducts: (req, res) => {
-    const fetchedList = getTransferProducts(req.query);
+    const fetchedList = getTransferProductsPos(req.query);
     fetchedList.then((resp) => {
       res.status(200).send(resp);
     });
   },
   updateTransfer: (req, res) => {
-    const update = updateTransfer(req.body);
+    const update = updateTransferPos(req.body);
     update.then((resp) => {
       res.status(200).send(resp);
     });
   },
   transferPrinted: (req, res) => {
-    const update = printTransfer(req.query);
+    const update = printTransferPos(req.query);
     update
       .then((resp) => {
         res.status(200).send(resp);
@@ -54,7 +67,7 @@ module.exports = {
       });
   },
   toRePrint: (req, res) => {
-    const orderList = toRePrintDetails(req.query);
+    const orderList = toRePrintDetailsPos(req.query);
     orderList
       .then((list) => {
         res.status(200).send(list);
@@ -64,7 +77,7 @@ module.exports = {
       });
   },
   changeReady: (req, res) => {
-    const changed = changeReady(req.query);
+    const changed = changeReadyPos(req.query);
     changed
       .then((list) => {
         res.status(200).send(list);
@@ -74,7 +87,7 @@ module.exports = {
       });
   },
   addProduct: (req, res) => {
-    const changed = addProductToTransfer(req.body);
+    const changed = addProductToTransferPos(req.body);
     changed
       .then((list) => {
         res.status(200).send(list);
@@ -84,7 +97,7 @@ module.exports = {
       });
   },
   deleteProduct: (req, res) => {
-    const changed = deleteProductFromTransfer(req.query);
+    const changed = deleteProductFromTransferPos(req.query);
     changed
       .then((list) => {
         res.status(200).send(list);
@@ -94,7 +107,7 @@ module.exports = {
       });
   },
   updateProduct: (req, res) => {
-    const changed = updateProductInTransfer(req.body);
+    const changed = updateProductInTransferPos(req.body);
     changed
       .then((list) => {
         res.status(200).send(list);
@@ -104,7 +117,7 @@ module.exports = {
       });
   },
   updateChangedTransfer: (req, res) => {
-    const changed = updateChangedTransfer(req.body);
+    const changed = updateChangedTransferPos(req.body);
     changed
       .then((list) => {
         res.status(200).send(list);
@@ -114,7 +127,7 @@ module.exports = {
       });
   },
   transitTransfers: (req, res) => {
-    const changed = getTransitTransfers(req.query);
+    const changed = getTransitTransfersPos(req.query);
     changed
       .then((list) => {
         res.status(200).send(list);
@@ -124,7 +137,7 @@ module.exports = {
       });
   },
   acceptTransfer: (req, res) => {
-    const changed = acceptTransfer(req.query);
+    const changed = acceptTransferPos(req.query);
     changed
       .then((list) => {
         res.status(200).send(list);

@@ -1,5 +1,6 @@
 const axios = require("axios");
 const xml2js = require("xml2js");
+const { client } = require("../postgressConn");
 const dbConnection = require("../server");
 require("dotenv").config();
 function xmlLogin(body) {
@@ -60,7 +61,7 @@ function xmlLogin(body) {
               .FechaVencimiento[0];
           const token =
             body.IniciarSesionResponse[0].IniciarSesionResult[0].SesionId[0];
-          const inserted = insertToken(token, fechaVen);
+          const inserted = insertTokenPos(token, fechaVen);
           inserted
             .then((res) => {
               console.log("Token actualizado", res);
@@ -95,6 +96,45 @@ function insertToken(token, fecha) {
   });
 }
 
+function insertTokenPos(token, fecha) {
+  const queryInsertToken = `update TokenComfiar set "stringToken"='${token}', 
+    "fechaHora"='${fecha}' where "idToken"=1`;
+  console.log("Query pa guardar", queryInsertToken);
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      try {
+        const added = await client.query(queryInsertToken);
+        resolve(added.rows);
+      } catch (err) {
+        reject(err);
+      }
+    }, 100);
+  });
+}
+
+function verifyTokenPos() {
+  const queryToken = `select cast("fechaHora" as varchar(50)) as "fechaHora", "stringToken" from TokenComfiar`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      try {
+        const isValid = await client(queryToken);
+        const stringToken = isValid.rows[0].stringToken;
+        const databaseDateString = isValid.rows[0].fechaHora;
+        const databaseDate = new Date(databaseDateString);
+        const currentDate = new Date();
+        if (databaseDate.getTime() > currentDate.getTime()) {
+          resolve({ fecha: databaseDateString, sesionId: stringToken });
+        } else {
+          console.log("Token pasado");
+          reject(false);
+        }
+      } catch (err) {
+        console.log(err, "Respuesta del query de validez mal");
+      }
+    }, 100);
+  });
+}
+
 function verifyToken() {
   const queryToken =
     "select cast(fechaHora as varchar(50)) as fechaHora, stringToken from TokenComfiar";
@@ -123,7 +163,7 @@ function verifyToken() {
 function getLastId(body) {
   console.log("Body recibido", body);
   return new Promise((resolve, reject) => {
-    const verifiedToken = verifyToken();
+    const verifiedToken = verifyTokenPos();
     verifiedToken
       .then(async ({ fecha, sesionId }) => {
         let dateparts = fecha.split(" ");
@@ -230,7 +270,7 @@ function getLastId(body) {
 
 function authorizeInvoice(body) {
   return new Promise(async (resolve, reject) => {
-    const verifiedToken = verifyToken();
+    const verifiedToken = verifyTokenPos();
     verifiedToken
       .then(async ({ fecha, sesionId }) => {
         let dateparts = fecha.split(" ");
@@ -338,7 +378,7 @@ function authorizeInvoice(body) {
 function InvoiceOut(body) {
   console.log("Body recibido", body);
   return new Promise((resolve, reject) => {
-    const verifiedToken = verifyToken();
+    const verifiedToken = verifyTokenPos();
     verifiedToken
       .then(async ({ fecha, sesionId }) => {
         let dateparts = fecha.split(" ");
@@ -438,7 +478,7 @@ function InvoiceOut(body) {
 function cancelInvoice(body) {
   console.log("Body recibido", body);
   return new Promise((resolve, reject) => {
-    const verifiedToken = verifyToken();
+    const verifiedToken = verifyTokenPos();
     verifiedToken
       .then(async ({ fecha, sesionId }) => {
         let dateparts = fecha.split(" ");

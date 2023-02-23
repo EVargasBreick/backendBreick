@@ -1,3 +1,4 @@
+const { client } = require("../postgressConn");
 const dbConnection = require("../server");
 
 function logRejectedOrder(body) {
@@ -47,8 +48,60 @@ function revisedRejected(params) {
   });
 }
 
+//Postgres
+
+function logRejectedOrderPos(body) {
+  const query = `insert into Log_Rechazos (motivo, "idOrden", "fechaRegistro", "idUsuario", "intId", tipo, revisado) 
+    values ('${body.motivo}', '${body.idOrden}', '${body.fechaRegistro}', ${body.idUsuario}, ${body.intId}, '${body.tipo}',0)`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      console.log("Query de loggeo", query);
+      try {
+        const logged = await client.query(query);
+        resolve(logged.rows);
+      } catch (err) {
+        reject(err);
+      }
+    }, 100);
+  });
+}
+
+function getRejectedPos() {
+  const query = `select lr.*, us.usuario as "usuarioRechazo" from Log_Rechazos lr 
+    inner join Usuarios us on lr."idUsuario"=us."idUsuario" where lr.revisado=0`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      console.log("Query de loggeo", query);
+      try {
+        const logged = await client.query(query);
+        resolve(logged.rows);
+      } catch (err) {
+        reject(err);
+      }
+    }, 100);
+  });
+}
+
+function revisedRejectedPos(params) {
+  const query = `update Log_Rechazos set revisado=1 where "idLogRechazo"=${params.id}`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      console.log("Query de loggeo", query);
+      try {
+        const logged = await client.query(query);
+        resolve(logged.rows);
+      } catch (err) {
+        reject(err);
+      }
+    }, 100);
+  });
+}
+
 module.exports = {
   logRejectedOrder,
   getRejected,
   revisedRejected,
+  logRejectedOrderPos,
+  getRejectedPos,
+  revisedRejectedPos,
 };

@@ -72,13 +72,17 @@ function registerPackPos(body) {
     setTimeout(async () => {
       try {
         const pack = await client.query(packQuery);
-        const idCreado = pack.rows[0].idpack;
+        console.log("Pack creado", pack.rows);
+        const idCreado = pack.rows[0].idPack;
+        console.log("Body recibido", body);
         body.productos.map((pr) => {
           setTimeout(async () => {
             const productQuery = `insert into Productos_Pack ("idPack", "idProducto", "cantProducto") 
                 values (${idCreado},${pr.idProducto},${pr.cantidadProducto})`;
+            console.log("Product query", productQuery);
             try {
               const added = await client.query(productQuery);
+              console.log("Added", added);
               resolve({ id: idCreado });
             } catch (err) {
               const deleteQuery = `delete from Packs where "idPack"=${idCreado}`;
@@ -96,4 +100,39 @@ function registerPackPos(body) {
   });
 }
 
-module.exports = { registerPack, getPacks, addIdToPack, registerPackPos };
+function getPacksPos() {
+  const packQuery = `select pc.*, pp.*, pr."nombreProducto", pr."precioDeFabrica" from Packs pc inner join Productos_Pack pp on pc."idPack"=pp."idPack" inner join Productos pr on pr."idProducto"=pp."idProducto"`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      try {
+        const pack = await client.query(packQuery);
+        resolve(pack.rows);
+      } catch (err) {
+        reject(err);
+      }
+    }, 100);
+  });
+}
+
+function addIdToPackPos(params) {
+  const addQuery = `update Packs set "idPackProd"=${params.idProducto} where "idPack"=${params.idPack}`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      try {
+        const pack = await client.query(addQuery);
+        resolve(pack);
+      } catch (err) {
+        reject(err);
+      }
+    }, 1000);
+  });
+}
+
+module.exports = {
+  registerPack,
+  getPacks,
+  addIdToPack,
+  registerPackPos,
+  getPacksPos,
+  addIdToPackPos,
+};

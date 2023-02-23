@@ -6,12 +6,16 @@ const {
   findUserById,
   createNewUser,
   findUserBasic,
+  findUserByNamePos,
+  findUserByIdPos,
+  createNewUserPos,
+  findUserBasicPos,
 } = require("../models/UserModel");
 let datos;
 let response;
 module.exports = {
   getUserByName: (req, res) => {
-    const promise = findUserByName(req.query.name);
+    const promise = findUserByNamePos(req.query.name);
     console.log("paramssss ", req.query.name);
     promise.then((data) => {
       response = JSON.parse(data);
@@ -20,7 +24,7 @@ module.exports = {
     });
   },
   getUserById: (req, res) => {
-    const promise = findUserById(req.query.id);
+    const promise = findUserByIdPos(req.query.id);
     console.log("paramssss ", req.query.id);
     promise.then((data) => {
       response = JSON.parse(data);
@@ -30,7 +34,7 @@ module.exports = {
   },
   createNewUser: (req, res) => {
     console.log("Body en controller:", req.body);
-    const promise = createNewUser(req.body);
+    const promise = createNewUserPos(req.body);
     promise.then((data) => {
       response = JSON.parse(data);
       console.log(data);
@@ -38,7 +42,7 @@ module.exports = {
     });
   },
   getUserBasic: (req, res) => {
-    const promise = findUserBasic();
+    const promise = findUserBasicPos();
     promise.then((data) => {
       response = JSON.parse(data);
       res.status(response.code).send(response.data);

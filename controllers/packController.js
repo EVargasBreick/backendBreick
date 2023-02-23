@@ -1,8 +1,15 @@
-const { registerPack, getPacks, addIdToPack } = require("../models/PackModel");
+const {
+  registerPack,
+  getPacks,
+  addIdToPack,
+  registerPackPos,
+  getPacksPos,
+  addIdToPackPos,
+} = require("../models/PackModel");
 
 module.exports = {
   registerPack: (req, res) => {
-    const ids = registerPack(req.body);
+    const ids = registerPackPos(req.body);
     ids
       .then((id) => {
         res.status(200).send(id);
@@ -12,7 +19,7 @@ module.exports = {
       });
   },
   getPacks: (req, res) => {
-    const list = getPacks();
+    const list = getPacksPos();
     list
       .then((resp) => {
         res.status(200).send(resp);
@@ -22,7 +29,7 @@ module.exports = {
       });
   },
   updatePackId: (req, res) => {
-    const list = addIdToPack(req.query);
+    const list = addIdToPackPos(req.query);
     list
       .then((resp) => {
         res.status(200).send(resp);

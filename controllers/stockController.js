@@ -4,11 +4,16 @@ const {
   getCurrentProductStock,
   getCurrentStoreStock,
   initializeStock,
+  getStockFromDateAndProductPos,
+  getStockFromDateAndStorePos,
+  getCurrentProductStockPos,
+  getCurrentStoreStockPos,
+  initializeStockPos,
 } = require("../models/StockModel");
 
 module.exports = {
   stockFromDateAndProduct: (req, res) => {
-    const stock = getStockFromDateAndProduct(req.query);
+    const stock = getStockFromDateAndProductPos(req.query);
     stock
       .then((resp) => {
         res.status(200).send(resp);
@@ -18,7 +23,7 @@ module.exports = {
       });
   },
   stockFromDateAndStore: (req, res) => {
-    const stock = getStockFromDateAndStore(req.query);
+    const stock = getStockFromDateAndStorePos(req.query);
     stock
       .then((resp) => {
         res.status(200).send(resp);
@@ -28,7 +33,7 @@ module.exports = {
       });
   },
   currentProductStock: (req, res) => {
-    const stock = getCurrentProductStock(req.query);
+    const stock = getCurrentProductStockPos(req.query);
     stock
       .then((resp) => {
         res.status(200).send(resp);
@@ -38,7 +43,7 @@ module.exports = {
       });
   },
   currentStoreStock: (req, res) => {
-    const stock = getCurrentStoreStock(req.query);
+    const stock = getCurrentStoreStockPos(req.query);
     stock
       .then((resp) => {
         res.status(200).send(resp);
@@ -48,7 +53,7 @@ module.exports = {
       });
   },
   initializeStock: (req, res) => {
-    const stock = initializeStock(req.body);
+    const stock = initializeStockPos(req.body);
     stock
       .then((resp) => {
         res.status(200).send(resp);
