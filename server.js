@@ -35,7 +35,7 @@ const sessionParams = {
 app.use(session(sessionParams));
 app.use(bodyParser.json());
 app.use(cors(corsOptions));
-const userRoutes = require("./routes/user");
+const userRoutes = require("./routes/user.js");
 const loginRoutes = require("./routes/login");
 const productRoutes = require("./routes/product");
 const storeRoutes = require("./routes/store");
