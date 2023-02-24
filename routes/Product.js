@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const controller = require("../controllers/productController");
+const controller = require("../controllers/product_controller");
 
 router.get("/productos", controller.findProduct);
 router.get("/productos/count", controller.numberOfProducts);

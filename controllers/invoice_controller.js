@@ -12,7 +12,7 @@ const {
   getInvoiceProductsPos,
   cancelInvoicePos,
   getOtherPaymentsPos,
-} = require("../models/InvoiceModel");
+} = require("../models/invoice_model");
 const app = express();
 app.use(session(sessionParams));
 

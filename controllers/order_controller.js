@@ -46,7 +46,7 @@ const {
   orderToReadyPos,
   toRePrintDetailsPos,
   changeReadyPos,
-} = require("../models/OrderModel");
+} = require("../models/order_model");
 
 const app = express();
 app.use(session(sessionParams));

@@ -1,7 +1,7 @@
 const express = require("express");
 const sessionParams = require("../server");
 const session = require("express-session");
-const { registerSale, registerSalePos } = require("../models/SaleModel.js");
+const { registerSale, registerSalePos } = require("../models/sale_modal.js");
 
 const app = express();
 app.use(session(sessionParams));

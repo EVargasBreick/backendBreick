@@ -2,14 +2,14 @@ const express = require("express");
 const sessionParams = require("../server");
 const session = require("express-session");
 const app = express();
-const getDays = require("../models/DayModel");
+const { getLangPos } = require("../models/languaje_model");
 app.use(session(sessionParams));
 
 module.exports = {
-  getDias: (req, res) => {
-    const dias = getDays.getDaysPos();
-    dias.then((dia) => {
-      res.status(200).send(dia);
+  getLanguajes: (req, res) => {
+    const languajes = getLangPos();
+    languajes.then((lang) => {
+      res.status(200).send(lang);
     });
   },
 };

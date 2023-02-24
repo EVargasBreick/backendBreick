@@ -5,7 +5,7 @@ const {
   logRejectedOrderPos,
   getRejectedPos,
   revisedRejectedPos,
-} = require("../models/RejectedModel.js");
+} = require("../models/rejected_model.js");
 
 module.exports = {
   logRejected: (req, res) => {

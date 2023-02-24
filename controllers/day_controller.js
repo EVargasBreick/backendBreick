@@ -2,14 +2,14 @@ const express = require("express");
 const sessionParams = require("../server");
 const session = require("express-session");
 const app = express();
-const { getZones, getZonesPos } = require("../models/ZoneModel.js");
+const getDays = require("../models/day_model");
 app.use(session(sessionParams));
 
 module.exports = {
-  getZonas: (req, res) => {
-    const zonas = getZonesPos();
-    zonas.then((zona) => {
-      res.status(200).send(zona);
+  getDias: (req, res) => {
+    const dias = getDays.getDaysPos();
+    dias.then((dia) => {
+      res.status(200).send(dia);
     });
   },
 };

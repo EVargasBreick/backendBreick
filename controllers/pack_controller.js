@@ -5,7 +5,7 @@ const {
   registerPackPos,
   getPacksPos,
   addIdToPackPos,
-} = require("../models/PackModel");
+} = require("../models/pack_model");
 
 module.exports = {
   registerPack: (req, res) => {

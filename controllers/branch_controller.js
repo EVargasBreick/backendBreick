@@ -1,7 +1,7 @@
 const express = require("express");
 const sessionParams = require("../server");
 const session = require("express-session");
-const { getBranches, getBranchesPostgres } = require("../models/branchModel");
+const { getBranches, getBranchesPostgres } = require("../models/branch_model");
 
 const app = express();
 

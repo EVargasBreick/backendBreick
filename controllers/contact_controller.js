@@ -8,7 +8,7 @@ const {
   registerContactPos,
   updateContactPos,
   getMainContactPos,
-} = require("../models/ContactsModel");
+} = require("../models/contacts_model");
 const app = express();
 app.use(session(sessionParams));
 module.exports = {

@@ -7,7 +7,7 @@ const {
   authorizeInvoice,
   InvoiceOut,
   cancelInvoice,
-} = require("../models/XmlModel.js");
+} = require("../models/xml_model.js");
 const app = express();
 app.use(session(sessionParams));
 module.exports = {

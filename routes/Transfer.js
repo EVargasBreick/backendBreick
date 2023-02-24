@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const controller = require("../controllers/transferController");
+const controller = require("../controllers/transfer_controller");
 
 router.post("/traspaso", controller.createTransfer);
 router.get("/traspaso/lista", controller.getTransferList);

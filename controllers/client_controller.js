@@ -12,7 +12,7 @@ const {
   getClientsPos,
   getClientByIdPos,
   getFullClientPos,
-} = require("../models/ClientModel");
+} = require("../models/client_model");
 const sessionParams = require("../server");
 const session = require("express-session");
 const app = express();

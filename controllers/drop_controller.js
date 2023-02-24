@@ -1,4 +1,4 @@
-const { createDrop, createDropPos } = require("../models/DropModel");
+const { createDrop, createDropPos } = require("../models/drop_model");
 
 module.exports = {
   createDrop: (req, res) => {

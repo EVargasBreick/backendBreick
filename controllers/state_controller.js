@@ -1,7 +1,7 @@
 const express = require("express");
 const sessionParams = require("../server");
 const session = require("express-session");
-const getDepartamentos = require("../models/StateModel.js");
+const getDepartamentos = require("../models/state_model.js");
 const app = express();
 
 app.use(session(sessionParams));

@@ -18,7 +18,7 @@ const {
   getProdOriginPos,
   getAvailableProductsPos,
   getProductsPos,
-} = require("../models/ProductModel");
+} = require("../models/product_model");
 
 module.exports = {
   findProduct: (req, res) => {

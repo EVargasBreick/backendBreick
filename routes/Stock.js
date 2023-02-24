@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const controller = require("../controllers/stockController");
+const controller = require("../controllers/stock_controller");
 router.get("/log/stock/agencia", controller.stockFromDateAndStore);
 router.get("/log/stock/producto", controller.stockFromDateAndProduct);
 router.get("/actual/stock/agencia", controller.currentStoreStock);

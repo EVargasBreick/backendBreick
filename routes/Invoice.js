@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const controller = require("../controllers/invoiceController");
+const controller = require("../controllers/invoice_controller");
 
 router.post("/factura", controller.createNewInvoice);
 router.delete("/factura", controller.deleteInvoice);

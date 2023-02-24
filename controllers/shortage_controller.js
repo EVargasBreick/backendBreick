@@ -1,7 +1,7 @@
 const express = require("express");
 const sessionParams = require("../server");
 const session = require("express-session");
-const { logShortage, logShortagePos } = require("../models/ShortageModel.js");
+const { logShortage, logShortagePos } = require("../models/shotage_model.js");
 
 const app = express();
 

@@ -10,7 +10,7 @@ const {
   findUserByIdPos,
   createNewUserPos,
   findUserBasicPos,
-} = require("../models/UserModel.js");
+} = require("../models/user_model.js");
 let datos;
 let response;
 module.exports = {
