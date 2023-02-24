@@ -9,7 +9,7 @@ const {
   getCurrentProductStockPos,
   getCurrentStoreStockPos,
   initializeStockPos,
-} = require("../models/StockModel");
+} = require("../models/StockModel.js");
 
 module.exports = {
   stockFromDateAndProduct: (req, res) => {

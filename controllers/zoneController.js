@@ -2,7 +2,7 @@ const express = require("express");
 const sessionParams = require("../server");
 const session = require("express-session");
 const app = express();
-const { getZones, getZonesPos } = require("../models/ZoneModel");
+const { getZones, getZonesPos } = require("../models/ZoneModel.js");
 app.use(session(sessionParams));
 
 module.exports = {

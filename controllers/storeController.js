@@ -19,7 +19,7 @@ const {
   updateProductStockPos,
   getSalePointsPos,
   getSalePointsAndStorePos,
-} = require("../models/StoreModel");
+} = require("../models/StoreModel.js");
 app.use(session(sessionParams));
 
 module.exports = {

@@ -25,7 +25,7 @@ const {
   updateChangedTransferPos,
   getTransitTransfersPos,
   acceptTransferPos,
-} = require("../models/transferModel");
+} = require("../models/transferModel.js");
 
 module.exports = {
   createTransfer: (req, res) => {

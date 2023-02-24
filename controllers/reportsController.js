@@ -11,7 +11,7 @@ const {
   ProductsSalesReportPos,
   ClosingReportPos,
   FirstAndLastPos,
-} = require("../models/ReportsModel");
+} = require("../models/ReportsModel.js");
 app.use(session(sessionParams));
 
 module.exports = {

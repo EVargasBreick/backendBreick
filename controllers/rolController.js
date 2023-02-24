@@ -2,7 +2,7 @@ const express = require("express");
 const sessionParams = require("../server");
 const session = require("express-session");
 const app = express();
-const getRoles = require("../models//RolModel");
+const getRoles = require("../models//RolModel.js");
 app.use(session(sessionParams));
 
 module.exports = {
