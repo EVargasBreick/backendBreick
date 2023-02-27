@@ -4,7 +4,7 @@ const session = require("express-session");
 var cors = require("cors");
 require("dotenv").config();
 const serverConfig = require("./config/serverConfig.json");
-const dbConnection = new (require("rest-mssql-nodejs"))({
+const dbConnection = 1; /*= new (require("rest-mssql-nodejs"))({
   user: process.env.USER_NAME,
   password: process.env.PASSWORD,
   server: process.env.SERVER, // replace this with your IP Serve
@@ -13,7 +13,7 @@ const dbConnection = new (require("rest-mssql-nodejs"))({
     encrypt: true,
     enableArithAbort: true,
   },
-});
+});*/
 
 var corsOptions = {
   origin: process.env.URL_SERVER,
