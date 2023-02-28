@@ -1,1 +1,3 @@
 node_modules
+nginx-selfsigned.crt
+nginx-selfsigned.key

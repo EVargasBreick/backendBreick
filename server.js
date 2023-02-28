@@ -1,6 +1,7 @@
 const express = require("express");
 const session = require("express-session");
-
+const https = require("https");
+const fs = require("fs");
 var cors = require("cors");
 require("dotenv").config();
 const serverConfig = require("./config/serverConfig.json");
@@ -21,7 +22,11 @@ var corsOptions = {
 };
 
 var bodyParser = require("body-parser");
-
+const options = {
+  key: fs.readFileSync("./breickkey.key"),
+  cert: fs.readFileSync("./breickventas_lat.crt"),
+  ca: fs.readFileSync("./breickventas_lat.ca-bundle"),
+};
 const maxAge = 60 * 60 * 12;
 const app = express();
 const sessionParams = {
@@ -83,6 +88,6 @@ app.use("/", xmlRoutes);
 app.use("/", packRoutes);
 app.use("/", rejectedRoutes);
 app.use("/", dropRoutes);
-app.listen(serverConfig.port, () => {
-  console.log("Server listening on port ", process.env.PORT);
+https.createServer(options, app).listen(443, () => {
+  console.log("Server listening on port 443");
 });

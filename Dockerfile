@@ -6,7 +6,10 @@ COPY package*.json ./
 RUN npm install
 
 COPY . . 
+COPY breickventas_lat.crt /etc/ssl/certs/
+COPY breickkey.key /etc/ssl/private/
+COPY breickventas_lat.ca-bundle /etc/ssl/certs/
 
 EXPOSE 5200
 
-CMD ["npm", "run", "dev"]
+CMD ["node", "server"]
