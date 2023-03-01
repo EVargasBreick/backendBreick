@@ -1,3 +1,5 @@
 node_modules
-nginx-selfsigned.crt
+breickkey.key
+breickventas_lat.ca-bundle
+breickventas_lat.crt
 nginx-selfsigned.key
