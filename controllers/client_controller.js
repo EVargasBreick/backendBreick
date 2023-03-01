@@ -20,7 +20,7 @@ app.use(session(sessionParams));
 module.exports = {
   createNewClient: (req, res) => {
     console.log("Body en controller:", req.body);
-    const promise = registerClient(req.body);
+    const promise = registerClientPos(req.body);
     promise.then((data) => {
       response = JSON.parse(data);
       console.log(data);

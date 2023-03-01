@@ -249,6 +249,24 @@ function FirstAndLastPos(params) {
   });
 }
 
+function mainPageReportPos() {
+  const query = `select count(pd.facturado) as "pedidosFacturados", 
+  (select count(*) from Pedidos where facturado=0 and estado='1') as "pedidosPorFacturar", 
+  (select count(*) from Facturas where estado=1) as "facturasAnuladas",
+  (select count(*) from Pedidos where tipo='muestra' and estado='1') as "muestrasAprobadas"
+  from Pedidos pd where pd.facturado=1 and pd.estado='1'`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      try {
+        const data = await client.query(query);
+        resolve(data.rows);
+      } catch (err) {
+        reject(err);
+      }
+    }, 100);
+  });
+}
+
 module.exports = {
   GeneralSalesReport,
   ProductsSalesReport,
@@ -258,4 +276,5 @@ module.exports = {
   ProductsSalesReportPos,
   ClosingReportPos,
   FirstAndLastPos,
+  mainPageReportPos,
 };

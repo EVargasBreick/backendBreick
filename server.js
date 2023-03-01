@@ -17,7 +17,9 @@ const dbConnection = 1; /*= new (require("rest-mssql-nodejs"))({
 });*/
 
 var corsOptions = {
-  origin: process.env.URL_SERVER,
+  origin: process.env.URL_SERVERS
+    ? process.env.URL_SERVERS
+    : process.env.URL_SERVER,
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204,
 };
 
@@ -88,6 +90,6 @@ app.use("/", xmlRoutes);
 app.use("/", packRoutes);
 app.use("/", rejectedRoutes);
 app.use("/", dropRoutes);
-https.createServer(options, app).listen(443, () => {
+https.createServer(app).listen(443, () => {
   console.log("Server listening on port 443");
 });

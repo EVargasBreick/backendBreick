@@ -11,6 +11,7 @@ const {
   ProductsSalesReportPos,
   ClosingReportPos,
   FirstAndLastPos,
+  mainPageReportPos,
 } = require("../models/reports_model.js");
 app.use(session(sessionParams));
 
@@ -47,6 +48,16 @@ module.exports = {
   },
   firstAndLast: (req, res) => {
     const data = FirstAndLastPos(req.query);
+    data
+      .then((dt) => {
+        res.status(200).send(dt);
+      })
+      .catch((err) => {
+        res.status(400).send(err);
+      });
+  },
+  mainReport: (req, res) => {
+    const data = mainPageReportPos();
     data
       .then((dt) => {
         res.status(200).send(dt);
