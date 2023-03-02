@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server",
-    "dev": " set URL_SERVERS=http://localhost:3006 && nodemon server"
+    "dev": " set TYPE=local && nodemon server"
   },
   "keywords": [],
   "author": "",

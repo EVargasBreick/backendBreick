@@ -215,7 +215,12 @@ BETWEEN TO_DATE('${params.idate}','DD/MM/YYYY') and TO_DATE('${params.fdate}','D
 }
 
 function ClosingReportPos(params) {
-  const generalQuery = `select  fc."idSucursal", fc."puntoDeVenta", fc."idOtroPago", fc."tipoPago", sum(fc.pagado) as "totalPagado", sum(fc.cambio) as "totalCambio", sum(fc.vale) as "totalVale"
+  const generalQuery = params.ruta
+    ? `select  fc."idSucursal", fc."puntoDeVenta", fc."idOtroPago", fc."tipoPago", sum(fc.pagado) as "totalPagado", sum(fc.cambio) as "totalCambio", sum(fc.vale) as "totalVale"
+ from Facturas fc inner join Sucursales sc on fc."idSucursal"=sc."idImpuestos"
+ where fc."idSucursal"=${params.idSucursal} and fc."puntoDeVenta"=${params.idPdv} and TO_DATE(SUBSTRING(fc."fechaHora",1,10),'DD/MM/YYYY')=CAST(CURRENT_DATE AS Date ) and sc."idAgencia"=${params.idAgencia}
+ group by fc."idSucursal", "puntoDeVenta", fc."idOtroPago", fc."tipoPago" `
+    : `select  fc."idSucursal", fc."puntoDeVenta", fc."idOtroPago", fc."tipoPago", sum(fc.pagado) as "totalPagado", sum(fc.cambio) as "totalCambio", sum(fc.vale) as "totalVale"
  from Facturas fc inner join Sucursales sc on fc."idSucursal"=sc."idImpuestos"
  where fc."idSucursal"=${params.idSucursal} and fc."puntoDeVenta"=${params.idPdv} and TO_DATE(SUBSTRING(fc."fechaHora",1,10),'DD/MM/YYYY')=CAST(CURRENT_DATE AS Date )
  group by fc."idSucursal", "puntoDeVenta", fc."idOtroPago", fc."tipoPago" `;
@@ -233,7 +238,12 @@ function ClosingReportPos(params) {
 }
 
 function FirstAndLastPos(params) {
-  const query = `select  min(cast(fc."nroFactura" as int)) as "PrimeraFactura", max(cast(fc."nroFactura" as int)) as "UltimaFactura", count(fc."nroFactura") as "CantidadFacturas" from Facturas fc 
+  const query = params.ruta
+    ? `select  min(cast(fc."nroFactura" as int)) as "PrimeraFactura", max(cast(fc."nroFactura" as int)) as "UltimaFactura", count(fc."nroFactura") as "CantidadFacturas" from Facturas fc 
+  where fc."idSucursal"=${params.idSucursal} and fc."puntoDeVenta"=${params.idPdv} and sc."idAgencia"=${params.idAgencia}
+  and TO_DATE(SUBSTRING(fc."fechaHora",1,10),'DD/MM/YYYY')=CAST(CURRENT_DATE AS Date)
+  `
+    : `select  min(cast(fc."nroFactura" as int)) as "PrimeraFactura", max(cast(fc."nroFactura" as int)) as "UltimaFactura", count(fc."nroFactura") as "CantidadFacturas" from Facturas fc 
   where fc."idSucursal"=${params.idSucursal} and fc."puntoDeVenta"=${params.idPdv} 
   and TO_DATE(SUBSTRING(fc."fechaHora",1,10),'DD/MM/YYYY')=CAST(CURRENT_DATE AS Date)
   `;

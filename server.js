@@ -17,9 +17,7 @@ const dbConnection = 1; /*= new (require("rest-mssql-nodejs"))({
 });*/
 
 var corsOptions = {
-  origin: process.env.URL_SERVERS
-    ? process.env.URL_SERVERS
-    : process.env.URL_SERVER,
+  origin: process.env.TYPE ? "http://localhost:3006" : process.env.URL_SERVER,
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204,
 };
 
@@ -90,6 +88,16 @@ app.use("/", xmlRoutes);
 app.use("/", packRoutes);
 app.use("/", rejectedRoutes);
 app.use("/", dropRoutes);
-https.createServer(app).listen(443, () => {
-  console.log("Server listening on port 443");
-});
+
+const serverType = process.env.TYPE ? "local" : "web";
+
+if (serverType === "web") {
+  https.createServer(app).listen(443, () => {
+    console.log("Server listening on port 443");
+  });
+} else {
+  app.listen(serverConfig.port, () => {
+    console.log("Cors options", corsOptions);
+    console.log("Server listening on port ", 5200);
+  });
+}
