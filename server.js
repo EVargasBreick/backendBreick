@@ -92,7 +92,7 @@ app.use("/", dropRoutes);
 const serverType = process.env.TYPE ? "local" : "web";
 
 if (serverType === "web") {
-  https.createServer(app).listen(443, () => {
+  https.createServer(options, app).listen(443, () => {
     console.log("Server listening on port 443");
   });
 } else {

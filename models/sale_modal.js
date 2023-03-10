@@ -127,6 +127,8 @@ function registerSalePos(data) {
         const newOrder = await client.query(query);
         const idCreado = newOrder.rows[0].idVenta;
         data.productos.map((producto) => {
+          const totalProducto =
+            producto.total != undefined ? producto.total : producto.totalProd;
           var queryProds = `insert into Venta_Productos
               (
                  "idVenta", 
@@ -138,9 +140,10 @@ function registerSalePos(data) {
                   ${idCreado},
                   ${producto.idProducto},
                   '${producto.cantProducto}',
-                  ${producto.total},
+                  ${totalProducto},
                   ${producto.descuentoProd}
               )`;
+          console.log("Insertando productos", queryProds);
           setTimeout(async () => {
             try {
               const prods = await client.query(queryProds);
