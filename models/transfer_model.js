@@ -4,10 +4,12 @@ const dateString = require("../services/dateServices");
 
 function createTransfer(body) {
   const dateResult = dateString();
-  console.log("body del traspaso", body);
+  console.log("body del traspasos", body);
   const movil = body.movil ? body.movil : 0;
+  const imp = body.impreso != undefined ? body.impreso : 0;
+  console.log("Imp", imp);
   var queryTransfer = `insert into Traspasos (fechaCrea, fechaActu, idOrigen, idDestino, idUsuario, estado, movil, listo, impreso, transito)
-    values ('${dateResult}','','${body.idOrigen}','${body.idDestino}',${body.idUsuario},0,${movil},0,0,${body.transito})`;
+    values ('${dateResult}','','${body.idOrigen}','${body.idDestino}',${body.idUsuario},0,${movil},0,${imp},${body.transito})`;
   return new Promise((resolve, reject) => {
     console.log("Query traspaso", queryTransfer);
     setTimeout(async () => {
@@ -249,7 +251,8 @@ function updateProductInTransfer(body) {
 }
 
 function updateChangedTransfer(body) {
-  const query = `update Traspasos set fechaActu='${body.fechaActualizacion}', listo=0, impreso=0, estado=0 where idTraspaso=${body.idTraspaso}`;
+  const imp = body.impreso != undefined ? body.impreso : 0;
+  const query = `update Traspasos set fechaActu='${body.fechaActualizacion}', listo=0, impreso=${imp}, estado=0 where idTraspaso=${body.idTraspaso}`;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       const updated = await dbConnection.executeQuery(query);
@@ -300,8 +303,9 @@ function createTransferPos(body) {
   const dateResult = dateString();
   console.log("body del traspaso", body);
   const movil = body.movil ? body.movil : 0;
+  const imp = body.impreso != undefined ? body.impreso : 0;
   var queryTransfer = `insert into Traspasos ("fechaCrea", "fechaActu", "idOrigen", "idDestino", "idUsuario", estado, movil, listo, impreso, transito)
-    values ('${dateResult}','','${body.idOrigen}','${body.idDestino}',${body.idUsuario},0,${movil},0,0,${body.transito}) returning "idTraspaso"`;
+    values ('${dateResult}','','${body.idOrigen}','${body.idDestino}',${body.idUsuario},0,${movil},0,${imp},${body.transito}) returning "idTraspaso"`;
   return new Promise((resolve, reject) => {
     console.log("Query traspaso", queryTransfer);
     setTimeout(async () => {
@@ -487,7 +491,8 @@ function toRePrintDetailsPos(params) {
 }
 
 function changeReadyPos(params) {
-  const query = `update Traspasos set listo=${params.listo} where "idTraspaso"=${params.id}`;
+  const isInterior = params.interior == 1 ? `, estado=1` : "";
+  const query = `update Traspasos set listo=${params.listo}${isInterior} where "idTraspaso"=${params.id}`;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       try {
@@ -563,7 +568,8 @@ function updateProductInTransferPos(body) {
 }
 
 function updateChangedTransferPos(body) {
-  const query = `update Traspasos set "fechaActu"='${body.fechaActualizacion}', listo=0, impreso=0, estado='0' where "idTraspaso"=${body.idTraspaso}`;
+  const imp = body.impreso != undefined ? body.impreso : 0;
+  const query = `update Traspasos set "fechaActu"='${body.fechaActualizacion}', listo=0, impreso=${imp}, estado='0' where "idTraspaso"=${body.idTraspaso}`;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       try {
@@ -622,7 +628,6 @@ module.exports = {
   updateChangedTransfer,
   getTransitTransfers,
   acceptTransfer,
-
   createTransferPos,
   getTransferListPos,
   getTransferProductsPos,

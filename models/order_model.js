@@ -3,6 +3,7 @@ const dbConnection = require("../server");
 
 function registerOrder(data) {
   console.log("Pedido", data);
+  const imp = data.impreso != undefined ? data.impreso : 0;
   var query = `insert into Pedidos 
     (
         idUsuarioCrea,
@@ -32,7 +33,7 @@ function registerOrder(data) {
         '${data.pedido.descCalculado}',
         '${data.pedido.notas}',
         0,
-        0,
+        ${imp},
         0
     )`;
   console.log("Creacion pedido query", query);
@@ -606,7 +607,7 @@ function changeReady(params) {
 //CONECTANDOSE A LA BASE DE DATOS DE POSTGRESS
 
 function registerOrderPos(data) {
-  console.log("Pedido", data);
+  const imp = data.pedido.impreso != undefined ? data.pedido.impreso : 0;
   var query = `insert into Pedidos 
     (
         "idUsuarioCrea",
@@ -636,7 +637,7 @@ function registerOrderPos(data) {
         '${data.pedido.descCalculado}',
         '${data.pedido.notas}',
         0,
-        0,
+        ${imp},
         0
     ) returning "idPedido"`;
   console.log("Creacion pedido query", query);
@@ -751,6 +752,7 @@ function getUserOrderListPos(params) {
     from Pedidos a inner join Usuarios b on a."idUsuarioCrea"=b."idUsuario" where b."idUsuario"=${params.id} ${params.condition}`;
   }
   return new Promise((resolve) => {
+    console.log("Query", queryList);
     setTimeout(async () => {
       try {
         const orderList = await client.query(queryList);
@@ -1016,12 +1018,23 @@ function updateOrderPos(body) {
   });
 }
 
-function getOrdersToInvoicePos() {
+function getOrdersToInvoicePos(params) {
+  console.log("Params", params);
+  const isInterior = params.idDepto != "" ? true : false;
+  console.log("Is store?", isInterior);
   return new Promise((resolve, reject) => {
-    const query = `select pd.*, cl."razonSocial", cl.nit,SUBSTRING(nombre, 1, 1)||''||"apPaterno"||'-'||tipo||'00'||cast(pd."idPedido" as varchar) as "idString" from Pedidos pd 
-    inner join Clientes cl on pd."idCliente"=cl."idCliente" 
-    inner join Usuarios us on pd."idUsuarioCrea"=us."idUsuario"
-    where  pd.estado='1' and pd.facturado=0 and pd.listo=1 and pd.tipo='normal'`;
+    var query;
+    if (!isInterior) {
+      query = `select pd.*, cl."razonSocial", cl.nit,SUBSTRING(nombre, 1, 1)||''||"apPaterno"||'-'||tipo||'00'||cast(pd."idPedido" as varchar) as "idString" from Pedidos pd 
+      inner join Clientes cl on pd."idCliente"=cl."idCliente" 
+      inner join Usuarios us on pd."idUsuarioCrea"=us."idUsuario"
+      where  pd.estado='1' and pd.facturado=0 and pd.listo=1 and pd.tipo='normal'`;
+    } else {
+      query = `select pd.*, cl."razonSocial", cl.nit,SUBSTRING(nombre, 1, 1)||''||"apPaterno"||'-'||tipo||'00'||cast(pd."idPedido" as varchar) as "idString" from Pedidos pd 
+      inner join Clientes cl on pd."idCliente"=cl."idCliente" 
+      inner join Usuarios us on pd."idUsuarioCrea"=us."idUsuario" 
+      where us."idDepto"=${params.idDepto} and pd.estado='1' and pd.facturado=0 and pd.listo=1 and pd.tipo='normal'`;
+    }
     setTimeout(async () => {
       try {
         const orderList = await client.query(query);
@@ -1169,14 +1182,15 @@ function orderPrintedPos(params) {
   });
 }
 
-function orderToReadyPos() {
+function orderToReadyPos(params) {
   const query = `
-  select pd."idPedido" as "idOrden", concat(upper(pd.tipo),'0',cast(pd."idPedido" as varchar)) as "nroOrden", pd."fechaCrea",'P' as tipo, us.usuario
-  from Pedidos pd inner join Usuarios us on us."idUsuario"=pd."idUsuarioCrea" where pd.impreso=1 and pd.listo=0
+  select pd."idPedido" as "idOrden", concat(upper(pd.tipo),'0',cast(pd."idPedido" as varchar)) as "nroOrden", pd."fechaCrea",'P' as tipo, us.usuario, us."idDepto"
+  from Pedidos pd inner join Usuarios us on us."idUsuario"=pd."idUsuarioCrea" where pd.impreso=1 and pd.listo=0 and us."idDepto"=${params.idDepto}
   union
-  select tp."idTraspaso" as "idOrden", tp."nroOrden", tp."fechaCrea", 'T' as tipo, us.usuario
-  from Traspasos tp inner join Usuarios us on us."idUsuario"=tp."idUsuario" where tp.impreso=1 and tp.listo=0`;
+  select tp."idTraspaso" as "idOrden", tp."nroOrden", tp."fechaCrea", 'T' as tipo, us.usuario, us."idDepto"
+  from Traspasos tp inner join Usuarios us on us."idUsuario"=tp."idUsuario" where tp.impreso=1 and tp.listo=0 and us."idDepto"=${params.idDepto}`;
   return new Promise((resolve, reject) => {
+    console.log("Query ", query);
     setTimeout(async () => {
       try {
         const printed = await client.query(query);
@@ -1207,8 +1221,10 @@ function toRePrintDetailsPos(params) {
 }
 
 function changeReadyPos(params) {
-  const query = `update Pedidos set listo=${params.listo} where "idPedido"=${params.id}`;
+  const isInterior = params.interior == 1 ? `, estado='1'` : "";
+  const query = `update Pedidos set listo=${params.listo}${isInterior} where "idPedido"=${params.id}`;
   return new Promise((resolve, reject) => {
+    console.log("Query", query);
     setTimeout(async () => {
       try {
         const changed = await client.query(query);

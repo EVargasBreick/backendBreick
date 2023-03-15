@@ -199,7 +199,6 @@ module.exports = {
   },
   notPrinted: (req, res) => {
     const orderList = getNotPrintedPos();
-    console.log("Entro hasta aca?");
     orderList
       .then((list) => {
         res.status(200).send(list);
@@ -210,7 +209,7 @@ module.exports = {
   },
   orderPrinted: (req, res) => {
     const orderList = orderPrintedPos(req.query);
-    console.log("Entro hasta aca?");
+
     orderList
       .then((list) => {
         res.status(200).send(list);
@@ -220,7 +219,7 @@ module.exports = {
       });
   },
   orderToReady: (req, res) => {
-    const orderList = orderToReadyPos();
+    const orderList = orderToReadyPos(req.query);
     orderList
       .then((list) => {
         res.status(200).send(list);

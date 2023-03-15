@@ -26,7 +26,7 @@ module.exports = {
     var responseObject = {};
     productPromise.then((productData) => {
       productResponse = JSON.parse(productData);
-      console.log("productResponse", productResponse);
+
       if (productData.length > 0) {
         responseObject.data = productResponse;
         responseObject.message = "Producto Encontrado";
@@ -45,7 +45,7 @@ module.exports = {
     var responseObject = {};
     products.then((productData) => {
       productResponse = JSON.parse(productData);
-      console.log("Product response", productData);
+
       if (productResponse[0]) {
         responseObject.data = productResponse;
         responseObject.message = "Producto Encontrado";

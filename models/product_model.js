@@ -2,7 +2,6 @@ const { client } = require("../postgressConn");
 const dbConnection = require("../server");
 
 function getProducts(params) {
-  console.log("Id producto:", params.id);
   var query;
   if (params.id === "all") {
     query = `select * from Productos`;
@@ -12,7 +11,6 @@ function getProducts(params) {
 
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
-      console.log(query);
       const products = await dbConnection.executeQuery(query);
       resolve(JSON.stringify(products.data));
     }, 1000);
@@ -20,7 +18,6 @@ function getProducts(params) {
 }
 
 function getProductsWithStock(params) {
-  console.log("Id producto:", params.idAlmacen);
   var query;
   if (params.id === "all") {
     query = `select a.*, b.cant_Actual from Productos a inner join Stock_Bodega b 
@@ -36,7 +33,6 @@ function getProductsWithStock(params) {
 
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
-      console.log(query);
       const products = await dbConnection.executeQuery(query);
       resolve(JSON.stringify(products.data));
     }, 1000);
@@ -185,7 +181,6 @@ function getProdOrigin() {
 //POSTGRES
 
 function getProductsPos(params) {
-  console.log("Id producto:", params.id);
   var query;
   if (params.id === "all") {
     query = `select * from Productos`;
@@ -195,7 +190,6 @@ function getProductsPos(params) {
 
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
-      console.log(query);
       const products = await client.query(query);
       resolve(JSON.stringify(products.rows));
     }, 1000);
@@ -203,7 +197,6 @@ function getProductsPos(params) {
 }
 
 function getProductsWithStockPos(params) {
-  console.log("Id producto:", params.idAlmacen);
   var query;
   if (params.id === "all") {
     query = `select a.*, b."cant_Actual" from Productos a inner join Stock_Bodega b 
@@ -220,7 +213,6 @@ function getProductsWithStockPos(params) {
 
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
-      console.log(query);
       const products = await client.query(query);
       resolve(JSON.stringify(products.rows));
     }, 1000);

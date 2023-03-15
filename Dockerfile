@@ -11,5 +11,6 @@ COPY breickkey.key /etc/ssl/private/
 COPY breickventas_lat.ca-bundle /etc/ssl/certs/
 
 EXPOSE 443
+EXPOSE 5432
 
 CMD ["node", "server"]
