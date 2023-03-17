@@ -64,6 +64,7 @@ const xmlRoutes = require("./routes/xml");
 const packRoutes = require("./routes/pack");
 const rejectedRoutes = require("./routes/rejected");
 const dropRoutes = require("./routes/drop");
+const testLogging = require("./services/logDailyKardex");
 app.use("/", userRoutes);
 app.use("/", loginRoutes);
 app.use("/", productRoutes);
@@ -94,10 +95,52 @@ const serverType = process.env.TYPE ? "local" : "web";
 if (serverType === "web") {
   https.createServer(options, app).listen(443, () => {
     console.log("Server listening on port 443");
+    function setupInterval() {
+      const now = new Date();
+      const millisTill4AM =
+        new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() + 1,
+          4,
+          0,
+          0,
+          0
+        ) - now;
+      if (millisTill4AM < 0) {
+        millisTill4AM += 86400000; // it's after 4am, try 4am tomorrow.
+      }
+      setTimeout(function () {
+        testLogging();
+        setInterval(testLogging, 24 * 60 * 60 * 1000);
+      }, millisTill4AM);
+    }
+    setupInterval();
   });
 } else {
   app.listen(serverConfig.port, () => {
     console.log("Cors options", corsOptions);
     console.log("Server listening on port ", 5200);
+    function setupInterval() {
+      const now = new Date();
+      const millisTill4AM =
+        new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() + 1,
+          4,
+          0,
+          0,
+          0
+        ) - now;
+      if (millisTill4AM < 0) {
+        millisTill4AM += 86400000; // it's after 4am, try 4am tomorrow.
+      }
+      setTimeout(function () {
+        testLogging();
+        setInterval(testLogging, 24 * 60 * 60 * 1000);
+      }, millisTill4AM);
+    }
+    setupInterval();
   });
 }

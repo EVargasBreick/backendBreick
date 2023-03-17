@@ -236,7 +236,7 @@ function getInvoiceProductsPos(params) {
   inner join Venta_Productos vp on vp."idVenta"=vn."idVenta"
   inner join Productos pr on pr."idProducto"=vp."idProducto"
   inner join Sucursales sc on sc."idImpuestos"=fr."idSucursal" 
-  where fr."idAgencia"=${params.idSucursal} and fr.estado=0`;
+  where fr."idAgencia"=${params.idSucursal} and fr."puntoDeVenta"=${params.pdv} and fr.estado=0`;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       try {
