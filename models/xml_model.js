@@ -165,6 +165,10 @@ function verifyToken() {
 
 function getLastId(body) {
   console.log("Body recibido", body);
+  console.log(
+    "Punto de Venta Id",
+    (body.puntoDeVentaId * 10000 + parseInt(body.caja)).toFixed(0)
+  );
   return new Promise((resolve, reject) => {
     const verifiedToken = verifyTokenPos();
     verifiedToken
@@ -203,7 +207,10 @@ function getLastId(body) {
                 xmlns: "http://comfiar.com.ar/webservice/",
               },
               cuitId: `${body.nit}`,
-              puntoDeVentaId: `${(body.puntoDeVentaId * 10000).toFixed(0)}`,
+              puntoDeVentaId: `${(
+                body.puntoDeVentaId * 10000 +
+                parseInt(body.caja)
+              ).toFixed(0)}`,
               tipoDeComprobanteId: `${body.tipoComprobante}`,
               token: {
                 SesionId: `${sesionId}`,
@@ -311,9 +318,9 @@ function authorizeInvoice(body) {
               },
               XML: `${body.XML}`,
               cuitAProcesar: `${body.nit}`,
-              puntoDeVentaId: `${parseFloat(body.idSucursal * 10000).toFixed(
-                0
-              )}`,
+              puntoDeVentaId: `${parseFloat(
+                body.idSucursal * 10000 + parseInt(body.caja)
+              ).toFixed(0)}`,
               tipoDeComprobanteId: `${body.tipoComprobante}`,
               formatoId: body.formatoId,
               token: {
@@ -523,7 +530,10 @@ function cancelInvoice(body) {
               usuarioId: `${process.env.COMFIAR_USER}`,
               transaccionId: body.transaccionId,
               cuitId: `${body.nit}`,
-              puntoDeVentaId: (body.puntoDeVentaId * 10000).toFixed(0),
+              puntoDeVentaId: (
+                body.puntoDeVentaId * 10000 +
+                parseInt(body.caja)
+              ).toFixed(0),
               tipoComprobanteId: body.tipoComprobante,
               numeroComprobante: body.numeroComprobante,
               motivoAnulacion: body.motivoAnulacion,
