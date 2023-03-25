@@ -473,7 +473,7 @@ function printTransferPos(params) {
 }
 
 function toRePrintDetailsPos(params) {
-  const query = `select tr."idTraspaso", tr."fechaCrea", us.usuario, pr."codInterno", pr."nombreProducto" ,tp."cantidadProducto" from Traspasos tr 
+  const query = `select tr."idTraspaso", tr."fechaCrea", us.usuario, pr."codInterno", pr."nombreProducto" ,tp."cantidadProducto", '' as "notas" from Traspasos tr 
   inner join Traspaso_Producto tp on tr."idTraspaso"=tp."idTraspaso"
   inner join Productos pr on pr."idProducto"=tp."idProducto" 
   inner join Usuarios us on us."idUsuario"=tr."idUsuario"
@@ -492,7 +492,7 @@ function toRePrintDetailsPos(params) {
 
 function changeReadyPos(params) {
   const isInterior = params.interior == 1 ? `, estado=1` : "";
-  const query = `update Traspasos set listo=${params.listo}${isInterior} where "idTraspaso"=${params.id}`;
+  const query = `update Traspasos set listo=${params.listo}, estado=1 where "idTraspaso"=${params.id}`;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       try {
@@ -589,6 +589,7 @@ function getTransitTransfersPos(params) {
   inner join Usuarios us on us."idUsuario"=tr."idUsuario"
   where tr.transito=0 and  ((tr.listo=1) or (tr.estado=1)) and tr."idDestino"='${params.storeId}'`;
   return new Promise((resolve, reject) => {
+    console.log("Query de transito ", query);
     setTimeout(async () => {
       try {
         const list = await client.query(query);

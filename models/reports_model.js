@@ -215,10 +215,11 @@ BETWEEN TO_DATE('${params.idate}','DD/MM/YYYY') and TO_DATE('${params.fdate}','D
 }
 
 function ClosingReportPos(params) {
+  console.log("Es ruta", params.ruta);
   const generalQuery = params.ruta
     ? `select  fc."idSucursal", fc."puntoDeVenta", fc."idOtroPago", fc."tipoPago", sum(fc.pagado) as "totalPagado", sum(fc.cambio) as "totalCambio", sum(fc.vale) as "totalVale"
  from Facturas fc inner join Sucursales sc on fc."idSucursal"=sc."idImpuestos"
- where fc."idSucursal"=${params.idSucursal} and fc."puntoDeVenta"=${params.idPdv} and TO_DATE(SUBSTRING(fc."fechaHora",1,10),'DD/MM/YYYY')=CAST(CURRENT_DATE AS Date ) and sc."idAgencia"=${params.idAgencia}
+ where fc."idSucursal"=${params.idSucursal} and fc."puntoDeVenta"=${params.idPdv} and TO_DATE(SUBSTRING(fc."fechaHora",1,10),'DD/MM/YYYY')=CAST(CURRENT_DATE AS Date ) and fc."idAgencia"=${params.idAgencia}
  group by fc."idSucursal", "puntoDeVenta", fc."idOtroPago", fc."tipoPago" `
     : `select  fc."idSucursal", fc."puntoDeVenta", fc."idOtroPago", fc."tipoPago", sum(fc.pagado) as "totalPagado", sum(fc.cambio) as "totalCambio", sum(fc.vale) as "totalVale"
  from Facturas fc inner join Sucursales sc on fc."idSucursal"=sc."idImpuestos"
@@ -226,6 +227,7 @@ function ClosingReportPos(params) {
  group by fc."idSucursal", "puntoDeVenta", fc."idOtroPago", fc."tipoPago" `;
   console.log("Query fechas:", generalQuery);
   return new Promise((resolve, reject) => {
+    console.log("Eod query", generalQuery);
     setTimeout(async () => {
       try {
         const data = await client.query(generalQuery);

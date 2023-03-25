@@ -183,7 +183,7 @@ function getProdOrigin() {
 function getProductsPos(params) {
   var query;
   if (params.id === "all") {
-    query = `select * from Productos`;
+    query = `select * from Productos order by "nombreProducto" asc`;
   } else {
     query = `select * from Productos where "idProducto"=${params.id}`;
   }
@@ -212,6 +212,7 @@ function getProductsWithStockPos(params) {
   }
 
   return new Promise((resolve, reject) => {
+    console.log("Query", query);
     setTimeout(async () => {
       const products = await client.query(query);
       resolve(JSON.stringify(products.rows));

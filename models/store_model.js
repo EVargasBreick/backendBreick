@@ -389,6 +389,7 @@ async function getStockFromDBPos(idProducto, idAlmacen, cantProducto) {
         select "cant_Actual"-${cantProducto} as resto, "cant_Actual" as disponible from Stock_Agencia where "idAgencia"='${idAlmacen}' and "idProducto"=${idProducto} union
         select "cant_Actual"-${cantProducto} as resto, "cant_Actual" as disponible from Stock_Agencia_Movil where "idVehiculo"='${idAlmacen}' and "idProducto"=${idProducto}`;
       const verified = await client.query(verifyQuery);
+      console.log("Flag query", verifyQuery);
       resolve({
         resto: verified.rows[0].resto,
         disponible: verified.rows[0].disponible,
@@ -467,6 +468,21 @@ where sc."idString"='${params.idAlmacen}'
   });
 }
 
+function getMobileSalePointsPos(params) {
+  const pointQuery = `select "idAgencia", "idSucursal","nroPuntoDeVenta" from pdvAgMovil pa 
+  inner join puntosdeventa pdv on pdv."idPuntoDeVenta"=pa.pdv where "idAgencia"='${params.idAgencia}';`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      const pointList = await client.query(pointQuery);
+      try {
+        resolve(pointList.rows);
+      } catch (err) {
+        reject(err);
+      }
+    }, 100);
+  });
+}
+
 module.exports = {
   getStores,
   getUserStock,
@@ -485,4 +501,5 @@ module.exports = {
   updateFullStockPos,
   getSalePointsPos,
   getSalePointsAndStorePos,
+  getMobileSalePointsPos,
 };

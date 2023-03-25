@@ -19,6 +19,7 @@ const {
   updateProductStockPos,
   getSalePointsPos,
   getSalePointsAndStorePos,
+  getMobileSalePointsPos,
 } = require("../models/store_model.js");
 app.use(session(sessionParams));
 
@@ -69,6 +70,16 @@ module.exports = {
   },
   getSalePoints: (req, res) => {
     const updated = getSalePointsPos(req.query);
+    updated
+      .then((upd) => {
+        res.status(200).send(upd);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
+  getMobileSalePoints: (req, res) => {
+    const updated = getMobileSalePointsPos(req.query);
     updated
       .then((upd) => {
         res.status(200).send(upd);

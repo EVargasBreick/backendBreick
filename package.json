@@ -20,6 +20,7 @@
     "encrypt-string": "^1.0.0",
     "express": "^4.18.1",
     "express-session": "^1.17.3",
+    "googleapis": "^113.0.0",
     "nodemailer": "^6.8.0",
     "pg": "^8.9.0",
     "rest-mssql-nodejs": "^1.0.10",

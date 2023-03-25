@@ -1037,6 +1037,7 @@ function getOrdersToInvoicePos(params) {
     }
     setTimeout(async () => {
       try {
+        console.log("Query siendo usado", query);
         const orderList = await client.query(query);
         resolve(
           JSON.stringify({
@@ -1135,21 +1136,21 @@ function numberOfInvoicedPos() {
 
 function getNotPrintedPos() {
   const query = `select pd."idPedido" as "idOrden", concat(upper(pd.tipo),'0',cast(pd."idPedido" as varchar)) as "nroOrden", us."usuario", pd."fechaCrea", 
-  pr."codInterno", pr."nombreProducto", pp."cantidadProducto", 'P' as tipo
+  pr."codInterno", pr."nombreProducto", pp."cantidadProducto", 'P' as tipo, pd.notas as "notas"
   from Pedidos pd
   inner join Usuarios us on pd."idUsuarioCrea"=us."idUsuario" 
   inner join Pedido_Producto pp on pp."idPedido"=pd."idPedido"
   inner join Productos pr on pr."idProducto"=pp."idProducto"
   where pd.impreso=0 and pd.listo=0 and pd.estado='0'
   union
-  select tp."idTraspaso" as "idOrden", tp."nroOrden", us.usuario, tp."fechaCrea", pr."codInterno", pr."nombreProducto", tpr."cantidadProducto", 'T' as tipo
+  select tp."idTraspaso" as "idOrden", tp."nroOrden", us.usuario, tp."fechaCrea", pr."codInterno", pr."nombreProducto", tpr."cantidadProducto", 'T' as tipo, '' as "notas"
   from Traspasos tp 
   inner join Usuarios us on us."idUsuario"=tp."idUsuario"
   inner join Traspaso_producto tpr on tpr."idTraspaso"=tp."idTraspaso"
   inner join Productos pr on tpr."idProducto"=pr."idProducto"
   where tp.movil=1 and tp.listo=0 and tp.impreso=0
   union 
-  select tp."idTraspaso" as "idOrden", tp."nroOrden", us.usuario, tp."fechaCrea", pr."codInterno", pr."nombreProducto", tpr."cantidadProducto", 'T' as tipo
+  select tp."idTraspaso" as "idOrden", tp."nroOrden", us.usuario, tp."fechaCrea", pr."codInterno", pr."nombreProducto", tpr."cantidadProducto", 'T' as tipo, '' as "notas"
   from Traspasos tp 
   inner join Usuarios us on us."idUsuario"=tp."idUsuario"
   inner join Traspaso_producto tpr on tpr."idTraspaso"=tp."idTraspaso"
@@ -1203,7 +1204,7 @@ function orderToReadyPos(params) {
 }
 
 function toRePrintDetailsPos(params) {
-  const query = `select pd."idPedido", pd."fechaCrea",concat(upper(pd.tipo),'0',cast(pd."idPedido" as varchar)) as "nroOrden", us.usuario, pr."codInterno", pr."nombreProducto" ,tp."cantidadProducto" from Pedidos pd
+  const query = `select pd."idPedido", pd."fechaCrea",concat(upper(pd.tipo),'0',cast(pd."idPedido" as varchar)) as "nroOrden", us.usuario, pr."codInterno", pr."nombreProducto" ,tp."cantidadProducto", pd."notas" from Pedidos pd
   inner join Pedido_Producto tp on pd."idPedido"=tp."idPedido"
   inner join Productos pr on pr."idProducto"=tp."idProducto" 
   inner join Usuarios us on us."idUsuario"=pd."idUsuarioCrea"
@@ -1222,7 +1223,7 @@ function toRePrintDetailsPos(params) {
 
 function changeReadyPos(params) {
   const isInterior = params.interior == 1 ? `, estado='1'` : "";
-  const query = `update Pedidos set listo=${params.listo}${isInterior} where "idPedido"=${params.id}`;
+  const query = `update Pedidos set listo=${params.listo}, estado='1' where "idPedido"=${params.id}`;
   return new Promise((resolve, reject) => {
     console.log("Query", query);
     setTimeout(async () => {
