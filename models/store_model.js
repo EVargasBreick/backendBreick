@@ -469,8 +469,14 @@ where sc."idString"='${params.idAlmacen}'
 }
 
 function getMobileSalePointsPos(params) {
-  const pointQuery = `select "idAgencia", "idSucursal","nroPuntoDeVenta" from pdvAgMovil pa 
-  inner join puntosdeventa pdv on pdv."idPuntoDeVenta"=pa.pdv where "idAgencia"='${params.idAgencia}';`;
+  var pointQuery;
+  if (params.idAgencia != "") {
+    pointQuery = `select "idAgencia", "idSucursal","nroPuntoDeVenta" from pdvAgMovil pa 
+    inner join puntosdeventa pdv on pdv."idPuntoDeVenta"=pa.pdv where "idAgencia"='${params.idAgencia}';`;
+  } else {
+    pointQuery = `select "idAgencia", "idSucursal","nroPuntoDeVenta" from pdvAgMovil pa 
+    inner join puntosdeventa pdv on pdv."idPuntoDeVenta"=pa.pdv;`;
+  }
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       const pointList = await client.query(pointQuery);

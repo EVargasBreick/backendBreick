@@ -238,6 +238,7 @@ function getInvoiceProductsPos(params) {
   inner join Sucursales sc on sc."idImpuestos"=fr."idSucursal" 
   where fr."idAgencia"=${params.idSucursal} and fr."puntoDeVenta"=${params.pdv} and fr.estado=0`;
   return new Promise((resolve, reject) => {
+    console.log("Query facturitas ", productsQuery);
     setTimeout(async () => {
       try {
         const invoices = await client.query(productsQuery);

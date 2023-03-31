@@ -492,7 +492,7 @@ function toRePrintDetailsPos(params) {
 
 function changeReadyPos(params) {
   const isInterior = params.interior == 1 ? `, estado=1` : "";
-  const query = `update Traspasos set listo=${params.listo}, estado=1 where "idTraspaso"=${params.id}`;
+  const query = `update Traspasos set listo=${params.listo} ${isInterior} where "idTraspaso"=${params.id}`;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       try {

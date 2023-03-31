@@ -1171,6 +1171,7 @@ function getNotPrintedPos() {
 
 function orderPrintedPos(params) {
   const query = `update Pedidos set impreso=1 where "idPedido"=${params.id}`;
+  console.log("Query impresion", query);
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       try {
@@ -1223,9 +1224,9 @@ function toRePrintDetailsPos(params) {
 
 function changeReadyPos(params) {
   const isInterior = params.interior == 1 ? `, estado='1'` : "";
-  const query = `update Pedidos set listo=${params.listo}, estado='1' where "idPedido"=${params.id}`;
+  const query = `update Pedidos set listo=${params.listo} ${isInterior} where "idPedido"=${params.id}`;
   return new Promise((resolve, reject) => {
-    console.log("Query", query);
+    console.log("Query updateo", query);
     setTimeout(async () => {
       try {
         const changed = await client.query(query);

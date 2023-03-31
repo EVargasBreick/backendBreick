@@ -131,6 +131,8 @@ function GeneralSalesReportPos(params) {
   const fromDate = `${fromDateParts[2]}-${fromDateParts[1]}-${fromDateParts[0]}`;
   const toDateParts = params.fdate.split("/");
   const toDate = `${toDateParts[2]}-${toDateParts[1]}-${toDateParts[0]}`;
+  const isSudo =
+    params.idAgencia != "" ? `and fc."idAgencia"='${params.idAgencia}'` : "";
   const generalQuery = `select SUBSTRING(fc."fechaHora", 0,11) as "fecha",
         SUBSTRING(fc."fechaHora", 12,5) as "hora",
         fc."nroFactura", 
@@ -144,6 +146,7 @@ function GeneralSalesReportPos(params) {
         fc."importeBase", 
         fc."debitoFiscal",
         fc.desembolsada,
+        fc.vale,
         us.nombre||' '||us."apPaterno"||' '||us."apMaterno" as "nombreCompleto",
         (select nombre from Agencias where "idAgencia"=us."idAlmacen" union 
         select nombre from Bodegas where "idBodega"=us."idAlmacen" union 
@@ -152,6 +155,7 @@ function GeneralSalesReportPos(params) {
     inner join Usuarios us on vn."idUsuarioCrea"=us."idUsuario"
     where TO_DATE(SUBSTRING(fc."fechaHora",1,10),'DD/MM/YYYY')
     BETWEEN TO_DATE('${params.idate}','DD/MM/YYYY') and TO_DATE('${params.fdate}','DD/MM/YYYY')
+    ${isSudo}
     order by ${params.sort}
     `;
   console.log("Query fechas:", generalQuery);
@@ -172,7 +176,8 @@ function ProductsSalesReportPos(params) {
   const fromDate = `${fromDateParts[2]}-${fromDateParts[1]}-${fromDateParts[0]}`;
   const toDateParts = params.fdate.split("/");
   const toDate = `${toDateParts[2]}-${toDateParts[1]}-${toDateParts[0]}`;
-
+  const isSudo =
+    params.idAgencia != "" ? `and fc."idAgencia"='${params.idAgencia}'` : "";
   const generalQuery = `select fc."nroFactura", 
     SUBSTRING(fc."fechaHora", 0,11) as "fecha",
     SUBSTRING(fc."fechaHora", 12,5) as "hora",
@@ -187,6 +192,7 @@ function ProductsSalesReportPos(params) {
     pr."precioDeFabrica",
     vp."totalProd",
     vp."descuentoProducto",
+    fc.vale,
     us.nombre||' '||us."apPaterno"||' '||us."apMaterno" as "nombreCompleto",
     (select nombre from Agencias where "idAgencia"=us."idAlmacen" union 
     select nombre from Bodegas where "idBodega"=us."idAlmacen" union 
@@ -199,6 +205,7 @@ inner join Zonas zn on zn."idZona"=cl."idZona"
 inner join Usuarios us on vn."idUsuarioCrea"=us."idUsuario"
 where TO_DATE(SUBSTRING(fc."fechaHora",1,10),'DD/MM/YYYY')
 BETWEEN TO_DATE('${params.idate}','DD/MM/YYYY') and TO_DATE('${params.fdate}','DD/MM/YYYY')
+${isSudo}
       order by ${params.sort}
       `;
   console.log("Query fechas:", generalQuery);
