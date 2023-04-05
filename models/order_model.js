@@ -675,13 +675,13 @@ function registerOrderPos(data) {
             } catch (error) {
               try {
                 const del = client.query(
-                  `delete from Pedidos where idPedido=${idCreado}`
+                  `delete from Pedidos where "idPedido"=${idCreado}`
                 );
                 del.then(() => {
                   resolve(
                     JSON.stringify({
                       code: 400,
-                      data: "Error",
+                      data: "Error al aumentar los productos",
                       message: "Products: " + error,
                     })
                   );
@@ -694,7 +694,7 @@ function registerOrderPos(data) {
         resolve(
           JSON.stringify({
             code: 400,
-            data: "Error",
+            data: "Error al aumentar los pedidos",
             message: "Pedido: " + err,
           })
         );
@@ -998,8 +998,10 @@ function updateOrderPos(body) {
           " " +
           [d.getHours(), d.getMinutes(), d.getSeconds()].join(":");
       var queryUpdate = `Update Pedidos set "montoFacturar"=${body.montoFacturar}, "montoTotal"=${body.montoTotal}, "fechaActualizacion"='${dformat}', descuento=${body.descuento}, "descuentoCalculado"=${body.descCalculado}, listo=${body.listo}, impreso=${body.impreso} where "idPedido"=${body.idPedido}`;
+      console.log("Actualizando pedido", queryUpdate);
       try {
         const updatedOrder = await client.query(queryUpdate);
+
         resolve(
           JSON.stringify({
             code: 200,

@@ -7,6 +7,7 @@ router.post("/factura", controller.createNewInvoice);
 router.delete("/factura", controller.deleteInvoice);
 router.get("/facturas/lista", controller.getInvoices);
 router.put("/facturas/anular", controller.cancelInvoice);
+router.put("/facturas", controller.updateInvoice);
 router.get("/pagos/otros", controller.otherPayments);
 
 module.exports = router;

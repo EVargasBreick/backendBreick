@@ -12,6 +12,7 @@ const {
   getInvoiceProductsPos,
   cancelInvoicePos,
   getOtherPaymentsPos,
+  updateInvoicePos,
 } = require("../models/invoice_model");
 const app = express();
 app.use(session(sessionParams));
@@ -51,6 +52,16 @@ module.exports = {
   },
   cancelInvoice: (req, res) => {
     const invoices = cancelInvoicePos(req.query);
+    invoices
+      .then((inv) => {
+        res.status(200).send(inv);
+      })
+      .catch((err) => {
+        res.status(500).send(err);
+      });
+  },
+  updateInvoice: (req, res) => {
+    const invoices = updateInvoicePos(req.body);
     invoices
       .then((inv) => {
         res.status(200).send(inv);

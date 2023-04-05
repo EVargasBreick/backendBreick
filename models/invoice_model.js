@@ -228,6 +228,23 @@ function deleteInvoicePos(id) {
   });
 }
 
+function updateInvoicePos(body) {
+  const deleteQuery = `update Facturas set 
+  "nroFactura"=${body.nroFactura}, cuf='${body.cuf}', cufd='${body.cufd}', 
+  autorizacion='${body.autorizacion}', "nroTransaccion"=${body.nroTransaccion}, "fechaEmision"='${body.fe}' where "idFactura"=${body.idFactura}`;
+  return new Promise((resolve, reject) => {
+    console.log("Actualizar", deleteQuery);
+    setTimeout(async () => {
+      try {
+        const deleted = await client.query(deleteQuery);
+        resolve(deleted);
+      } catch (err) {
+        reject(err);
+      }
+    }, 100);
+  });
+}
+
 function getInvoiceProductsPos(params) {
   const productsQuery = `select fr.*, pr."idProducto", pr."nombreProducto", sc."idString" as "idAlmacen", sc."idImpuestos",
   vp."cantidadProducto" as "cantProducto", vn."montoFacturar"
@@ -236,7 +253,7 @@ function getInvoiceProductsPos(params) {
   inner join Venta_Productos vp on vp."idVenta"=vn."idVenta"
   inner join Productos pr on pr."idProducto"=vp."idProducto"
   inner join Sucursales sc on sc."idImpuestos"=fr."idSucursal" 
-  where fr."idAgencia"=${params.idSucursal} and fr."puntoDeVenta"=${params.pdv} and fr.estado=0`;
+  where fr."idAgencia"=${params.idSucursal} and fr."puntoDeVenta"=${params.pdv} and fr.estado!=1`;
   return new Promise((resolve, reject) => {
     console.log("Query facturitas ", productsQuery);
     setTimeout(async () => {
@@ -291,4 +308,5 @@ module.exports = {
   getInvoiceProductsPos,
   cancelInvoicePos,
   getOtherPaymentsPos,
+  updateInvoicePos,
 };

@@ -150,6 +150,7 @@ function registerSalePos(data) {
               resolve(
                 JSON.stringify({
                   code: 201,
+                  idCreado: idCreado,
                   data: {
                     idCreado: idCreado,
                   },
@@ -184,4 +185,23 @@ function registerSalePos(data) {
   });
 }
 
-module.exports = { registerSale, registerSalePos };
+function deleteSale(params) {
+  const query = `delete from Ventas where "idVenta"=${params.id}`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      try {
+        const leng = await client.query(query);
+        const queryProds = `delete from Venta_Productos where "idVenta"=${params.id}`;
+        const deled = await client.query(queryProds);
+        resolve({
+          leng: leng.rows,
+          deled: deled.rows,
+        });
+      } catch (err) {
+        reject(err);
+      }
+    }, 100);
+  });
+}
+
+module.exports = { registerSale, registerSalePos, deleteSale };

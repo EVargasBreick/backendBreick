@@ -1,7 +1,11 @@
 const express = require("express");
 const sessionParams = require("../server");
 const session = require("express-session");
-const { registerSale, registerSalePos } = require("../models/sale_modal.js");
+const {
+  registerSale,
+  registerSalePos,
+  deleteSale,
+} = require("../models/sale_modal.js");
 
 const app = express();
 app.use(session(sessionParams));
@@ -12,7 +16,17 @@ module.exports = {
     promise.then((data) => {
       var resp = JSON.parse(data);
       console.log(data);
-      res.status(resp.code).send(resp);
+      res.status(200).send(resp);
     });
+  },
+  deleteSale: (req, res) => {
+    const deleted = deleteSale(req.query);
+    deleted
+      .then((resp) => {
+        res.status(200).send(resp);
+      })
+      .catch((err) => {
+        res.status(200).send(err);
+      });
   },
 };
