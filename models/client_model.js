@@ -190,7 +190,7 @@ function registerClientPos(data) {
   return new Promise((resolve, reject) => {
     const responseObject = {};
     setTimeout(async () => {
-      console.log("Client:", queryNewClient);
+      console.log("Client query:", queryNewClient);
       try {
         const newClient = await client.query(queryNewClient);
         responseObject.createdId = newClient.rows[0].idCliente;

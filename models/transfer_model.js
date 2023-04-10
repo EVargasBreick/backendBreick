@@ -528,7 +528,7 @@ function addProductToTransferPos(body) {
 }
 
 function deleteProductFromTransferPos(params) {
-  console.log("Parameters", params);
+  console.log("Parameters", params.body);
   const body = JSON.parse(params.body);
   console.log("Llego hasta aca, model", body);
   return new Promise((resolve, reject) => {

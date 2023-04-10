@@ -46,6 +46,7 @@ const {
   orderToReadyPos,
   toRePrintDetailsPos,
   changeReadyPos,
+  getAlltOrderListPos,
 } = require("../models/order_model");
 
 const app = express();
@@ -68,6 +69,13 @@ module.exports = {
   },
   getOrderList: (req, res) => {
     const orderList = getOrderListPos(req.query);
+    orderList.then((list) => {
+      var resp = JSON.parse(list);
+      res.status(resp.code).send(resp);
+    });
+  },
+  getAllOrderList: (req, res) => {
+    const orderList = getAlltOrderListPos(req.query);
     orderList.then((list) => {
       var resp = JSON.parse(list);
       res.status(resp.code).send(resp);

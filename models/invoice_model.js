@@ -297,6 +297,25 @@ function getOtherPaymentsPos() {
   });
 }
 
+function logIncompleteInvoice(body) {
+  console.log("Body", body);
+  const logQuery = `insert into Facturas_incompletas ("nroFactura","idSucursal", 
+  "puntoDeVenta","nroTransaccion","idAgencia","correoCliente",emitida,"idFactura")
+   values ('${body.nroFactura}',${body.idSucursal},${body.puntoDeVenta},${body.nroTransaccion},
+   '${body.idAlmacen}','${body.correoCliente}',0,${body.idFactura})`;
+  console.log("Log query", logQuery);
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      try {
+        const newLog = await client.query(logQuery);
+        resolve(newLog.rows);
+      } catch (err) {
+        reject(err);
+      }
+    }, 100);
+  });
+}
+
 module.exports = {
   createInvoice,
   deleteInvoice,
@@ -309,4 +328,5 @@ module.exports = {
   cancelInvoicePos,
   getOtherPaymentsPos,
   updateInvoicePos,
+  logIncompleteInvoice,
 };
