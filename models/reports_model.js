@@ -227,7 +227,7 @@ function ClosingReportPos(params) {
     ? `select  fc."idSucursal", fc."puntoDeVenta", fc."idOtroPago", fc."tipoPago", sum(fc.pagado) as "totalPagado", sum(fc.cambio) as "totalCambio", sum(fc.vale) as "totalVale"
  from Facturas fc inner join Sucursales sc on fc."idSucursal"=sc."idImpuestos"
  where fc."idSucursal"=${params.idSucursal} and fc."puntoDeVenta"=${params.idPdv} and TO_DATE(SUBSTRING(fc."fechaHora",1,10),'DD/MM/YYYY')=CAST(CURRENT_DATE AS Date ) 
- and fc."idAgencia"=${params.idAgencia} and fc.estado=0
+ and fc."idAgencia"=${params.idAgencia} and fc.estado!=1
  group by fc."idSucursal", "puntoDeVenta", fc."idOtroPago", fc."tipoPago" `
     : `select  fc."idSucursal", fc."puntoDeVenta", fc."idOtroPago", fc."tipoPago", sum(fc.pagado) as "totalPagado", sum(fc.cambio) as "totalCambio", sum(fc.vale) as "totalVale"
  from Facturas fc inner join Sucursales sc on fc."idSucursal"=sc."idImpuestos"

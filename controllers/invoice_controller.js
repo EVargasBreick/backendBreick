@@ -14,6 +14,7 @@ const {
   getOtherPaymentsPos,
   updateInvoicePos,
   logIncompleteInvoice,
+  getIncompleteInvoices,
 } = require("../models/invoice_model");
 const app = express();
 app.use(session(sessionParams));
@@ -83,6 +84,16 @@ module.exports = {
   },
   logIncomplete: (req, res) => {
     const invoices = logIncompleteInvoice(req.body);
+    invoices
+      .then((inv) => {
+        res.status(200).send(inv);
+      })
+      .catch((err) => {
+        res.status(500).send(err);
+      });
+  },
+  getIncomplete: (req, res) => {
+    const invoices = getIncompleteInvoices();
     invoices
       .then((inv) => {
         res.status(200).send(inv);

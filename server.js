@@ -65,6 +65,7 @@ const packRoutes = require("./routes/pack");
 const rejectedRoutes = require("./routes/rejected");
 const dropRoutes = require("./routes/drop");
 const testLogging = require("./services/logDailyKardex");
+const getInvoicesIncomplete = require("./services/getIncompleteInvoices");
 app.use("/", userRoutes);
 app.use("/", loginRoutes);
 app.use("/", productRoutes);
@@ -121,6 +122,7 @@ if (serverType === "web") {
   app.listen(serverConfig.port, () => {
     console.log("Cors options", corsOptions);
     console.log("Server listening on port ", 5200);
+
     function setupInterval() {
       const now = new Date();
       const millisTill4AM =
@@ -137,6 +139,7 @@ if (serverType === "web") {
         millisTill4AM += 86400000; // it's after 4am, try 4am tomorrow.
       }
       setTimeout(function () {
+        getInvoicesIncomplete();
         testLogging();
         setInterval(testLogging, 24 * 60 * 60 * 1000);
       }, millisTill4AM);

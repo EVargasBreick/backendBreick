@@ -10,5 +10,6 @@ router.put("/facturas/anular", controller.cancelInvoice);
 router.put("/facturas", controller.updateInvoice);
 router.get("/pagos/otros", controller.otherPayments);
 router.post("/facturas/log", controller.logIncomplete);
+router.get("/facturas/incompletas", controller.getIncomplete);
 
 module.exports = router;

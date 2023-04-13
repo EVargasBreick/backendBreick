@@ -316,6 +316,70 @@ function logIncompleteInvoice(body) {
   });
 }
 
+function getIncompleteInvoices() {
+  const query = `select fi."idFacturaIncompleta",fc."idFactura",sc."idImpuestos", bd.nombre, bd.telefono, fc."nitCliente", us."usuario", 
+  "fechaHora", fc."nroFactura",fc."razonSocial", "nombreProducto", "cantidadProducto", "totalProd", 
+  "descuentoProducto", vn."montoTotal", vn."montoFacturar", 
+  vn."descuentoCalculado", pagado, cambio, "tipoPago", bd.direccion, zn."ciudad", 
+  fi."nroTransaccion", ca.correo as "correoAgencia", fi."correoCliente", fc."puntoDeVenta"
+  from Facturas_Incompletas fi
+  inner join Facturas fc on fi."idFactura"=fc."idFactura"
+  inner join Sucursales sc on sc."idImpuestos"=fc."idSucursal"
+  inner join Ventas vn on vn."idFactura"=fc."idFactura"
+  inner join Venta_Productos vp on vp."idVenta"=vn."idVenta"
+  inner join Productos pr on pr."idProducto"=vp."idProducto"
+  inner join Bodegas bd on bd."idBodega"=sc."idString"
+  inner join Clientes cl on cl."idCliente"=vn."idCliente"
+  inner join Usuarios us on us."idUsuario"=vn."idUsuarioCrea"
+  inner join Zonas zn on zn."idZona"=bd."idZona"
+  inner join correos_agencia ca on ca."idImpuestos"=sc."idImpuestos"
+  where fi.emitida=0
+  union
+  select fi."idFacturaIncompleta",fc."idFactura" ,sc."idImpuestos", ag.nombre, ag.telefono, fc."nitCliente", us."usuario", 
+  "fechaHora", fc."nroFactura",fc."razonSocial", "nombreProducto", "cantidadProducto", "totalProd", 
+  "descuentoProducto", vn."montoTotal", vn."montoFacturar", 
+  vn."descuentoCalculado", pagado, cambio, "tipoPago", ag.direccion, zn."ciudad", fi."nroTransaccion",
+  ca.correo as "correoAgencia", fi."correoCliente", fc."puntoDeVenta"
+  from Facturas_Incompletas fi
+  inner join Facturas fc on fi."idFactura"=fc."idFactura"
+  inner join Sucursales sc on sc."idImpuestos"=fc."idSucursal"
+  inner join Ventas vn on vn."idFactura"=fc."idFactura"
+  inner join Venta_Productos vp on vp."idVenta"=vn."idVenta"
+  inner join Productos pr on pr."idProducto"=vp."idProducto"
+  inner join Agencias ag on ag."idAgencia"=sc."idString"
+  inner join Clientes cl on cl."idCliente"=vn."idCliente"
+  inner join Usuarios us on us."idUsuario"=vn."idUsuarioCrea"
+  inner join Zonas zn on zn."idZona"=ag."idZona"
+  inner join correos_agencia ca on ca."idImpuestos"=sc."idImpuestos"
+  where fi.emitida=0
+  order by cast ("idFacturaIncompleta" as int)desc
+`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      try {
+        const newLog = await client.query(query);
+        resolve(newLog.rows);
+      } catch (err) {
+        reject(err);
+      }
+    }, 100);
+  });
+}
+
+function updateIncompleteInvoices(id) {
+  const updateInvoice = `update Facturas_Incompletas set emitida=1 where "idFacturaIncompleta"=${id}`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      try {
+        const newLog = await client.query(updateInvoice);
+        resolve(newLog.rows);
+      } catch (err) {
+        reject(err);
+      }
+    }, 100);
+  });
+}
+
 module.exports = {
   createInvoice,
   deleteInvoice,
@@ -329,4 +393,6 @@ module.exports = {
   getOtherPaymentsPos,
   updateInvoicePos,
   logIncompleteInvoice,
+  getIncompleteInvoices,
+  updateIncompleteInvoices,
 };

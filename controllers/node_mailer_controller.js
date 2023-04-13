@@ -132,4 +132,101 @@ module.exports = {
     }
     sendMail();
   },
+  sendInvoiceGmail: (mailArray, pdfPath, nombreArchivo) => {
+    console.log("ENTRO AL CLIENTE DE MAIL");
+    const oAuth2Client = new google.auth.OAuth2(
+      process.env.NODEMAILER_CLIENTID,
+      process.env.NODEMAILER_CLIENT_SECRET,
+      process.env.REDIRECT_URI
+    );
+    oAuth2Client.setCredentials({ refresh_token: process.env.REFRESH_TOKEN });
+    async function sendMail() {
+      const accessToken = await oAuth2Client.getAccessToken();
+      var transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          type: "OAuth2",
+          user: process.env.INFOMAIL,
+          clientId: process.env.NODEMAILER_CLIENTID,
+          clientSecret: process.env.NODEMAILER_CLIENT_SECRET,
+          refreshToken: process.env.REFRESH_TOKEN,
+          accessToken: accessToken,
+        },
+      });
+      var mailOptions = {
+        from: `Sistema de Ventas Breick <${process.env.INFOMAIL}`,
+        to: "evargas@breick.com.bo",
+        subject: `Factura emitida`,
+        html: `<!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>My Page</title>
+          <style>
+            header {
+              background-color: #6a4593;
+              color: white;
+              text-align: center;
+              padding: 10px;
+            }
+          
+            footer {
+              background-color: #6a4593;
+              color: white;
+              text-align: center;
+              padding: 10px;
+            }
+            
+          </style>
+        </head>
+        <body>
+          <header>
+          <img src="cid:breicklogo" style="width: 100px;">
+            <h1>Factura emitida</h1>
+          </header>
+          <table cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr>
+            <td align="center" style="background-color: #f1f1f1; padding: 35px;">
+              <p style="font-family: Arial, sans-serif; font-size: 22px; color: #333;">Estimado cliente, le hacemos llegar su factura, muchas gracias por su preferencia</p>
+            </td>
+          </tr>
+        </table>    
+          <footer>
+            <p>2023 Incadex S.R.L.</p>
+          </footer>
+        </body>
+      </html>`,
+        attachments: [
+          {
+            filename: "BreickSimple.png",
+            path: path.join(__dirname, "../assets/BreickSimple.png"),
+            cid: "breicklogo",
+          },
+          {
+            filename: nombreArchivo,
+            path: pdfPath,
+          },
+        ],
+      };
+      return new Promise((resolve, reject) => {
+        transporter.sendMail(mailOptions, function (error, info) {
+          if (error) {
+            reject("Error al enviar el mail");
+          } else {
+            resolve("Correo enviado correctamente");
+          }
+        });
+      });
+    }
+    return new Promise((resolve, reject) => {
+      const sended = sendMail();
+      sended
+        .then((res) => {
+          resolve(res);
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    });
+  },
 };

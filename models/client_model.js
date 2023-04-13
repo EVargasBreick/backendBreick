@@ -243,11 +243,13 @@ function getClientsPos(params) {
     : `select a.*, b.zona, c.dias from Clientes a, Zonas b, Dias_Frecuencia c where a."idZona"=b."idZona" and a.frecuencia=c."idDiasFrec" and a.activo=1`;
   const responseObject = {};
   return new Promise((resolve, reject) => {
+    console.log("Buscando cliente", queryGetClient);
     setTimeout(async () => {
       try {
         const foundClient = await client.query(queryGetClient);
         responseObject.code = 201;
         responseObject.data = foundClient.rows;
+        console.log("Found client", foundClient.rows);
       } catch (err) {
         responseObject.code = 400;
         responseObject.data = "Error";
