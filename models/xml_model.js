@@ -391,6 +391,7 @@ function InvoiceOut(body) {
     const verifiedToken = verifyTokenPos();
     verifiedToken
       .then(async ({ fecha, sesionId }) => {
+        console.log("TOKEN VALIDADO ");
         let dateparts = fecha.split(" ");
         let date2 = `${dateparts[0]}T${dateparts[1]}`;
         const builder = new xml2js.Builder({
@@ -454,7 +455,6 @@ function InvoiceOut(body) {
             }
           });
         } catch (error) {
-          console.log(error);
           reject(error);
         }
       })
@@ -474,7 +474,7 @@ function InvoiceOut(body) {
                 resolve(resp);
               })
               .catch((error) => {
-                console.log("Error al tratar", error);
+                console.log("Error al tratar de nuevo", error);
                 reject(false);
               });
           })

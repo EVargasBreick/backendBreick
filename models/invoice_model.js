@@ -302,13 +302,16 @@ function logIncompleteInvoice(body) {
   const logQuery = `insert into Facturas_incompletas ("nroFactura","idSucursal", 
   "puntoDeVenta","nroTransaccion","idAgencia","correoCliente",emitida,"idFactura")
    values ('${body.nroFactura}',${body.idSucursal},${body.puntoDeVenta},${body.nroTransaccion},
-   '${body.idAlmacen}','${body.correoCliente}',0,${body.idFactura})`;
+   '${body.idAlmacen}','${body.correoCliente}',0,${body.idFactura}) returning "idFacturaIncompleta"`;
   console.log("Log query", logQuery);
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       try {
         const newLog = await client.query(logQuery);
-        resolve(newLog.rows);
+        const idCreado = newLog.rows[0].idFacturaIncompleta;
+        setTimeout(() => {
+          resolve({ response: newLog.rows, idCreado: idCreado });
+        }, 2000);
       } catch (err) {
         reject(err);
       }
@@ -380,6 +383,66 @@ function updateIncompleteInvoices(id) {
   });
 }
 
+function getInvoiceToRePrint(params) {
+  const queryInvoice = `select fc."idFactura",fc.cuf,sc."idImpuestos", bd.nombre, bd.telefono, fc."nitCliente", us."usuario", 
+  "fechaHora", fc."nroFactura",fc."razonSocial", "nombreProducto", "cantidadProducto", "totalProd", 
+  "descuentoProducto", vn."montoTotal", vn."montoFacturar", 
+  vn."descuentoCalculado", pagado, cambio, "tipoPago", bd.direccion, zn."ciudad", 
+  fc."puntoDeVenta", fc.vale
+  from Facturas fc
+  inner join Sucursales sc on sc."idImpuestos"=fc."idSucursal"
+  inner join Ventas vn on vn."idFactura"=fc."idFactura"
+  inner join Venta_Productos vp on vp."idVenta"=vn."idVenta"
+  inner join Productos pr on pr."idProducto"=vp."idProducto"
+  inner join Bodegas bd on bd."idBodega"=sc."idString"
+  inner join Clientes cl on cl."idCliente"=vn."idCliente"
+  inner join Usuarios us on us."idUsuario"=vn."idUsuarioCrea"
+  inner join Zonas zn on zn."idZona"=bd."idZona"
+  where fc."idAgencia"='${params.idAgencia}' and "puntoDeVenta"=${params.pdv} and fc."nroFactura"='${params.nroFactura}' 
+  union
+  select fc."idFactura",fc.cuf,sc."idImpuestos", ag.nombre, ag.telefono, fc."nitCliente", us."usuario", 
+  "fechaHora", fc."nroFactura",fc."razonSocial", "nombreProducto", "cantidadProducto", "totalProd", 
+  "descuentoProducto", vn."montoTotal", vn."montoFacturar", 
+  vn."descuentoCalculado", pagado, cambio, "tipoPago", ag.direccion, zn."ciudad", 
+  fc."puntoDeVenta", fc.vale
+  from Facturas fc
+  inner join Sucursales sc on sc."idImpuestos"=fc."idSucursal"
+  inner join Ventas vn on vn."idFactura"=fc."idFactura"
+  inner join Venta_Productos vp on vp."idVenta"=vn."idVenta"
+  inner join Productos pr on pr."idProducto"=vp."idProducto"
+  inner join Agencias ag on ag."idAgencia"=sc."idString"
+  inner join Clientes cl on cl."idCliente"=vn."idCliente"
+  inner join Usuarios us on us."idUsuario"=vn."idUsuarioCrea"
+  inner join Zonas zn on zn."idZona"=ag."idZona"
+  where fc."idAgencia"='${params.idAgencia}' and "puntoDeVenta"=${params.pdv} and fc."nroFactura"='${params.nroFactura}'`;
+  return new Promise((resolve, reject) => {
+    console.log("Query reimpresion", queryInvoice);
+    setTimeout(async () => {
+      try {
+        const newLog = await client.query(queryInvoice);
+        resolve(newLog.rows);
+      } catch (err) {
+        reject(err);
+      }
+    }, 100);
+  });
+}
+
+function getIncompleteInvoicesList() {
+  const updateInvoice = `select * from Facturas where "cuf"='' and "nroTransaccion">0 order by cast ("idFactura" as int)`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      try {
+        const newLog = await client.query(updateInvoice);
+        console.log("Data", newLog.rows);
+        resolve(newLog.rows);
+      } catch (err) {
+        reject(err);
+      }
+    }, 100);
+  });
+}
+
 module.exports = {
   createInvoice,
   deleteInvoice,
@@ -395,4 +458,6 @@ module.exports = {
   logIncompleteInvoice,
   getIncompleteInvoices,
   updateIncompleteInvoices,
+  getInvoiceToRePrint,
+  getIncompleteInvoicesList,
 };

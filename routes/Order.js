@@ -26,4 +26,5 @@ router.put("/pedidos/imprimir", controller.orderPrinted);
 router.get("/pedidos/alistar", controller.orderToReady);
 router.get("/pedidos/reimprimir", controller.toRePrint);
 router.put("/pedidos/alistar", controller.changeReady);
+router.put("/pedidos/rechazar", controller.rejectReady);
 module.exports = router;

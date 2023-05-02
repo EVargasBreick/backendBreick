@@ -11,5 +11,6 @@ router.put("/facturas", controller.updateInvoice);
 router.get("/pagos/otros", controller.otherPayments);
 router.post("/facturas/log", controller.logIncomplete);
 router.get("/facturas/incompletas", controller.getIncomplete);
+router.get("/facturas/reimprimir", controller.rePrintInvoice);
 
 module.exports = router;

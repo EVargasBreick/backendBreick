@@ -155,7 +155,7 @@ module.exports = {
       });
       var mailOptions = {
         from: `Sistema de Ventas Breick <${process.env.INFOMAIL}`,
-        to: "evargas@breick.com.bo",
+        to: mailArray,
         subject: `Factura emitida`,
         html: `<!DOCTYPE html>
       <html>

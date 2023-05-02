@@ -423,7 +423,7 @@ function getTransferListPos(params) {
 }
 
 function getTransferProductsPos(params) {
-  var queryProds = `select tr.*, tr."cantidadProducto" as "cantProducto", pr."codInterno", pr."nombreProducto" from Traspaso_Producto tr inner join Productos pr on tr."idProducto"=pr."idProducto" where tr."idTraspaso"=${params.id}`;
+  var queryProds = `select tr.*, tr."cantidadProducto" as "cantProducto", tr."cantidadProducto" as "cant_Anterior", pr."codInterno", pr."nombreProducto" from Traspaso_Producto tr inner join Productos pr on tr."idProducto"=pr."idProducto" where tr."idTraspaso"=${params.id}`;
   return new Promise((resolve) => {
     setTimeout(async () => {
       try {
@@ -473,7 +473,9 @@ function printTransferPos(params) {
 }
 
 function toRePrintDetailsPos(params) {
-  const query = `select tr."idTraspaso", tr."fechaCrea", us.usuario, pr."codInterno", pr."nombreProducto" ,tp."cantidadProducto", '' as "notas" from Traspasos tr 
+  const query = `select tr."idTraspaso", tr."fechaCrea", us.usuario, pr."codInterno", pr."nombreProducto" ,tp."cantidadProducto", '' as "notas",
+  '' as "razonSocial", '' as "zona"
+  from Traspasos tr 
   inner join Traspaso_Producto tp on tr."idTraspaso"=tp."idTraspaso"
   inner join Productos pr on pr."idProducto"=tp."idProducto" 
   inner join Usuarios us on us."idUsuario"=tr."idUsuario"
@@ -518,7 +520,9 @@ function addProductToTransferPos(body) {
           try {
             const added = await client.query(query);
             resolve(added.rows);
+            console.log("llego aca?");
           } catch (err) {
+            console.log("Error en el back", err);
             reject(err);
           }
         }, 100);

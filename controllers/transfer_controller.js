@@ -87,6 +87,7 @@ module.exports = {
       });
   },
   addProduct: (req, res) => {
+    console.log("Flag 1");
     const changed = addProductToTransferPos(req.body);
     changed
       .then((list) => {

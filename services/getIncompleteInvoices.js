@@ -358,7 +358,9 @@ async function runEverything(invoiceObject, products, fr) {
                   if (err) {
                     console.log(err);
                   } else {
-                    resolve(true);
+                    setTimeout(() => {
+                      resolve(true);
+                    }, 4000);
                     console.log("PDF file deleted");
                   }
                 });

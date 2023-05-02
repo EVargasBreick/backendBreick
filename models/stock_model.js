@@ -242,6 +242,53 @@ function initializeStockPos(body) {
   });
 }
 
+function logProductEntry(body) {
+  const entryQuery = `insert into ingresos ("idUsuarioCrea", "fechaCrea") values (${body.idUsuarioCrea}, '${body.fechaCrea}') returning "idIngreso"`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      try {
+        const log = await client.query(entryQuery);
+        const idCreado = log.rows[0].idIngreso;
+        for (product of body.products) {
+          const productQuery = `insert into ingreso_productos ("idIngreso", "idProducto","cantidadProducto") 
+          values (${idCreado},${product.idProducto} ,${product.cantProducto}) returning "idIngresoProducto"`;
+          try {
+            const logged = await client.query(productQuery);
+            if (body.products.indexOf(product) === body.products.length - 1) {
+              resolve(logged);
+            }
+          } catch (error) {
+            const deleteEntry = `delete from ingresos where "idIngreso"=${idCreado}`;
+            const deleteProduct = `delete from ingreso_productos where "idIngreso"=${idCreado}`;
+            const deletedEntry = await client.query(deleteEntry);
+            const deletedProduct = await client.query(deleteProduct);
+            reject(error);
+          }
+        }
+      } catch (err) {
+        reject(err);
+      }
+    }, 100);
+  });
+}
+
+function getLoggedEntries() {
+  const getQuery = `select ig."idIngreso","codInterno", "nombreProducto", "cantidadProducto", "fechaCrea", "usuario"
+  from ingresos ig inner join ingreso_productos ip on ip."idIngreso"=ig."idIngreso"
+  inner join Productos pr on pr."idProducto"=ip."idProducto"
+  inner join Usuarios us on us."idUsuario"=ig."idUsuarioCrea"`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      try {
+        const log = await client.query(getQuery);
+        resolve(log.rows);
+      } catch (err) {
+        reject(err);
+      }
+    }, 100);
+  });
+}
+
 module.exports = {
   getStockFromDateAndProduct,
   getStockFromDateAndStore,
@@ -253,4 +300,6 @@ module.exports = {
   getCurrentProductStockPos,
   getCurrentStoreStockPos,
   initializeStockPos,
+  logProductEntry,
+  getLoggedEntries,
 };

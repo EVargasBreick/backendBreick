@@ -288,58 +288,71 @@ function getUserStockPos(params) {
 function updateProductStockPos(body) {
   const dateResult = dateString();
   const operator = body.accion === "add" ? "+" : "-";
-
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     if (body.productos.length > 0) {
       if (body.accion === "add") {
-        body.productos.map((prod) => {
-          setTimeout(async () => {
-            let updateStockQuery = `update Stock_Bodega set "cant_Anterior"=(select "cant_Actual" from Stock_Bodega where "idProducto"=${prod.idProducto} and "idBodega"='${body.idAlmacen}'), 
-          diferencia=${prod.cantProducto}, "cant_Actual"=(select "cant_Actual" from Stock_Bodega where "idProducto"=${prod.idProducto} and "idBodega"='${body.idAlmacen}') ${operator} ${prod.cantProducto},
-          "fechaActualizacion"='${dateResult}' where "idProducto"=${prod.idProducto} and "idBodega"='${body.idAlmacen}';
-          update Stock_Agencia set "cant_Anterior"=(select "cant_Actual" from Stock_Agencia where "idProducto"=${prod.idProducto} and "idAgencia"='${body.idAlmacen}'), 
-          diferencia=${prod.cantProducto}, "cant_Actual"=(select "cant_Actual" from Stock_Agencia where "idProducto"=${prod.idProducto} and "idAgencia"='${body.idAlmacen}') ${operator} ${prod.cantProducto},
-          "fechaActualizacion"='${dateResult}' where "idProducto"=${prod.idProducto} and "idAgencia"='${body.idAlmacen}';
-          update Stock_Agencia_Movil set "cant_Anterior"=(select "cant_Actual" from Stock_Agencia_Movil where "idProducto"=${prod.idProducto} and "idVehiculo"='${body.idAlmacen}'), 
-          diferencia=${prod.cantProducto}, "cant_Actual"=(select "cant_Actual" from Stock_Agencia_Movil where "idProducto"=${prod.idProducto} and "idVehiculo"='${body.idAlmacen}') ${operator} ${prod.cantProducto},
-          "fechaActualizacion"='${dateResult}' where "idProducto"=${prod.idProducto} and "idVehiculo"='${body.idAlmacen}';`;
-            console.log("Query de updateo para AGREGAR", updateStockQuery);
+        const rowList = [];
+        const errList = [];
+        for (const prod of body.productos) {
+          const updateStockQuery = `update Stock_Bodega set "cant_Anterior"=(select "cant_Actual" from Stock_Bodega where "idProducto"=${prod.idProducto} and "idBodega"='${body.idAlmacen}'), 
+            diferencia=${prod.cantProducto}, "cant_Actual"=(select "cant_Actual" from Stock_Bodega where "idProducto"=${prod.idProducto} and "idBodega"='${body.idAlmacen}') ${operator} ${prod.cantProducto},
+            "fechaActualizacion"='${dateResult}' where "idProducto"=${prod.idProducto} and "idBodega"='${body.idAlmacen}';
+            update Stock_Agencia set "cant_Anterior"=(select "cant_Actual" from Stock_Agencia where "idProducto"=${prod.idProducto} and "idAgencia"='${body.idAlmacen}'), 
+            diferencia=${prod.cantProducto}, "cant_Actual"=(select "cant_Actual" from Stock_Agencia where "idProducto"=${prod.idProducto} and "idAgencia"='${body.idAlmacen}') ${operator} ${prod.cantProducto},
+            "fechaActualizacion"='${dateResult}' where "idProducto"=${prod.idProducto} and "idAgencia"='${body.idAlmacen}';
+            update Stock_Agencia_Movil set "cant_Anterior"=(select "cant_Actual" from Stock_Agencia_Movil where "idProducto"=${prod.idProducto} and "idVehiculo"='${body.idAlmacen}'), 
+            diferencia=${prod.cantProducto}, "cant_Actual"=(select "cant_Actual" from Stock_Agencia_Movil where "idProducto"=${prod.idProducto} and "idVehiculo"='${body.idAlmacen}') ${operator} ${prod.cantProducto},
+            "fechaActualizacion"='${dateResult}' where "idProducto"=${prod.idProducto} and "idVehiculo"='${body.idAlmacen}';`;
+          console.log("Query de updateo para AGREGAR", updateStockQuery);
+          try {
             const updated = await client.query(updateStockQuery);
-            resolve({
-              data: updated.rows,
-              code: 200,
-            });
-          }, 700);
-        });
+            rowList.push(updated.rows);
+          } catch (err) {
+            console.log("error", err);
+            errList.push(err);
+          }
+        }
+        if (rowList.length === body.productos.length) {
+          resolve({
+            data: rowList,
+            code: 200,
+          });
+        } else {
+          reject(errList);
+        }
       } else {
         const verification = verifyStock(body);
         verification
-          .then((response) => {
-            body.productos.map((prod) => {
-              setTimeout(async () => {
-                let updateStockQuery = `update Stock_Bodega set "cant_Anterior"=(select "cant_Actual" from Stock_Bodega where "idProducto"=${prod.idProducto} and "idBodega"='${body.idAlmacen}'), 
-                diferencia=${prod.cantProducto}, "cant_Actual"=(select "cant_Actual" from Stock_Bodega where "idProducto"=${prod.idProducto} and "idBodega"='${body.idAlmacen}') ${operator} ${prod.cantProducto},
-                "fechaActualizacion"='${dateResult}' where "idProducto"=${prod.idProducto} and "idBodega"='${body.idAlmacen}';
-                update Stock_Agencia set "cant_Anterior"=(select "cant_Actual" from Stock_Agencia where "idProducto"=${prod.idProducto} and "idAgencia"='${body.idAlmacen}'), 
-                diferencia=${prod.cantProducto}, "cant_Actual"=(select "cant_Actual" from Stock_Agencia where "idProducto"=${prod.idProducto} and "idAgencia"='${body.idAlmacen}') ${operator} ${prod.cantProducto},
-                "fechaActualizacion"='${dateResult}' where "idProducto"=${prod.idProducto} and "idAgencia"='${body.idAlmacen}';
-                update Stock_Agencia_Movil set "cant_Anterior"=(select "cant_Actual" from Stock_Agencia_Movil where "idProducto"=${prod.idProducto} and "idVehiculo"='${body.idAlmacen}'), 
-                diferencia=${prod.cantProducto}, "cant_Actual"=(select "cant_Actual" from Stock_Agencia_Movil where "idProducto"=${prod.idProducto} and "idVehiculo"='${body.idAlmacen}') ${operator} ${prod.cantProducto},
-                "fechaActualizacion"='${dateResult}' where "idProducto"=${prod.idProducto} and "idVehiculo"='${body.idAlmacen}';`;
-
-                try {
-                  const updated = await client.query(updateStockQuery);
-
-                  resolve({
-                    data: updated.rows,
-                    code: 200,
-                  });
-                } catch (err) {
-                  console.log("error al updatear", err);
-                  reject(err);
-                }
-              }, 200);
-            });
+          .then(async (response) => {
+            const rowList = [];
+            const errList = [];
+            for (const prod of body.productos) {
+              const updateStockQuery = `update Stock_Bodega set "cant_Anterior"=(select "cant_Actual" from Stock_Bodega where "idProducto"=${prod.idProducto} and "idBodega"='${body.idAlmacen}'), 
+            diferencia=${prod.cantProducto}, "cant_Actual"=(select "cant_Actual" from Stock_Bodega where "idProducto"=${prod.idProducto} and "idBodega"='${body.idAlmacen}') ${operator} ${prod.cantProducto},
+            "fechaActualizacion"='${dateResult}' where "idProducto"=${prod.idProducto} and "idBodega"='${body.idAlmacen}';
+            update Stock_Agencia set "cant_Anterior"=(select "cant_Actual" from Stock_Agencia where "idProducto"=${prod.idProducto} and "idAgencia"='${body.idAlmacen}'), 
+            diferencia=${prod.cantProducto}, "cant_Actual"=(select "cant_Actual" from Stock_Agencia where "idProducto"=${prod.idProducto} and "idAgencia"='${body.idAlmacen}') ${operator} ${prod.cantProducto},
+            "fechaActualizacion"='${dateResult}' where "idProducto"=${prod.idProducto} and "idAgencia"='${body.idAlmacen}';
+            update Stock_Agencia_Movil set "cant_Anterior"=(select "cant_Actual" from Stock_Agencia_Movil where "idProducto"=${prod.idProducto} and "idVehiculo"='${body.idAlmacen}'), 
+            diferencia=${prod.cantProducto}, "cant_Actual"=(select "cant_Actual" from Stock_Agencia_Movil where "idProducto"=${prod.idProducto} and "idVehiculo"='${body.idAlmacen}') ${operator} ${prod.cantProducto},
+            "fechaActualizacion"='${dateResult}' where "idProducto"=${prod.idProducto} and "idVehiculo"='${body.idAlmacen}';`;
+              console.log("Query de updateo para AGREGAR", updateStockQuery);
+              try {
+                const updated = await client.query(updateStockQuery);
+                rowList.push(updated.rows);
+              } catch (err) {
+                console.log("error", err);
+                errList.push(err);
+              }
+            }
+            if (rowList.length === body.productos.length) {
+              resolve({
+                data: rowList,
+                code: 200,
+              });
+            } else {
+              reject(errList);
+            }
           })
           .catch((error) => {
             reject({
@@ -445,11 +458,11 @@ function getSalePointsPos(params) {
 }
 
 function getSalePointsAndStorePos(params) {
-  const pointQuery = ` select ag.nombre, pdv."nroPuntoDeVenta" from Agencias ag 
+  const pointQuery = ` select ag.nombre, pdv."nroPuntoDeVenta", ag."idAgencia" as "idAgencia" from Agencias ag 
 inner join Sucursales sc on ag."idAgencia"=sc."idString" 
 inner join PuntosDeVenta pdv on pdv."idSucursal"=sc."idSucursal"
 where sc."idString"='${params.idAlmacen}' union 
-select ag.nombre, pdv."nroPuntoDeVenta" from Bodegas ag 
+select ag.nombre, pdv."nroPuntoDeVenta", ag."idBodega" as "idAgencia" from Bodegas ag 
 inner join Sucursales sc on ag."idBodega"=sc."idString" 
 inner join PuntosDeVenta pdv on pdv."idSucursal"=sc."idSucursal"
 where sc."idString"='${params.idAlmacen}'

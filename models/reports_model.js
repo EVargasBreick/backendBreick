@@ -226,12 +226,12 @@ function ClosingReportPos(params) {
   const generalQuery = params.ruta
     ? `select  fc."idSucursal", fc."puntoDeVenta", fc."idOtroPago", fc."tipoPago", sum(fc.pagado) as "totalPagado", sum(fc.cambio) as "totalCambio", sum(fc.vale) as "totalVale"
  from Facturas fc inner join Sucursales sc on fc."idSucursal"=sc."idImpuestos"
- where fc."idSucursal"=${params.idSucursal} and fc."puntoDeVenta"=${params.idPdv} and TO_DATE(SUBSTRING(fc."fechaHora",1,10),'DD/MM/YYYY')=CAST(CURRENT_DATE AS Date ) 
- and fc."idAgencia"=${params.idAgencia} and fc.estado!=1
+ where fc."idSucursal"=${params.idSucursal} and fc."puntoDeVenta"=${params.idPdv} and TO_DATE(SUBSTRING(fc."fechaHora",1,10),'DD/MM/YYYY')=CAST(${params.fecha} AS Date )
+ and fc."idAgencia"=${params.idAgencia} and fc.estado!=1 and fc."nroFactura"!='0'
  group by fc."idSucursal", "puntoDeVenta", fc."idOtroPago", fc."tipoPago" `
     : `select  fc."idSucursal", fc."puntoDeVenta", fc."idOtroPago", fc."tipoPago", sum(fc.pagado) as "totalPagado", sum(fc.cambio) as "totalCambio", sum(fc.vale) as "totalVale"
  from Facturas fc inner join Sucursales sc on fc."idSucursal"=sc."idImpuestos"
- where fc."idSucursal"=${params.idSucursal} and fc.estado!=1 and fc."puntoDeVenta"=${params.idPdv} and TO_DATE(SUBSTRING(fc."fechaHora",1,10),'DD/MM/YYYY')=CAST(CURRENT_DATE AS Date )
+ where fc."idSucursal"=${params.idSucursal} and fc.estado!=1 and fc."nroFactura"!='0'and fc."puntoDeVenta"=${params.idPdv} and TO_DATE(SUBSTRING(fc."fechaHora",1,10),'DD/MM/YYYY')=CAST(${params.fecha} AS Date )
  group by fc."idSucursal", "puntoDeVenta", fc."idOtroPago", fc."tipoPago" `;
   console.log("Query fechas:", generalQuery);
   return new Promise((resolve, reject) => {
@@ -251,11 +251,11 @@ function FirstAndLastPos(params) {
   const query = params.ruta
     ? `select  min(cast(fc."nroFactura" as int)) as "PrimeraFactura", max(cast(fc."nroFactura" as int)) as "UltimaFactura", count(fc."nroFactura") as "CantidadFacturas" from Facturas fc 
   where fc."idSucursal"=${params.idSucursal} and fc."puntoDeVenta"=${params.idPdv} and sc."idAgencia"=${params.idAgencia}
-  and TO_DATE(SUBSTRING(fc."fechaHora",1,10),'DD/MM/YYYY')=CAST(CURRENT_DATE AS Date)
+  and TO_DATE(SUBSTRING(fc."fechaHora",1,10),'DD/MM/YYYY')=CAST(${params.fecha} AS Date )
   `
     : `select  min(cast(fc."nroFactura" as int)) as "PrimeraFactura", max(cast(fc."nroFactura" as int)) as "UltimaFactura", count(fc."nroFactura") as "CantidadFacturas" from Facturas fc 
   where fc."idSucursal"=${params.idSucursal} and fc."puntoDeVenta"=${params.idPdv} 
-  and TO_DATE(SUBSTRING(fc."fechaHora",1,10),'DD/MM/YYYY')=CAST(CURRENT_DATE AS Date)
+  and TO_DATE(SUBSTRING(fc."fechaHora",1,10),'DD/MM/YYYY')=CAST(${params.fecha} AS Date )
   `;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {

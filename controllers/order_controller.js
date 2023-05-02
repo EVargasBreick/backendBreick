@@ -47,6 +47,7 @@ const {
   toRePrintDetailsPos,
   changeReadyPos,
   getAlltOrderListPos,
+  rejectReadyPos,
 } = require("../models/order_model");
 
 const app = express();
@@ -248,6 +249,16 @@ module.exports = {
   },
   changeReady: (req, res) => {
     const changed = changeReadyPos(req.query);
+    changed
+      .then((list) => {
+        res.status(200).send(list);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
+  rejectReady: (req, res) => {
+    const changed = rejectReadyPos(req.query);
     changed
       .then((list) => {
         res.status(200).send(list);
