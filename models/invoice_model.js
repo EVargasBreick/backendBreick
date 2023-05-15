@@ -369,8 +369,8 @@ function getIncompleteInvoices() {
   });
 }
 
-function updateIncompleteInvoices(id) {
-  const updateInvoice = `update Facturas_Incompletas set emitida=1 where "idFacturaIncompleta"=${id}`;
+function updateIncompleteInvoices(id, emitida) {
+  const updateInvoice = `update Facturas_Incompletas set emitida=${emitida} where "idFacturaIncompleta"=${id}`;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       try {

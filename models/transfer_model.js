@@ -474,7 +474,13 @@ function printTransferPos(params) {
 
 function toRePrintDetailsPos(params) {
   const query = `select tr."idTraspaso", tr."fechaCrea", us.usuario, pr."codInterno", pr."nombreProducto" ,tp."cantidadProducto", '' as "notas",
-  '' as "razonSocial", '' as "zona"
+  '' as "razonSocial", '' as "zona", 
+  (select nombre from Agencias where "idAgencia"=tr."idOrigen" union
+   select nombre from Bodegas where "idBodega"=tr."idOrigen" union 
+   select placa from Vehiculos where placa=tr."idOrigen") as origen,
+    (select nombre from Agencias where "idAgencia"=tr."idDestino" union
+   select nombre from Bodegas where "idBodega"=tr."idDestino" union 
+   select placa from Vehiculos where placa=tr."idDestino") as destino
   from Traspasos tr 
   inner join Traspaso_Producto tp on tr."idTraspaso"=tp."idTraspaso"
   inner join Productos pr on pr."idProducto"=tp."idProducto" 

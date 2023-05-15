@@ -14,7 +14,11 @@ function logIncompleteInvoices() {
         nit: process.env.NIT_EMPRESA,
         id: item.nroTransaccion,
       };
-      await runEverything(requestBody, item);
+      try {
+        await runEverything(requestBody, item);
+      } catch (err) {
+        console.log("ERROR");
+      }
     }
   });
 }
@@ -24,7 +28,12 @@ async function runEverything(requestBody, item) {
     const dataOut = InvoiceOut(requestBody);
     dataOut
       .then((data) => {
-        console.log("FLAG", data);
+        console.log(
+          "FLAG",
+          data.SalidaTransaccionBoliviaResponse[0]
+            .SalidaTransaccionBoliviaResult[0].TransaccionSalidaUnificada[0]
+            .Errores[0].Error[0]
+        );
         const respuesta =
           data.SalidaTransaccionBoliviaResponse[0]
             .SalidaTransaccionBoliviaResult[0].TransaccionSalidaUnificada[0];
@@ -55,14 +64,13 @@ async function runEverything(requestBody, item) {
             .then((resp) => {
               setTimeout(() => {
                 resolve(resp);
-              }, 10000);
+              }, 7000);
             })
             .catch((error) => reject(error));
         }
       })
       .catch((err) => {
         console.log("ERROR");
-        reject(err);
       });
   });
 }

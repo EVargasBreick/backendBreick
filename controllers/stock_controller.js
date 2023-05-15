@@ -11,6 +11,8 @@ const {
   initializeStockPos,
   logProductEntry,
   getLoggedEntries,
+  getStockCodes,
+  getStockLogged,
 } = require("../models/stock_model.js");
 
 module.exports = {
@@ -76,6 +78,26 @@ module.exports = {
   },
   getlogEntry: (req, res) => {
     const stock = getLoggedEntries(req.body);
+    stock
+      .then((resp) => {
+        res.status(200).send(resp);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
+  getStockCodes: (req, res) => {
+    const stock = getStockCodes();
+    stock
+      .then((resp) => {
+        res.status(200).send(resp);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
+  getStockLogged: (req, res) => {
+    const stock = getStockLogged(req.query);
     stock
       .then((resp) => {
         res.status(200).send(resp);

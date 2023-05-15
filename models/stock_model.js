@@ -255,7 +255,7 @@ function logProductEntry(body) {
           try {
             const logged = await client.query(productQuery);
             if (body.products.indexOf(product) === body.products.length - 1) {
-              resolve(logged);
+              resolve({ logged, id: idCreado });
             }
           } catch (error) {
             const deleteEntry = `delete from ingresos where "idIngreso"=${idCreado}`;
@@ -289,6 +289,45 @@ function getLoggedEntries() {
   });
 }
 
+function getStockCodes() {
+  const getQuery = `select * from Codigos_Stock`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      try {
+        const log = await client.query(getQuery);
+        resolve(log.rows);
+      } catch (err) {
+        reject(err);
+      }
+    }, 100);
+  });
+}
+
+function getStockLogged(params) {
+  const getQuery = `
+  select lsc.*, pr."codInterno", pr."nombreProducto", 
+  (select "nombre" from Bodegas where "idBodega"=lsc."idAgencia" 
+  union select "nombre" from Agencias where "idAgencia"=lsc."idAgencia" 
+  union select placa from Vehiculos where "placa"=lsc."idAgencia" ) as "agencia"
+  from Log_Stock_Change lsc 
+  inner join Productos pr on pr."idProducto"=lsc."idProducto"
+  where lsc."idAgencia"='${params.idAgencia}' and
+  to_date("fechaHora",'DD/MM/YYYY') between to_date('${params.fromDate}', 'YYYY-MM-DD') and to_date('${params.toDate}', 'YYYY-MM-DD') 
+  
+  `;
+  return new Promise((resolve, reject) => {
+    console.log("Flag", getQuery);
+    setTimeout(async () => {
+      try {
+        const log = await client.query(getQuery);
+        resolve(log.rows);
+      } catch (err) {
+        reject(err);
+      }
+    }, 100);
+  });
+}
+
 module.exports = {
   getStockFromDateAndProduct,
   getStockFromDateAndStore,
@@ -302,4 +341,6 @@ module.exports = {
   initializeStockPos,
   logProductEntry,
   getLoggedEntries,
+  getStockCodes,
+  getStockLogged,
 };
