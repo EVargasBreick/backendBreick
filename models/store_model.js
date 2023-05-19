@@ -349,15 +349,12 @@ function updateProductStockPos(body) {
           reject(errList);
         }
       } else {
-        const verification = verifyStock(body);
-        verification
-          .then(async (response) => {
-            const rowList = [];
-            const errList = [];
-            try {
-              await client.query("BEGIN");
-              for (const prod of body.productos) {
-                const updateStockQuery = `
+        const rowList = [];
+        const errList = [];
+        try {
+          await client.query("BEGIN");
+          for (const prod of body.productos) {
+            const updateStockQuery = `
               update Stock_Bodega set 
                 "cant_Anterior"= "cant_Actual", 
                 diferencia=${prod.cantProducto}, 
@@ -376,40 +373,32 @@ function updateProductStockPos(body) {
                 "cant_Actual"="cant_Actual" ${operator} ${prod.cantProducto},
                 "fechaActualizacion"='${dateResult}' 
               where "idProducto"=${prod.idProducto} and "idVehiculo"='${body.idAlmacen}';`;
-                console.log("Query de updateo para AGREGAR", updateStockQuery);
+            console.log("Query de updateo para AGREGAR", updateStockQuery);
 
-                const updated = await client.query(updateStockQuery);
-                const query = `insert into log_stock_change ("idProducto", "cantidadProducto", "idAgencia", "fechaHora","accion", "detalle")
+            const updated = await client.query(updateStockQuery);
+            const query = `insert into log_stock_change ("idProducto", "cantidadProducto", "idAgencia", "fechaHora","accion", "detalle")
                     values (${prod.idProducto},${prod.cantProducto},'${body.idAlmacen}', '${dateResult}', '${operator}','${body.detalle}')`;
-                console.log("Query de log", query);
-                await client.query(query);
-                rowList.push(updated.rows);
-              }
-              await client.query("COMMIT");
-            } catch (err) {
-              await client.query("ROLLBACK");
-              console.log("error", err);
-              errList.push(err);
-            }
-            if (rowList.length === body.productos.length) {
-              resolve({
-                data: rowList,
-                code: 200,
-              });
-            } else {
-              reject({
-                errorList: errList,
-                message: "Error actualizar cantidades",
-              });
-            }
-          })
-          .catch((error) => {
-            reject({
-              code: 200,
-              error: error,
-              message: "Error al validar cantidades",
-            });
+            console.log("Query de log", query);
+            await client.query(query);
+            rowList.push(updated.rows);
+          }
+          await client.query("COMMIT");
+        } catch (err) {
+          await client.query("ROLLBACK");
+          console.log("error", err);
+          errList.push(err);
+        }
+        if (rowList.length === body.productos.length) {
+          resolve({
+            data: rowList,
+            code: 200,
           });
+        } else {
+          reject({
+            errorList: errList,
+            message: "Error actualizar cantidades",
+          });
+        }
       }
     } else {
       setTimeout(() => {
