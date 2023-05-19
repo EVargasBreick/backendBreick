@@ -280,6 +280,11 @@ function getUserStockPos(params) {
 }
 
 function updateProductStockPos(body) {
+  const TiposStock = Object.freeze({
+    AGENCIA: "AG",
+    BODEGA: "AL",
+    MOVIL: "-",
+  });
   const dateResult = dateString();
   const operator = body.accion === "add" ? "+" : "-";
   return new Promise(async (resolve, reject) => {
@@ -290,25 +295,36 @@ function updateProductStockPos(body) {
         try {
           await client.query("BEGIN");
           for (const prod of body.productos) {
-            const updateStockQuery = `
-        update Stock_Bodega set 
+            let updateStockQuery = "";
+            if (body.idAlmacen.includes(TiposStock.AGENCIA)) {
+              updateStockQuery = `
+          update Stock_Agencia set 
+            "cant_Anterior"= "cant_Actual", 
+            diferencia=${prod.cantProducto}, 
+            "cant_Actual"= "cant_Actual" ${operator} ${prod.cantProducto},
+              "fechaActualizacion"='${dateResult}' 
+          where "idProducto"=${prod.idProducto} and "idAgencia"='${body.idAlmacen}';
+          `;
+            } else if (body.idAlmacen.includes(TiposStock.BODEGA)) {
+              updateStockQuery = `
+              update Stock_Bodega set 
           "cant_Anterior"= "cant_Actual", 
           diferencia=${prod.cantProducto}, 
           "cant_Actual"="cant_Actual" ${operator} ${prod.cantProducto},
           "fechaActualizacion"='${dateResult}' 
         where "idProducto"=${prod.idProducto} and "idBodega"='${body.idAlmacen}';
-        update Stock_Agencia set 
-          "cant_Anterior"= "cant_Actual", 
-          diferencia=${prod.cantProducto}, 
-          "cant_Actual"= "cant_Actual" ${operator} ${prod.cantProducto},
-            "fechaActualizacion"='${dateResult}' 
-        where "idProducto"=${prod.idProducto} and "idAgencia"='${body.idAlmacen}';
-        update Stock_Agencia_Movil set 
+          `;
+            } else {
+              updateStockQuery = `
+              update Stock_Agencia_Movil set 
           "cant_Anterior"="cant_Actual", 
             diferencia=${prod.cantProducto}, 
           "cant_Actual"="cant_Actual" ${operator} ${prod.cantProducto},
             "fechaActualizacion"='${dateResult}' 
-        where "idProducto"=${prod.idProducto} and "idVehiculo"='${body.idAlmacen}';`;
+        where "idProducto"=${prod.idProducto} and "idVehiculo"='${body.idAlmacen}';
+              `;
+            }
+
             console.log("Query de updateo para AGREGAR", updateStockQuery);
 
             const updated = await client.query(updateStockQuery);
