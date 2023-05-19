@@ -25,6 +25,7 @@ const {
   updateChangedTransferPos,
   getTransitTransfersPos,
   acceptTransferPos,
+  deleteTransferData,
 } = require("../models/transfer_model.js");
 
 module.exports = {
@@ -139,6 +140,16 @@ module.exports = {
   },
   acceptTransfer: (req, res) => {
     const changed = acceptTransferPos(req.query);
+    changed
+      .then((list) => {
+        res.status(200).send(list);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
+  deleteTransfer: (req, res) => {
+    const changed = deleteTransferData(req.query);
     changed
       .then((list) => {
         res.status(200).send(list);

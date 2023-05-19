@@ -15,4 +15,5 @@ router.put("/traspaso/productos", controller.updateProduct);
 router.put("/traspaso", controller.updateChangedTransfer);
 router.get("/traspaso/transito", controller.transitTransfers);
 router.put("/traspaso/transito", controller.acceptTransfer);
+router.delete("/traspaso/borrar", controller.deleteTransfer);
 module.exports = router;

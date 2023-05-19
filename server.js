@@ -144,6 +144,6 @@ if (serverType === "web") {
     console.log("Cors options", corsOptions);
     console.log("Server listening on port ", 5200);
     //logIncompleteInvoices();
-    getInvoicesIncomplete();
+    //getInvoicesIncomplete();
   });
 }

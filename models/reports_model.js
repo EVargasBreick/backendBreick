@@ -148,9 +148,9 @@ function GeneralSalesReportPos(params) {
         fc.desembolsada,
         fc.vale,
         us.nombre||' '||us."apPaterno"||' '||us."apMaterno" as "nombreCompleto",
-        (select nombre from Agencias where "idAgencia"=us."idAlmacen" union 
-        select nombre from Bodegas where "idBodega"=us."idAlmacen" union 
-        select placa from Vehiculos where placa=us."idAlmacen") as "Agencia"
+        (select nombre from Agencias where "idAgencia"=fc."idAgencia" union 
+        select nombre from Bodegas where "idBodega"=fc."idAgencia" union 
+        select placa from Vehiculos where placa=fc."idAgencia") as "Agencia"
     from Facturas fc inner join ventas vn on vn."idFactura"=fc."idFactura"
     inner join Usuarios us on vn."idUsuarioCrea"=us."idUsuario"
     where TO_DATE(SUBSTRING(fc."fechaHora",1,10),'DD/MM/YYYY')
@@ -194,9 +194,9 @@ function ProductsSalesReportPos(params) {
     vp."descuentoProducto",
     fc.vale,
     us.nombre||' '||us."apPaterno"||' '||us."apMaterno" as "nombreCompleto",
-    (select nombre from Agencias where "idAgencia"=us."idAlmacen" union 
-    select nombre from Bodegas where "idBodega"=us."idAlmacen" union 
-    select placa from Vehiculos where placa=us."idAlmacen") as "Agencia"
+    (select nombre from Agencias where "idAgencia"=fc."idAgencia" union 
+    select nombre from Bodegas where "idBodega"=fc."idAgencia" union 
+    select placa from Vehiculos where placa=fc."idAgencia") as "Agencia"
 from Facturas fc inner join Ventas vn on fc."idFactura"=vn."idFactura"
 inner join Venta_Productos vp on vn."idVenta"=vp."idVenta"
 inner join Productos pr on pr."idProducto"=vp."idProducto"

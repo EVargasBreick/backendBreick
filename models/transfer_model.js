@@ -625,6 +625,23 @@ function acceptTransferPos(params) {
   });
 }
 
+function deleteTransferData(params) {
+  const query = `delete from Traspasos where "idTraspaso"=${params.id}`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      try {
+        client.query("BEGIN");
+        const updated = await client.query(query);
+        resolve(updated.rows);
+        client.query("COMMIT");
+      } catch (err) {
+        client.query("ROLLBACK");
+        reject(err);
+      }
+    }, 100);
+  });
+}
+
 module.exports = {
   createTransfer,
   getTransferList,
@@ -652,4 +669,5 @@ module.exports = {
   updateChangedTransferPos,
   getTransitTransfersPos,
   acceptTransferPos,
+  deleteTransferData,
 };

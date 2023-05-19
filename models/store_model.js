@@ -287,8 +287,10 @@ function updateProductStockPos(body) {
       if (body.accion === "add") {
         const rowList = [];
         const errList = [];
-        for (const prod of body.productos) {
-          const updateStockQuery = `
+        try {
+          await client.query("BEGIN");
+          for (const prod of body.productos) {
+            const updateStockQuery = `
         update Stock_Bodega set 
           "cant_Anterior"= "cant_Actual", 
           diferencia=${prod.cantProducto}, 
@@ -307,18 +309,20 @@ function updateProductStockPos(body) {
           "cant_Actual"="cant_Actual" ${operator} ${prod.cantProducto},
             "fechaActualizacion"='${dateResult}' 
         where "idProducto"=${prod.idProducto} and "idVehiculo"='${body.idAlmacen}';`;
-          console.log("Query de updateo para AGREGAR", updateStockQuery);
-          try {
+            console.log("Query de updateo para AGREGAR", updateStockQuery);
+
             const updated = await client.query(updateStockQuery);
             const query = `insert into log_stock_change ("idProducto", "cantidadProducto", "idAgencia", "fechaHora","accion", "detalle")
                 values (${prod.idProducto},${prod.cantProducto},'${body.idAlmacen}', '${dateResult}', '${operator}', '${body.detalle}')`;
             console.log("Query de log", query);
             await client.query(query);
             rowList.push(updated.rows);
-          } catch (err) {
-            console.log("error", err);
-            errList.push(err);
           }
+          await client.query("COMMIT");
+        } catch (err) {
+          await client.query("ROLLBACK");
+          console.log("error", err);
+          errList.push(err);
         }
         if (rowList.length === body.productos.length) {
           resolve({
@@ -334,8 +338,10 @@ function updateProductStockPos(body) {
           .then(async (response) => {
             const rowList = [];
             const errList = [];
-            for (const prod of body.productos) {
-              const updateStockQuery = `
+            try {
+              await client.query("BEGIN");
+              for (const prod of body.productos) {
+                const updateStockQuery = `
               update Stock_Bodega set 
                 "cant_Anterior"= "cant_Actual", 
                 diferencia=${prod.cantProducto}, 
@@ -354,18 +360,20 @@ function updateProductStockPos(body) {
                 "cant_Actual"="cant_Actual" ${operator} ${prod.cantProducto},
                 "fechaActualizacion"='${dateResult}' 
               where "idProducto"=${prod.idProducto} and "idVehiculo"='${body.idAlmacen}';`;
-              console.log("Query de updateo para AGREGAR", updateStockQuery);
-              try {
+                console.log("Query de updateo para AGREGAR", updateStockQuery);
+
                 const updated = await client.query(updateStockQuery);
                 const query = `insert into log_stock_change ("idProducto", "cantidadProducto", "idAgencia", "fechaHora","accion", "detalle")
                     values (${prod.idProducto},${prod.cantProducto},'${body.idAlmacen}', '${dateResult}', '${operator}','${body.detalle}')`;
                 console.log("Query de log", query);
                 await client.query(query);
                 rowList.push(updated.rows);
-              } catch (err) {
-                console.log("error", err);
-                errList.push(err);
               }
+              await client.query("COMMIT");
+            } catch (err) {
+              await client.query("ROLLBACK");
+              console.log("error", err);
+              errList.push(err);
             }
             if (rowList.length === body.productos.length) {
               resolve({
@@ -373,14 +381,17 @@ function updateProductStockPos(body) {
                 code: 200,
               });
             } else {
-              reject(errList);
+              reject({
+                errorList: errList,
+                message: "Error actualizar cantidades",
+              });
             }
           })
           .catch((error) => {
             reject({
-              faltantes: error.faltantes,
               code: 200,
               error: error,
+              message: "Error al validar cantidades",
             });
           });
       }
