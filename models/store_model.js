@@ -378,8 +378,17 @@ function updateProductStockPos(body) {
             const updated = await client.query(updateStockQuery);
             const query = `insert into log_stock_change ("idProducto", "cantidadProducto", "idAgencia", "fechaHora","accion", "detalle")
                     values (${prod.idProducto},${prod.cantProducto},'${body.idAlmacen}', '${dateResult}', '${operator}','${body.detalle}')`;
-            console.log("Query de log", query);
-            await client.query(query);
+
+            try {
+              console.log("Query de log", query);
+              await client.query(query);
+            } catch (error) {
+              reject({
+                errorList: errList,
+                message: "Error al actualizar log",
+              });
+            }
+
             rowList.push(updated.rows);
           }
           await client.query("COMMIT");
