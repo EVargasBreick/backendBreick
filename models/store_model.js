@@ -281,133 +281,71 @@ function getUserStockPos(params) {
 
 function updateProductStockPos(body) {
   const TiposStock = Object.freeze({
-    AGENCIA: "AG",
-    BODEGA: "AL",
-    MOVIL: "-",
+    AGENCIA: {
+      identificador: "AG",
+      idName: "idAgencia",
+      tableName: "Stock_Agencia",
+    },
+    BODEGA: {
+      identificador: "AL",
+      idName: "idBodega",
+      tableName: "Stock_Bodega",
+    },
+    MOVIL: {
+      identificador: "-",
+      idName: "idVehiculo",
+      tableName: "Stock_Agencia_Movil",
+    },
   });
   const dateResult = dateString();
   const operator = body.accion === "add" ? "+" : "-";
   return new Promise(async (resolve, reject) => {
     if (body.productos.length > 0) {
-      if (body.accion === "add") {
-        const rowList = [];
-        const errList = [];
-        try {
-          await client.query("BEGIN");
-          for (const prod of body.productos) {
-            let updateStockQuery = "";
-            if (body.idAlmacen.includes(TiposStock.AGENCIA)) {
-              updateStockQuery = `
-          update Stock_Agencia set 
+      const rowList = [];
+      const errList = [];
+      // get if is agency, store or mobile
+      const typeStock = body.idAlmacen.includes(
+        TiposStock.AGENCIA.identificador
+      )
+        ? TiposStock.AGENCIA
+        : body.idAlmacen.includes(TiposStock.BODEGA.identificador)
+        ? TiposStock.BODEGA
+        : TiposStock.MOVIL;
+
+      try {
+        await client.query("BEGIN");
+        for (const prod of body.productos) {
+          const updateStockQuery = `
+          update ${typeStock.tableName} set 
             "cant_Anterior"= "cant_Actual", 
             diferencia=${prod.cantProducto}, 
             "cant_Actual"= "cant_Actual" ${operator} ${prod.cantProducto},
               "fechaActualizacion"='${dateResult}' 
-          where "idProducto"=${prod.idProducto} and "idAgencia"='${body.idAlmacen}';
+          where "idProducto"=${prod.idProducto} and "${typeStock.idName}"='${body.idAlmacen}';
           `;
-            } else if (body.idAlmacen.includes(TiposStock.BODEGA)) {
-              updateStockQuery = `
-              update Stock_Bodega set 
-          "cant_Anterior"= "cant_Actual", 
-          diferencia=${prod.cantProducto}, 
-          "cant_Actual"="cant_Actual" ${operator} ${prod.cantProducto},
-          "fechaActualizacion"='${dateResult}' 
-        where "idProducto"=${prod.idProducto} and "idBodega"='${body.idAlmacen}';
-          `;
-            } else {
-              updateStockQuery = `
-              update Stock_Agencia_Movil set 
-          "cant_Anterior"="cant_Actual", 
-            diferencia=${prod.cantProducto}, 
-          "cant_Actual"="cant_Actual" ${operator} ${prod.cantProducto},
-            "fechaActualizacion"='${dateResult}' 
-        where "idProducto"=${prod.idProducto} and "idVehiculo"='${body.idAlmacen}';
-              `;
-            }
 
-            console.log("Query de updateo para AGREGAR", updateStockQuery);
+          console.log(`Query de updateo para ${operator}`, updateStockQuery);
 
-            const updated = await client.query(updateStockQuery);
-            const query = `insert into log_stock_change ("idProducto", "cantidadProducto", "idAgencia", "fechaHora","accion", "detalle")
+          const updated = await client.query(updateStockQuery);
+          const query = `insert into log_stock_change ("idProducto", "cantidadProducto", "idAgencia", "fechaHora","accion", "detalle")
                 values (${prod.idProducto},${prod.cantProducto},'${body.idAlmacen}', '${dateResult}', '${operator}', '${body.detalle}')`;
-            console.log("Query de log", query);
-            await client.query(query);
-            rowList.push(updated.rows);
-          }
-          await client.query("COMMIT");
-        } catch (err) {
-          await client.query("ROLLBACK");
-          console.log("error", err);
-          errList.push(err);
+          console.log("Query de log", query);
+          await client.query(query);
+          rowList.push(updated.rows);
         }
-        if (rowList.length === body.productos.length) {
-          resolve({
-            data: rowList,
-            code: 200,
-          });
-        } else {
-          reject(errList);
-        }
+        await client.query("COMMIT");
+      } catch (err) {
+        await client.query("ROLLBACK");
+        console.log("error", err);
+        errList.push(err);
+      }
+      if (rowList.length === body.productos.length) {
+        resolve({
+          data: rowList,
+          code: 200,
+        });
       } else {
-        const rowList = [];
-        const errList = [];
-        try {
-          await client.query("BEGIN");
-          for (const prod of body.productos) {
-            const updateStockQuery = `
-              update Stock_Bodega set 
-                "cant_Anterior"= "cant_Actual", 
-                diferencia=${prod.cantProducto}, 
-                "cant_Actual"="cant_Actual" ${operator} ${prod.cantProducto},
-                "fechaActualizacion"='${dateResult}' 
-              where "idProducto"=${prod.idProducto} and "idBodega"='${body.idAlmacen}';
-              update Stock_Agencia set 
-                "cant_Anterior"= "cant_Actual", 
-                diferencia=${prod.cantProducto}, 
-                "cant_Actual"= "cant_Actual" ${operator} ${prod.cantProducto},
-                "fechaActualizacion"='${dateResult}' 
-              where "idProducto"=${prod.idProducto} and "idAgencia"='${body.idAlmacen}';
-              update Stock_Agencia_Movil set 
-                "cant_Anterior"="cant_Actual", 
-                diferencia=${prod.cantProducto}, 
-                "cant_Actual"="cant_Actual" ${operator} ${prod.cantProducto},
-                "fechaActualizacion"='${dateResult}' 
-              where "idProducto"=${prod.idProducto} and "idVehiculo"='${body.idAlmacen}';`;
-            console.log("Query de updateo para AGREGAR", updateStockQuery);
-
-            const updated = await client.query(updateStockQuery);
-            const query = `insert into log_stock_change ("idProducto", "cantidadProducto", "idAgencia", "fechaHora","accion", "detalle")
-                    values (${prod.idProducto},${prod.cantProducto},'${body.idAlmacen}', '${dateResult}', '${operator}','${body.detalle}')`;
-
-            try {
-              console.log("Query de log", query);
-              await client.query(query);
-            } catch (error) {
-              reject({
-                errorList: errList,
-                message: "Error al actualizar log",
-              });
-            }
-
-            rowList.push(updated.rows);
-          }
-          await client.query("COMMIT");
-        } catch (err) {
-          await client.query("ROLLBACK");
-          console.log("error", err);
-          errList.push(err);
-        }
-        if (rowList.length === body.productos.length) {
-          resolve({
-            data: rowList,
-            code: 200,
-          });
-        } else {
-          reject({
-            errorList: errList,
-            message: "Error actualizar cantidades",
-          });
-        }
+        reject(errList);
       }
     } else {
       setTimeout(() => {
