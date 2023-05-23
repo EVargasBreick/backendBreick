@@ -21,6 +21,7 @@ const {
   getSalePointsAndStorePos,
   getMobileSalePointsPos,
   getAllStores,
+  transactionOfUpdateStocks,
 } = require("../models/store_model.js");
 app.use(session(sessionParams));
 
@@ -101,6 +102,17 @@ module.exports = {
   },
   getAllStores: (req, res) => {
     const updated = getAllStores();
+    updated
+      .then((upd) => {
+        res.status(200).send(upd);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
+
+  updateProductStockTransaction: (req, res) => {
+    const updated = transactionOfUpdateStocks(req.body);
     updated
       .then((upd) => {
         res.status(200).send(upd);
