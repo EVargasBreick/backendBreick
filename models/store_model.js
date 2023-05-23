@@ -279,7 +279,7 @@ function getUserStockPos(params) {
   });
 }
 
-function updateProductStockPos(body) {
+async function updateProductStockPos(body) {
   const TiposStock = Object.freeze({
     AGENCIA: {
       identificador: "AG",
@@ -299,65 +299,46 @@ function updateProductStockPos(body) {
   });
   const dateResult = dateString();
   const operator = body.accion === "add" ? "+" : "-";
-  return new Promise(async (resolve, reject) => {
-    if (body.productos.length > 0) {
-      const rowList = [];
-      const errList = [];
-      // get if is agency, store or mobile
-      const typeStock = body.idAlmacen.includes(
-        TiposStock.AGENCIA.identificador
-      )
-        ? TiposStock.AGENCIA
-        : body.idAlmacen.includes(TiposStock.BODEGA.identificador)
-        ? TiposStock.BODEGA
-        : TiposStock.MOVIL;
+  const typeStock = body.idAlmacen.includes(TiposStock.AGENCIA.identificador)
+    ? TiposStock.AGENCIA
+    : body.idAlmacen.includes(TiposStock.BODEGA.identificador)
+    ? TiposStock.BODEGA
+    : TiposStock.MOVIL;
 
-      try {
-        await client.query("BEGIN");
-        for (const prod of body.productos) {
-          const updateStockQuery = `
-          update ${typeStock.tableName} set 
-            "cant_Anterior"= "cant_Actual", 
-            diferencia=${prod.cantProducto}, 
-            "cant_Actual"= "cant_Actual" ${operator} ${prod.cantProducto},
-              "fechaActualizacion"='${dateResult}' 
-          where "idProducto"=${prod.idProducto} and "${typeStock.idName}"='${body.idAlmacen}';
-          `;
+  const queries = [];
+  for (const prod of body.productos) {
+    const updateStockQuery = `
+    UPDATE ${typeStock.tableName}
+      SET "cant_Anterior" = "cant_Actual",
+          "diferencia" = ${prod.cantProducto},
+          "cant_Actual" = "cant_Actual" ${operator} ${prod.cantProducto},
+          "fechaActualizacion" = '${dateResult}'
+      WHERE "idProducto" = ${prod.idProducto} AND "${typeStock.idName}" = '${body.idAlmacen}'
+    `;
+    queries.push(updateStockQuery);
+    const logQuery = `
+    INSERT INTO log_stock_change ("idProducto", "cantidadProducto", "idAgencia", "fechaHora", "accion", "detalle")
+    VALUES (${prod.idProducto}, ${prod.cantProducto}, '${body.idAlmacen}', '${dateResult}', '${operator}', '${body.detalle}')
+    `;
+    queries.push(logQuery);
+  }
 
-          console.log(`Query de updateo para ${operator}`, updateStockQuery);
-
-          const updated = await client.query(updateStockQuery);
-          const query = `insert into log_stock_change ("idProducto", "cantidadProducto", "idAgencia", "fechaHora","accion", "detalle")
-                values (${prod.idProducto},${prod.cantProducto},'${body.idAlmacen}', '${dateResult}', '${operator}', '${body.detalle}')`;
-          console.log("Query de log", query);
-          await client.query(query);
-          rowList.push(updated.rows);
-        }
-        await client.query("COMMIT");
-      } catch (err) {
-        await client.query("ROLLBACK");
-        console.log("error", err);
-        errList.push(err);
-      }
-      if (rowList.length === body.productos.length) {
-        resolve({
-          data: rowList,
-          code: 200,
-        });
-      } else {
-        reject(errList);
-      }
-    } else {
-      setTimeout(() => {
-        resolve(
-          JSON.stringify({
-            code: 200,
-            data: "No product to modify",
-          })
-        );
-      }, 200);
-    }
-  });
+  try {
+    await client.query("BEGIN");
+    await Promise.all(queries.map((q) => client.query(q)));
+    await client.query("COMMIT");
+    return {
+      data: [],
+      code: 200,
+    };
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.log("error", err);
+    return {
+      error: err.message || err,
+      code: 500,
+    };
+  }
 }
 
 function verifyAvailabilityPos(body) {
@@ -503,6 +484,79 @@ function getAllStores() {
   });
 }
 
+async function transactionOfUpdateStocks(bodies) {
+  try {
+    await client.query("BEGIN");
+    const results = [];
+    for (const body of bodies) {
+      const TiposStock = Object.freeze({
+        AGENCIA: {
+          identificador: "AG",
+          idName: "idAgencia",
+          tableName: "Stock_Agencia",
+        },
+        BODEGA: {
+          identificador: "AL",
+          idName: "idBodega",
+          tableName: "Stock_Bodega",
+        },
+        MOVIL: {
+          identificador: "-",
+          idName: "idVehiculo",
+          tableName: "Stock_Agencia_Movil",
+        },
+      });
+      const dateResult = dateString();
+      const operator = body.accion === "add" ? "+" : "-";
+      const typeStock = body.idAlmacen.includes(
+        TiposStock.AGENCIA.identificador
+      )
+        ? TiposStock.AGENCIA
+        : body.idAlmacen.includes(TiposStock.BODEGA.identificador)
+        ? TiposStock.BODEGA
+        : TiposStock.MOVIL;
+
+      const queries = [];
+      for (const prod of body.productos) {
+        const updateStockQuery = `
+          UPDATE ${typeStock.tableName}
+            SET "cant_Anterior" = "cant_Actual",
+                "diferencia" = ${prod.cantProducto},
+                "cant_Actual" = "cant_Actual" ${operator} ${prod.cantProducto},
+                "fechaActualizacion" = '${dateResult}'
+            WHERE "idProducto" = ${prod.idProducto} AND "${typeStock.idName}" = '${body.idAlmacen}'
+          `;
+        queries.push(updateStockQuery);
+        const logQuery = `
+          INSERT INTO log_stock_change ("idProducto", "cantidadProducto", "idAgencia", "fechaHora", "accion", "detalle")
+          VALUES (${prod.idProducto}, ${prod.cantProducto}, '${body.idAlmacen}', '${dateResult}', '${operator}', '${body.detalle}')
+          `;
+        queries.push(logQuery);
+      }
+
+      if (results.length === 1) {
+        throw new Error("Error de prueba");
+      }
+      await Promise.all(queries.map((q) => client.query(q)));
+
+      results.push(body);
+    }
+    await client.query("COMMIT");
+    return {
+      data: results,
+      code: 200,
+    };
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.log("error", err);
+    reject(err);
+    return {
+      error: err.message || err,
+      code: 400,
+    };
+  }
+}
+
 module.exports = {
   getStores,
   getUserStock,
@@ -522,4 +576,5 @@ module.exports = {
   getSalePointsAndStorePos,
   getMobileSalePointsPos,
   getAllStores,
+  transactionOfUpdateStocks,
 };
