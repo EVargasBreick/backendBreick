@@ -534,9 +534,9 @@ async function transactionOfUpdateStocks(bodies) {
         queries.push(logQuery);
       }
 
-      if (results.length === 1) {
-        throw new Error("Error de prueba");
-      }
+      // if (results.length === 1) {
+      //   throw new Error("Error de prueba");
+      // }
       await Promise.all(queries.map((q) => client.query(q)));
 
       results.push(body);
