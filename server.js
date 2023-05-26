@@ -67,7 +67,7 @@ const dropRoutes = require("./routes/drop");
 const testLogging = require("./services/logDailyKardex");
 const getInvoicesIncomplete = require("./services/getIncompleteInvoices");
 const logIncompleteInvoices = require("./services/logIncompleteInvoices");
-const emizorRoutes = require("./routes/Emizor");
+const emizorRoutes = require("./routes/emizor");
 app.use("/", userRoutes);
 app.use("/", loginRoutes);
 app.use("/", productRoutes);
