@@ -877,19 +877,18 @@ function getOrderProductListPos(params) {
   });
 }
 
-function deleteOrderPos(id) {
-  var queryDeleteOrder = `delete from Pedidos where "idPedido"=${id}`;
-  var queryDeleteProd = `delete from Pedido_Producto where "idPedido"=${id} `;
+function deleteOrderPos(params) {
+  var queryDeleteOrder = `delete from Pedidos where "idPedido"=${params.id}`;
+
+  var queryDeleteProd = `delete from Pedido_Producto where "idPedido"=${params.id} `;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       try {
         const delOrder = await client.query(queryDeleteOrder);
-        setTimeout(async () => {
-          const delProds = await client.query(queryDeleteProd);
-          resolve(JSON.stringify(delProds));
-        }, 500);
+        resolve(delOrder);
       } catch (err) {
-        reject(JSON.parse(err));
+        console.log("Error al borrar", err);
+        reject(err);
       }
     }, 500);
   });
@@ -1232,10 +1231,10 @@ function orderToReadyPos(params) {
   console.log("Params del query", params);
   const query = `
   select pd."idPedido" as "idOrden", concat(upper(pd.tipo),'0',cast(pd."idPedido" as varchar)) as "nroOrden", pd."fechaCrea",'P' as tipo, us.usuario, us."idDepto"
-  from Pedidos pd inner join Usuarios us on us."idUsuario"=pd."idUsuarioCrea" where pd.impreso=1 and pd.listo=0 and us."idDepto"=${params.idDepto}
+  from Pedidos pd inner join Usuarios us on us."idUsuario"=pd."idUsuarioCrea" where pd.impreso=1 and pd.listo=0 and pd.estado!='2' and us."idDepto"=${params.idDepto}
   union
   select tp."idTraspaso" as "idOrden", tp."nroOrden", tp."fechaCrea", 'T' as tipo, us.usuario, us."idDepto"
-  from Traspasos tp inner join Usuarios us on us."idUsuario"=tp."idUsuario" where tp.impreso=1 and tp.listo=0 and us."idDepto"=${params.idDepto}`;
+  from Traspasos tp inner join Usuarios us on us."idUsuario"=tp."idUsuario" where tp.impreso=1 and tp.listo=0 and tp.estado!='2' and us."idDepto"=${params.idDepto}`;
   return new Promise((resolve, reject) => {
     console.log("Query ", query);
     setTimeout(async () => {
