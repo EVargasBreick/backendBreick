@@ -64,7 +64,7 @@ async function runEverything(requestBody, item) {
             .then((resp) => {
               setTimeout(() => {
                 resolve(resp);
-              }, 7000);
+              }, 5000);
             })
             .catch((error) => reject(error));
         }

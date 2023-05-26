@@ -165,10 +165,7 @@ function verifyToken() {
 
 function getLastId(body) {
   console.log("Body recibido", body);
-  console.log(
-    "Punto de Venta Id",
-    (body.puntoDeVentaId * 10000 + parseInt(body.caja)).toFixed(0)
-  );
+ 
   return new Promise((resolve, reject) => {
     const verifiedToken = verifyTokenPos();
     verifiedToken

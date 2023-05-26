@@ -118,15 +118,13 @@ module.exports = {
     });
   },
   deleteOrder: (req, res) => {
-    const deleted = deleteOrderPos(req.params);
+    const deleted = deleteOrderPos(req.query);
     deleted
       .then((dl) => {
-        var resp = JSON.parse(dl);
-        res.status(200).send(resp);
+        res.status(200).send(dl);
       })
       .catch((error) => {
-        var resp = JSON.parse(error);
-        res.status(400).send(resp);
+        res.status(400).send(error);
       });
   },
   cancelOrder: (req, res) => {
