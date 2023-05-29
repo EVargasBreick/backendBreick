@@ -21,15 +21,17 @@ module.exports = {
 
 
   deleteAnularFactura: async (req, res) => {
-      const cuf_ackTicket_uniqueCode = req.params.cuf_ackTicket_uniqueCode;
-      const unique_code = req.query.unique_code
-      const anularPromise = await emizor.anularFactura(
-        cuf_ackTicket_uniqueCode,
-        unique_code
-      );
+    const cuf_ackTicket_uniqueCode = req.params.cuf_ackTicket_uniqueCode;
+    const unique_code = req.query.unique_code
+    const anularPromise = emizor.anularFactura(
+      cuf_ackTicket_uniqueCode,
+      unique_code
+    );
+    anularPromise.then((anularData) => {
       var responseObject = {}
       responseObject.message = "Factura anulada";
       responseObject.code = JSON.parse(anularPromise).status;
       res.status(responseObject.code).send(responseObject);
+    });
   },
 };
