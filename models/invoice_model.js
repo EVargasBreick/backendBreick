@@ -197,7 +197,7 @@ function createInvoicePos(body) {
         ) returning "idFactura"`;
 
   return new Promise((resolve, reject) => {
-    console.log("Query factura", invoiceQuery);
+    console.log("New invoice", invoiceQuery);
     setTimeout(async () => {
       try {
         const added = await client.query(invoiceQuery);

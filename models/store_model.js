@@ -319,13 +319,50 @@ async function updateProductStockPos(body) {
     const logQuery = `
     INSERT INTO log_stock_change ("idProducto", "cantidadProducto", "idAgencia", "fechaHora", "accion", "detalle")
     VALUES (${prod.idProducto}, ${prod.cantProducto}, '${body.idAlmacen}', '${dateResult}', '${operator}', '${body.detalle}')
-    `;
+    returning "idStockChange"`;
     queries.push(logQuery);
   }
 
   try {
     await client.query("BEGIN");
-    await Promise.all(queries.map((q) => client.query(q)));
+    const resultArray = await Promise.all(queries.map((q) => client.query(q)));
+
+    const filtered = resultArray.filter(
+      (result) => result.command === "INSERT"
+    );
+    console.log("filtered", filtered);
+    const arrayIds = [];
+    for (const filt of filtered) {
+      console.log("Valueee", filt.rows);
+      arrayIds.push(filt.rows[0].idStockChange);
+    }
+    console.log("Array ids", arrayIds);
+    await client.query("COMMIT");
+    return {
+      data: arrayIds,
+      code: 200,
+    };
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.log("error", err);
+    return {
+      error: err.message || err,
+      code: 500,
+    };
+  }
+}
+
+async function updateLogStockDetails(detalle, idsCreados) {
+  console.log("Ids creados", idsCreados);
+  const queryArray = [];
+  for (const id of idsCreados) {
+    const updateQuery = `update log_stock_change set detalle='${detalle}' where "idStockChange"=${id}`;
+    console.log("Updateando stock query log", updateQuery);
+    queryArray.push(updateQuery);
+  }
+  try {
+    await client.query("BEGIN");
+    await Promise.all(queryArray.map((q) => client.query(q)));
     await client.query("COMMIT");
     return {
       data: [],
@@ -333,7 +370,6 @@ async function updateProductStockPos(body) {
     };
   } catch (err) {
     await client.query("ROLLBACK");
-    console.log("error", err);
     return {
       error: err.message || err,
       code: 500,
@@ -577,4 +613,5 @@ module.exports = {
   getMobileSalePointsPos,
   getAllStores,
   transactionOfUpdateStocks,
+  updateLogStockDetails,
 };

@@ -93,8 +93,8 @@ function registerSale(data) {
   });
 }
 
-function registerSalePos(data) {
-  console.log("Ventas", data);
+function registerSalePos(data, idFactura) {
+  console.log("Ventas", data, idFactura);
   const idPedido = data.pedido.idPedido != "" ? data.pedido.idPedido : 0;
   var query = `insert into Ventas 
       (
@@ -118,7 +118,7 @@ function registerSalePos(data) {
           '${data.pedido.descuento}',
           '${data.pedido.montoFacturar}',
           '${idPedido}',
-          '${data.pedido.idFactura}'
+          '${idFactura ? idFactura : data.pedido.idFactura}'
       ) returning "idVenta"`;
   console.log("Creacion pedido query", query);
   return new Promise((resolve, reject) => {
