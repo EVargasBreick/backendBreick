@@ -7,10 +7,7 @@ async function isAuthEmizor(req, res, next) {
     const fechaHoraActual = new Date();
     const diferencia = fechaHora - fechaHoraActual;
     const diferenciaDias = parseInt(diferencia / (1000 * 60 * 60 * 24));
-    console.log(
-      "🚀 ~ file: isAuthEmizor.js:10 ~ isAuthEmizor ~ diferenciaDias:",
-      diferenciaDias
-    );
+
     if (diferenciaDias < 2) {
       const postOauthToken = await emizor.postOauthToken();
       console.log("Actualizando token");
