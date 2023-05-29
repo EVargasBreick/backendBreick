@@ -53,9 +53,9 @@ async function postOauthToken() {
       response.data.access_token,
       response.data.expires_in
     );
-    return JSON.stringify({ ...response.data, status: response.status });
+    return JSON.stringify({ data: response.data, status: response.status, });
   } catch (error) {
-    return JSON.stringify("Error en Auth a Emizor");
+    return JSON.stringify({ data: error?.response?.data ?? "Error Emizor Auth", status: error?.response?.status ?? 500 });
   }
 }
 
@@ -72,7 +72,7 @@ async function anularFactura(cuf_ackTicket_uniqueCode, unique_code = null) {
     );
     return JSON.stringify({ data: response.data, status: response.status });
   } catch (error) {
-    return JSON.stringify("Error en Anular Factura Emizor");
+    return JSON.stringify({ data: error?.response?.data ?? "Error Emizor Anulacion Factura", status: error?.response?.status ?? 500 });
   }
 }
 
