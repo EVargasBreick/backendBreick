@@ -21,7 +21,6 @@ module.exports = {
 
 
   deleteAnularFactura: async (req, res) => {
-    try {
       const cuf_ackTicket_uniqueCode = req.params.cuf_ackTicket_uniqueCode;
       const unique_code = req.query.unique_code
       const anularPromise = await emizor.anularFactura(
@@ -32,8 +31,5 @@ module.exports = {
       responseObject.message = "Factura anulada";
       responseObject.code = JSON.parse(anularPromise).status;
       res.status(responseObject.code).send(responseObject);
-    } catch (error) {
-      res.status(500).send("Error en el controlador de anularFactura");
-    }
   },
 };
