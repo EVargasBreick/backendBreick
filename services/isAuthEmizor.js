@@ -11,7 +11,7 @@ async function isAuthEmizor(req, res, next) {
       "🚀 ~ file: isAuthEmizor.js:10 ~ isAuthEmizor ~ diferenciaDias:",
       diferenciaDias
     );
-    if (diferenciaDias < 10) {
+    if (diferenciaDias < 2) {
       const postOauthToken = await emizor.postOauthToken();
       console.log("Actualizando token");
       console.log("postOauthToken: ", postOauthToken);

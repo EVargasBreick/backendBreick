@@ -26,8 +26,7 @@ function getEmizorToken() {
     client
       .query(query)
       .then((res) => {
-        console.log("🚀 ~ file: emizor_model.js:29 ~ .then ~ res:", res.rows)
-        resolve(res.rows[0]);        
+        resolve(res.rows[0]);
       })
       .catch((err) => {
         reject(err);
