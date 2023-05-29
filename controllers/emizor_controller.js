@@ -34,4 +34,15 @@ module.exports = {
       res.status(responseObject.code).send(responseObject);
     });
   },
+
+  getPuntosVenta: async (req, res) => {
+    const puntosVentaPromise = emizor.getPuntosVenta(req);
+    var responseObject = {};
+    puntosVentaPromise.then((puntosVentaData) => {
+      puntosVentaResponse = JSON.parse(puntosVentaData);
+      responseObject.data = puntosVentaResponse.data;
+      responseObject.code = puntosVentaResponse.status;
+      res.status(responseObject.code).send(responseObject);
+    });
+  }
 };
