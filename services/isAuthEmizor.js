@@ -14,7 +14,6 @@ async function isAuthEmizor(req, res, next) {
       console.log("postOauthToken: ", postOauthToken);
     }
     else {
-      console.log("Token in header");
       req.headers.authorization = 'Bearer ' + emizorToken.token;
     }
   }
