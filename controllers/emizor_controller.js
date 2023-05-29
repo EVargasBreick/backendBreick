@@ -1,7 +1,7 @@
 const express = require("express");
 const sessionParams = require("../server");
 const session = require("express-session");
-const postOauthToken = require("../models/emizor_model");
+const emizor = require("../models/emizor_model");
 const secondsToDate = require("../services/secondsToDate");
 const { use } = require("../routes/user");
 const app = express();
@@ -9,7 +9,7 @@ app.use(session(sessionParams));
 
 module.exports = {
   postOauthToken: async (req, res) => {
-    const userPromise = postOauthToken.postOauthToken();
+    const userPromise = emizor.postOauthToken();
     var responseObject = {};
     userPromise.then((userData) => {
       userResponse = JSON.parse(userData);
@@ -39,4 +39,7 @@ module.exports = {
       }
     });
   },
+
+  // get 
+  
 };

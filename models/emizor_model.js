@@ -19,6 +19,20 @@ function updateTableToken(token, fechaHora) {
   });
 }
 
+function getEmizorToken() {
+  return new Promise((resolve, reject) => {
+    const query = `select * from emizortoken where "idToken" = 1;`;
+    client
+      .query(query)
+      .then((res) => {
+        resolve(res.rows[0]);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
 async function postOauthToken() {
   try {
     const response = await axios.post(
@@ -34,7 +48,10 @@ async function postOauthToken() {
         },
       }
     );
-    await updateTableToken(response.data.access_token, response.data.expires_in);
+    await updateTableToken(
+      response.data.access_token,
+      response.data.expires_in
+    );
     return JSON.stringify({ ...response.data, status: response.status });
   } catch (error) {
     return JSON.stringify("Error en Auth a Emizor");
@@ -42,4 +59,5 @@ async function postOauthToken() {
 }
 module.exports = {
   postOauthToken,
+  getEmizorToken,
 };
