@@ -64,6 +64,7 @@ const xmlRoutes = require("./routes/xml");
 const packRoutes = require("./routes/pack");
 const rejectedRoutes = require("./routes/rejected");
 const dropRoutes = require("./routes/drop");
+const composedRoutes = require("./routes/composed");
 const testLogging = require("./services/logDailyKardex");
 const getInvoicesIncomplete = require("./services/getIncompleteInvoices");
 const logIncompleteInvoices = require("./services/logIncompleteInvoices");
@@ -93,7 +94,7 @@ app.use("/", packRoutes);
 app.use("/", rejectedRoutes);
 app.use("/", dropRoutes);
 app.use("/", emizorRoutes);
-
+app.use("/", composedRoutes);
 const serverType = process.env.TYPE ? "local" : "web";
 
 if (serverType === "web") {
