@@ -21,11 +21,13 @@ function updateTableToken(token, fechaHora) {
 
 function getEmizorToken() {
   return new Promise((resolve, reject) => {
-    const query = `select * from emizortoken where "idToken" = 1;`;
+    // in query only get one row
+    const query = `select * from emizortoken where "idToken" = 1 limit 1;`;
     client
       .query(query)
       .then((res) => {
-        resolve(res.rows[0]);
+        console.log("🚀 ~ file: emizor_model.js:29 ~ .then ~ res:", res.rows)
+        resolve(res.rows[0]);        
       })
       .catch((err) => {
         reject(err);

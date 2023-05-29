@@ -68,8 +68,12 @@ const testLogging = require("./services/logDailyKardex");
 const getInvoicesIncomplete = require("./services/getIncompleteInvoices");
 const logIncompleteInvoices = require("./services/logIncompleteInvoices");
 const emizorRoutes = require("./routes/emizorRoute");
-app.use("/", userRoutes);
+const middlewareEmizor = require("./services/isAuthEmizor");
+
 app.use("/", loginRoutes);
+app.use("/", emizorRoutes);
+app.use(middlewareEmizor);
+app.use("/", userRoutes);
 app.use("/", productRoutes);
 app.use("/", storeRoutes);
 app.use("/", languajeRoutes);
@@ -92,7 +96,6 @@ app.use("/", xmlRoutes);
 app.use("/", packRoutes);
 app.use("/", rejectedRoutes);
 app.use("/", dropRoutes);
-app.use("/", emizorRoutes);
 
 const serverType = process.env.TYPE ? "local" : "web";
 
