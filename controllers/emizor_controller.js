@@ -25,7 +25,8 @@ module.exports = {
     const unique_code = req.query.unique_code
     const anularPromise = emizor.anularFactura(
       cuf_ackTicket_uniqueCode,
-      unique_code
+      unique_code,
+      req
     );
     anularPromise.then((anularData) => {
       var responseObject = {}
