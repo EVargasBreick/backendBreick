@@ -58,7 +58,26 @@ async function postOauthToken() {
     return JSON.stringify("Error en Auth a Emizor");
   }
 }
+
+async function anularFactura(cuf_ackTicket_uniqueCode, unique_code = null) {
+  try {
+    const url = process.env.EMIZOR_URL + `/api/v1/facturas/${cuf_ackTicket_uniqueCode}/anular`
+    const params = unique_code ? { unique_code: unique_code } : null
+    // add query params axios delete
+    const response = await axios.delete(
+      url,
+      {
+        params: params
+      }
+    );
+    return JSON.stringify({ data: response.data, status: response.status });
+  } catch (error) {
+    return JSON.stringify("Error en Anular Factura Emizor");
+  }
+}
+
 module.exports = {
   postOauthToken,
   getEmizorToken,
+  anularFactura
 };
