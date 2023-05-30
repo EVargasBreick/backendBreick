@@ -109,6 +109,17 @@ async function getPuntosVenta(req) {
 function postFactura(bodyFacturas, bodyFacturasInfo, req) {
   return new Promise(async (resolve, reject) => {
     try {
+      let codigosLeyendaResponse = {};
+      getCodigosLeyenda(req).then((codigosLeyendaData) => {
+        codigosLeyendaResponse = JSON.parse(codigosLeyendaData);
+        bodyFacturas.leyendas = codigosLeyendaResponse.data.data[0].codigo;
+      }).catch((error) => {
+        reject(JSON.stringify({
+          data: error?.response?.data ?? "Error Emizor Factura Leyenda",
+          status: error?.response?.status ?? 500,
+        }));
+      });
+
       const url =
         process.env.EMIZOR_URL +
         `/api/v1/sucursales/${bodyFacturasInfo.nroSucursal}/facturas/compra-venta`;
@@ -118,7 +129,7 @@ function postFactura(bodyFacturas, bodyFacturasInfo, req) {
           Authorization: authHeader,
         },
       });
-      resolve(JSON.stringify({ data: response.data, status: response.status }));
+      resolve(JSON.stringify({ data: response.data, status: response.status, leyenda: codigosLeyendaResponse.data.data[0] }));
     } catch (error) {
       reject(
         JSON.stringify({
@@ -130,10 +141,29 @@ function postFactura(bodyFacturas, bodyFacturasInfo, req) {
   });
 }
 
+async function getCodigosLeyenda(req) {
+  try {
+    const url = process.env.EMIZOR_URL + `/api/v1/parametricas/leyendas`;
+    const authHeader = req.headers.authorization;
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: authHeader,
+      },
+    })
+    return JSON.stringify({ data: response.data, status: response.status });
+  } catch (error) {
+    return JSON.stringify({
+      data: error?.response?.data ?? "Error Emizor Codigos Leyenda",
+      status: error?.response?.status ?? 500,
+    });
+  }
+}
+
 module.exports = {
   postOauthToken,
   getEmizorToken,
   anularFactura,
   getPuntosVenta,
   postFactura,
+  getCodigosLeyenda,
 };

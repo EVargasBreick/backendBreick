@@ -45,5 +45,17 @@ module.exports = {
       responseObject.code = puntosVentaResponse.status;
       res.status(responseObject.code).send(responseObject);
     });
-  }
+  },
+
+  getCodigosLeyenda: async(req, res) => {
+  const codigosLeyendaPromise = emizor.getCodigosLeyenda(req);
+  var responseObject = {};
+  codigosLeyendaPromise.then((codigosLeyendaData) => {
+    codigosLeyendaResponse = JSON.parse(codigosLeyendaData);
+    responseObject.data = codigosLeyendaResponse.data;
+    responseObject.code = codigosLeyendaResponse.status;
+    res.status(responseObject.code).send(responseObject);
+  });
+}
+
 };
