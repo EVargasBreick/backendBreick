@@ -112,7 +112,7 @@ function postFactura(bodyFacturas, bodyFacturasInfo, req) {
       let codigosLeyendaResponse = {};
       getCodigosLeyenda(req).then((codigosLeyendaData) => {
         codigosLeyendaResponse = JSON.parse(codigosLeyendaData);
-        bodyFacturas.leyendas = codigosLeyendaResponse.data.data[0].codigo;
+        bodyFacturas.codigoLeyenda = codigosLeyendaResponse.data.data[0].codigo;
       }).catch((error) => {
         reject(JSON.stringify({
           data: error?.response?.data ?? "Error Emizor Factura Leyenda",
