@@ -97,9 +97,33 @@ async function getPuntosVenta(req) {
   }
 }
 
+function postFactura(bodyFacturas, bodyFacturasInfo, req) {
+  return new Promise(async (resolve, reject) => {
+
+    try {
+      const url = process.env.EMIZOR_URL + `/api/v1/sucursales/${bodyFacturasInfo.nroSucursal}/facturas/compra-venta`
+      const authHeader = req.headers.authorization
+      const response = await axios.post(
+        url,
+        bodyFacturas,
+        {
+          headers: {
+            "Authorization": authHeader
+          }
+        }
+      );
+      resolve(JSON.stringify({ data: response.data, status: response.status }));
+    } catch (error) {
+      reject(JSON.stringify({ data: error?.response?.data ?? "Error Emizor Factura", status: error?.response?.status ?? 500 }));
+    }
+  });
+}
+
+
 module.exports = {
   postOauthToken,
   getEmizorToken,
   anularFactura,
-  getPuntosVenta
+  getPuntosVenta,
+  postFactura
 };

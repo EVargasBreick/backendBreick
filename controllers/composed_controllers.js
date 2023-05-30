@@ -13,7 +13,7 @@ app.use(session(sessionParams));
 
 module.exports = {
   invoiceProcess: (req, res) => {
-    const createdInvoice = createInvoice(req.body);
+    const createdInvoice = createInvoice(req.body, req);
     createdInvoice
       .then((invoice) => {
         res.status(200).send(invoice);
@@ -24,7 +24,7 @@ module.exports = {
   },
 };
 
-const createInvoice = async (body) => {
+const createInvoice = async (body, req) => {
   try {
     const stockBody = {
       accion: "take",
@@ -41,7 +41,8 @@ const createInvoice = async (body) => {
         console.log("Update stock", updatedStock);
         const invoiceResponse = await createEmizorInvoice(
           body.emizor,
-          body.storeInfo
+          body.storeInfo,
+          req
         );
         const data = invoiceResponse.data;
         body.invoice.nroFactura = data.numeroFactura;
