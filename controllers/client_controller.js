@@ -12,6 +12,7 @@ const {
   getClientsPos,
   getClientByIdPos,
   getFullClientPos,
+  updateTheClientMail,
 } = require("../models/client_model");
 const sessionParams = require("../server");
 const session = require("express-session");
@@ -75,4 +76,17 @@ module.exports = {
       res.status(resp.code).send(resp);
     });
   },
+  updateClientMail: (req, res) => {
+    console.log("Body en controller:", req.body);
+    const promise = updateTheClientMail(req.body);
+    promise.then((data) => {
+      response = JSON.parse(data);
+      console.log(data);
+      res.status(response.code).send(response);
+    }
+    ).catch((err) => {
+      const error = JSON.parse(err);
+      res.status(error.code).send(error.data);
+    });
+  }
 };

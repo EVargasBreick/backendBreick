@@ -328,6 +328,29 @@ function getNumberOfClientsPos() {
   });
 }
 
+function updateTheClientMail(body) {
+  const { idClient, mail } = body;
+  const queryUpdateMail = `update clientes set correo='${mail}' where "idCliente"=${idClient}`;
+  return new Promise(async (resolve, reject) => {
+    try {
+      const updatedMail = await client.query(queryUpdateMail);
+      resolve(
+        JSON.stringify({
+          code: 200,
+          data: body,
+        })
+      );
+    } catch (err) {
+      reject(
+        JSON.stringify({
+          code: 400,
+          data: "Error al actualizar el mail",
+        })
+      );
+    }
+  });
+}
+
 module.exports = {
   registerClient,
   getClients,
@@ -341,4 +364,5 @@ module.exports = {
   getClientByIdPos,
   getFullClientPos,
   getNumberOfClientsPos,
+  updateTheClientMail
 };

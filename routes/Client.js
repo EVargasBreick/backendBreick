@@ -9,4 +9,5 @@ router.get("/client", controller.getClientById);
 router.get("/client/full", controller.getFullClient);
 router.get("/client/count", controller.getNumberClients);
 router.put("/client", controller.updateClient);
+router.put("/client/mail", controller.updateClientMail);
 module.exports = router;
