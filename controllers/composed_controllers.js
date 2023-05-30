@@ -34,74 +34,102 @@ const createInvoice = async (body) => {
     };
     console.log("Stock body", stockBody);
     const updatedStock = await updateProductStockPos(stockBody);
-    console.log("Resultado de creacion de logs", updatedStock);
-    const idsCreados = updatedStock.data;
-    try {
-      console.log("Update stock", updatedStock);
-      const invoiceResponse = await createEmizorInvoice(body.emizor);
-      const data = invoiceResponse.data;
-      body.invoice.nroFactura = data.numeroFactura;
-      body.invoice.cuf = data.cuf;
-      body.invoice.autorizacion = data.ack_ticket;
-      body.invoice.cufd = data.shortLink;
-      body.invoice.fechaEmision = data.fechaEmision;
+    if (updatedStock.code === 200) {
+      console.log("Resultado de creacion de logs", updatedStock);
+      const idsCreados = updatedStock.data;
       try {
-        const invoiceCreated = await createInvoicePos(body.invoice);
-        console.log(
-          "Invoice created",
-          invoiceCreated.factura.rows[0].idFactura
+        console.log("Update stock", updatedStock);
+        const invoiceResponse = await createEmizorInvoice(
+          body.emizor,
+          body.storeInfo
         );
-        body.venta.idFactura = invoiceCreated.factura.rows[0].idFactura;
+        const data = invoiceResponse.data;
+        body.invoice.nroFactura = data.numeroFactura;
+        body.invoice.cuf = data.cuf;
+        body.invoice.autorizacion = data.ack_ticket;
+        body.invoice.cufd = data.shortLink;
+        body.invoice.fechaEmision = data.fechaEmision;
         try {
-          const saleCreated = await registerSalePos(
-            body.venta,
+          const invoiceCreated = await createInvoicePos(body.invoice);
+          console.log(
+            "Invoice created",
             invoiceCreated.factura.rows[0].idFactura
           );
-
-          const ventaCreada = JSON.parse(saleCreated);
-          console.log("Sale created", ventaCreada);
+          body.venta.idFactura = invoiceCreated.factura.rows[0].idFactura;
           try {
-            const updatedLogs = updateLogStockDetails(
-              `NVAG-${ventaCreada.idCreado}`,
-              idsCreados
+            const saleCreated = await registerSalePos(
+              body.venta,
+              invoiceCreated.factura.rows[0].idFactura
             );
+            const ventaCreada = JSON.parse(saleCreated);
+            console.log("Sale created", ventaCreada);
+            try {
+              const updatedLogs = updateLogStockDetails(
+                `NVAG-${ventaCreada.idCreado}`,
+                idsCreados
+              );
+              return {
+                code: 200,
+                data: invoiceResponse,
+              };
+            } catch (error) {
+              return {
+                code: 500,
+                error: error,
+                message: "Error al actualizar los logs",
+              };
+            }
+          } catch {
             return {
-              code: 200,
-              data: invoiceResponse,
+              code: 500,
+              error: error,
+              message: "Error al crear la venta",
+            };
+          }
+        } catch (error) {
+          try {
+            const stockBody = {
+              accion: "add",
+              idAlmacen: body.stock.idAlmacen,
+              productos: body.stock.productos,
+              detalle: `CVAGN-0`,
+            };
+            console.log("Stock body", stockBody);
+            const updatedStock = await updateProductStockPos(stockBody);
+            return {
+              code: 500,
+              error: error,
+              message: "Error al crear la factura",
             };
           } catch (error) {
             return {
               code: 500,
               error: error,
-              message: "Error al actualizar los logs",
+              message: "Error al devolver el stock",
             };
           }
-        } catch {
-          return {
-            code: 500,
-            error: error,
-            message: "Error al crear la venta",
-          };
         }
       } catch (error) {
         return {
           code: 500,
           error: error,
-          message: "Error al crear la factura",
+          message: "Error al enviar la factura a emizor",
         };
       }
-    } catch (error) {
+    } else {
       return {
-        code: error.status,
-        error: error,
-        message: "Error al enviar la factura a emizor",
+        code: 500,
+        error: updatedStock,
+        message:
+          "Error al actualizar stock, algún producto no cuenta con la cantidad solicitada",
       };
     }
   } catch (error) {
     return {
-      code: error.status,
+      code: 500,
       error: error,
-      message: "Error al actualizar stock",
+      message:
+        "Error al actualizar stock, algún producto no cuenta con la cantidad solicitada",
     };
   }
 };
