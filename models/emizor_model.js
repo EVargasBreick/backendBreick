@@ -53,77 +53,87 @@ async function postOauthToken() {
       response.data.access_token,
       response.data.expires_in
     );
-    return JSON.stringify({ data: response.data, status: response.status, });
+    return JSON.stringify({ data: response.data, status: response.status });
   } catch (error) {
-    return JSON.stringify({ data: error?.response?.data ?? "Error Emizor Auth", status: error?.response?.status ?? 500 });
+    return JSON.stringify({
+      data: error?.response?.data ?? "Error Emizor Auth",
+      status: error?.response?.status ?? 500,
+    });
   }
 }
 
-async function anularFactura(cuf_ackTicket_uniqueCode, unique_code = null, req) {
+async function anularFactura(
+  cuf_ackTicket_uniqueCode,
+  unique_code = null,
+  req
+) {
   try {
-    const url = process.env.EMIZOR_URL + `/api/v1/facturas/${cuf_ackTicket_uniqueCode}/anular`
-    const params = unique_code ? { unique_code: unique_code } : null
-    const authHeader = req.headers.authorization
-    const response = await axios.delete(
-      url,
-      {
-        params: params,
-        headers: {
-          "Authorization": authHeader
-        }
-      }
-    );
+    const url =
+      process.env.EMIZOR_URL +
+      `/api/v1/facturas/${cuf_ackTicket_uniqueCode}/anular`;
+    const params = unique_code ? { unique_code: unique_code } : null;
+    const authHeader = req.headers.authorization;
+    const response = await axios.delete(url, {
+      params: params,
+      headers: {
+        Authorization: authHeader,
+      },
+    });
     return JSON.stringify({ data: response.data, status: response.status });
   } catch (error) {
-    return JSON.stringify({ data: error?.response?.data ?? "Error Emizor Anulacion Factura", status: error?.response?.status ?? 500 });
+    return JSON.stringify({
+      data: error?.response?.data ?? "Error Emizor Anulacion Factura",
+      status: error?.response?.status ?? 500,
+    });
   }
 }
 
 async function getPuntosVenta(req) {
   try {
-    const url = process.env.EMIZOR_URL + `/api/v1/puntos-de-venta`
-    const authHeader = req.headers.authorization
-    const response = await axios.get(
-      url,
-      {
-        headers: {
-          "Authorization": authHeader
-        }
-      }
-    );
+    const url = process.env.EMIZOR_URL + `/api/v1/puntos-de-venta`;
+    const authHeader = req.headers.authorization;
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: authHeader,
+      },
+    });
     return JSON.stringify({ data: response.data, status: response.status });
   } catch (error) {
-    return JSON.stringify({ data: error?.response?.data ?? "Error Emizor Punto VENTA", status: error?.response?.status ?? 500 });
+    return JSON.stringify({
+      data: error?.response?.data ?? "Error Emizor Punto VENTA",
+      status: error?.response?.status ?? 500,
+    });
   }
 }
 
 function postFactura(bodyFacturas, bodyFacturasInfo, req) {
   return new Promise(async (resolve, reject) => {
-
     try {
-      const url = process.env.EMIZOR_URL + `/api/v1/sucursales/${bodyFacturasInfo.nroSucursal}/facturas/compra-venta`
-      const authHeader = req.headers.authorization
-      const response = await axios.post(
-        url,
-        bodyFacturas,
-        {
-          headers: {
-            "Authorization": authHeader
-          }
-        }
-      );
+      const url =
+        process.env.EMIZOR_URL +
+        `/api/v1/sucursales/${bodyFacturasInfo.nroSucursal}/facturas/compra-venta`;
+      const authHeader = req.headers.authorization;
+      const response = await axios.post(url, bodyFacturas, {
+        headers: {
+          Authorization: authHeader,
+        },
+      });
       resolve(JSON.stringify({ data: response.data, status: response.status }));
     } catch (error) {
-      reject(JSON.stringify({ data: error?.response?.data ?? "Error Emizor Factura", status: error?.response?.status ?? 500 }));
+      reject(
+        JSON.stringify({
+          data: error?.response?.data ?? "Error Emizor Factura",
+          status: error?.response?.status ?? 500,
+        })
+      );
     }
   });
 }
-
 
 module.exports = {
   postOauthToken,
   getEmizorToken,
   anularFactura,
   getPuntosVenta,
-  postFactura
+  postFactura,
 };

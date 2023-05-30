@@ -7,6 +7,7 @@ const {
   updateProductStockPos,
   updateLogStockDetails,
 } = require("../models/store_model");
+const { postFactura } = require("../models/emizor_model");
 const app = express();
 
 app.use(session(sessionParams));
@@ -37,14 +38,16 @@ const createInvoice = async (body, req) => {
     if (updatedStock.code === 200) {
       console.log("Resultado de creacion de logs", updatedStock);
       const idsCreados = updatedStock.data;
+      console.log("Flag 1");
       try {
         console.log("Update stock", updatedStock);
-        const invoiceResponse = await createEmizorInvoice(
+        const invoiceResponse = await postFactura(
           body.emizor,
           body.storeInfo,
           req
         );
-        const data = invoiceResponse.data;
+        console.log("Resp de la factura", invoiceResponse);
+        const data = JSON.parse(invoiceResponse).data;
         body.invoice.nroFactura = data.numeroFactura;
         body.invoice.cuf = data.cuf;
         body.invoice.autorizacion = data.ack_ticket;
@@ -112,7 +115,7 @@ const createInvoice = async (body, req) => {
         }
       } catch (error) {
         return {
-          code: 500,
+          code: JSON.parse(error).status,
           error: error,
           message: "Error al enviar la factura a emizor",
         };
@@ -122,7 +125,7 @@ const createInvoice = async (body, req) => {
         code: 500,
         error: updatedStock,
         message:
-          "Error al actualizar stock, algún producto no cuenta con la cantidad solicitada",
+          "Error al actualizar stock, algún producto no cuenta con la cantidad solicitada 1 ",
       };
     }
   } catch (error) {
@@ -130,7 +133,7 @@ const createInvoice = async (body, req) => {
       code: 500,
       error: error,
       message:
-        "Error al actualizar stock, algún producto no cuenta con la cantidad solicitada",
+        "Error al actualizar stock, algún producto no cuenta con la cantidad solicitada 2",
     };
   }
 };
