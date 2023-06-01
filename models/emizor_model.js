@@ -3,6 +3,7 @@ require("dotenv").config();
 const dbConnection = require("../server");
 const { client } = require("../postgressConn");
 const secondsToDate = require("../services/secondsToDate");
+const dateString = require("../services/dateServices");
 
 function updateTableToken(token, fechaHora) {
   return new Promise((resolve, reject) => {
@@ -75,13 +76,19 @@ async function anularFactura(
     const body = {
       codigoMotivoAnulacion: Number(motivo),
     };
-    console.log("body", body);
     const response = await axios.delete(url, {
       headers: {
         Authorization: authHeader,
       },
       data: body
     });
+
+    const dateResult = dateString();
+    const cancelQuery = `update Facturas set estado=1, "fechaAnulacion"='${dateResult}' where cuf='${cuf_ackTicket_uniqueCode}'`;
+    console.log("TCL: cancelQuery", cancelQuery)
+
+    await client.query(cancelQuery);
+    console.log("TCL: cancelQuery2", cancelQuery)
     return JSON.stringify({ data: response.data, status: response.status });
   } catch (error) {
     return JSON.stringify({
