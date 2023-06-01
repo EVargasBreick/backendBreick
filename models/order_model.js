@@ -1085,7 +1085,7 @@ function getOrdersToInvoicePos(params) {
 
 function getOrderToInvoiceDetailsPos(params) {
   return new Promise((resolve, reject) => {
-    const query = `select pd.*, pp.*, cl.nit, cl."razonSocial", us."idAlmacen", pr."nombreProducto", pr."codInterno", pr."codigoUnidad", pr."precioDeFabrica" from Pedidos pd 
+    const query = `select pd.*, pp.*, cl.nit, cl."razonSocial", cl."tipoDocumento", cl.correo, us."idAlmacen", pr."nombreProducto", pr."codInterno", pr."codigoUnidad", pr."precioDeFabrica" from Pedidos pd 
     inner join Pedido_Producto pp on pd."idPedido"=pp."idPedido"
     inner join Clientes cl on pd."idCliente"=cl."idCliente"
     inner join Usuarios us on pd."idUsuarioCrea"=us."idUsuario"

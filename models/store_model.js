@@ -280,99 +280,117 @@ function getUserStockPos(params) {
 }
 
 async function updateProductStockPos(body) {
-  const TiposStock = Object.freeze({
-    AGENCIA: {
-      identificador: "AG",
-      idName: "idAgencia",
-      tableName: "Stock_Agencia",
-    },
-    BODEGA: {
-      identificador: "AL",
-      idName: "idBodega",
-      tableName: "Stock_Bodega",
-    },
-    MOVIL: {
-      identificador: "-",
-      idName: "idVehiculo",
-      tableName: "Stock_Agencia_Movil",
-    },
-  });
-  const dateResult = dateString();
-  const operator = body.accion === "add" ? "+" : "-";
-  const typeStock = body.idAlmacen.includes(TiposStock.AGENCIA.identificador)
-    ? TiposStock.AGENCIA
-    : body.idAlmacen.includes(TiposStock.BODEGA.identificador)
-    ? TiposStock.BODEGA
-    : TiposStock.MOVIL;
+  if (body.productos.length > 0) {
+    const TiposStock = Object.freeze({
+      AGENCIA: {
+        identificador: "AG",
+        idName: "idAgencia",
+        tableName: "Stock_Agencia",
+      },
+      BODEGA: {
+        identificador: "AL",
+        idName: "idBodega",
+        tableName: "Stock_Bodega",
+      },
+      MOVIL: {
+        identificador: "-",
+        idName: "idVehiculo",
+        tableName: "Stock_Agencia_Movil",
+      },
+    });
+    const dateResult = dateString();
+    const operator = body.accion === "add" ? "+" : "-";
+    const typeStock = body.idAlmacen.includes(TiposStock.AGENCIA.identificador)
+      ? TiposStock.AGENCIA
+      : body.idAlmacen.includes(TiposStock.BODEGA.identificador)
+      ? TiposStock.BODEGA
+      : TiposStock.MOVIL;
 
-  const queries = [];
-  for (const prod of body.productos) {
-    const updateStockQuery = `
-    UPDATE ${typeStock.tableName}
-      SET "cant_Anterior" = "cant_Actual",
-          "diferencia" = ${prod.cantProducto},
-          "cant_Actual" = "cant_Actual" ${operator} ${prod.cantProducto},
-          "fechaActualizacion" = '${dateResult}'
-      WHERE "idProducto" = ${prod.idProducto} AND "${typeStock.idName}" = '${body.idAlmacen}'
-    `;
-    queries.push(updateStockQuery);
-    const logQuery = `
-    INSERT INTO log_stock_change ("idProducto", "cantidadProducto", "idAgencia", "fechaHora", "accion", "detalle")
-    VALUES (${prod.idProducto}, ${prod.cantProducto}, '${body.idAlmacen}', '${dateResult}', '${operator}', '${body.detalle}')
-    returning "idStockChange"`;
-    queries.push(logQuery);
-  }
-
-  try {
-    await client.query("BEGIN");
-    const resultArray = await Promise.all(queries.map((q) => client.query(q)));
-
-    const filtered = resultArray.filter(
-      (result) => result.command === "INSERT"
-    );
-    console.log("filtered", filtered);
-    const arrayIds = [];
-    for (const filt of filtered) {
-      console.log("Valueee", filt.rows);
-      arrayIds.push(filt.rows[0].idStockChange);
+    const queries = [];
+    for (const prod of body.productos) {
+      const updateStockQuery = `
+      UPDATE ${typeStock.tableName}
+        SET "cant_Anterior" = "cant_Actual",
+            "diferencia" = ${prod.cantProducto},
+            "cant_Actual" = "cant_Actual" ${operator} ${prod.cantProducto},
+            "fechaActualizacion" = '${dateResult}'
+        WHERE "idProducto" = ${prod.idProducto} AND "${typeStock.idName}" = '${body.idAlmacen}'
+      `;
+      queries.push(updateStockQuery);
+      const logQuery = `
+      INSERT INTO log_stock_change ("idProducto", "cantidadProducto", "idAgencia", "fechaHora", "accion", "detalle")
+      VALUES (${prod.idProducto}, ${prod.cantProducto}, '${body.idAlmacen}', '${dateResult}', '${operator}', '${body.detalle}')
+      returning "idStockChange"`;
+      queries.push(logQuery);
     }
-    console.log("Array ids", arrayIds);
-    await client.query("COMMIT");
+
+    try {
+      await client.query("BEGIN");
+      const resultArray = await Promise.all(
+        queries.map((q) => client.query(q))
+      );
+
+      const filtered = resultArray.filter(
+        (result) => result.command === "INSERT"
+      );
+      console.log("filtered", filtered);
+      const arrayIds = [];
+      for (const filt of filtered) {
+        console.log("Valueee", filt.rows);
+        arrayIds.push(filt.rows[0].idStockChange);
+      }
+      console.log("Array ids", arrayIds);
+      await client.query("COMMIT");
+      return {
+        data: arrayIds,
+        code: 200,
+      };
+    } catch (err) {
+      await client.query("ROLLBACK");
+      console.log("error", err);
+      return {
+        error: err.message || err,
+        code: 500,
+      };
+    }
+  } else {
+    const arrayIds = [];
     return {
+      message: "No product to update",
       data: arrayIds,
       code: 200,
-    };
-  } catch (err) {
-    await client.query("ROLLBACK");
-    console.log("error", err);
-    return {
-      error: err.message || err,
-      code: 500,
     };
   }
 }
 
 async function updateLogStockDetails(detalle, idsCreados) {
-  console.log("Ids creados", idsCreados);
-  const queryArray = [];
-  for (const id of idsCreados) {
-    const updateQuery = `update log_stock_change set detalle='${detalle}' where "idStockChange"=${id}`;
-    console.log("Updateando stock query log", updateQuery);
-    queryArray.push(updateQuery);
-  }
-  try {
-    await client.query("BEGIN");
-    await Promise.all(queryArray.map((q) => client.query(q)));
-    await client.query("COMMIT");
+  if (idsCreados > 0) {
+    console.log("Ids creados", idsCreados);
+    const queryArray = [];
+    for (const id of idsCreados) {
+      const updateQuery = `update log_stock_change set detalle='${detalle}' where "idStockChange"=${id}`;
+      console.log("Updateando stock query log", updateQuery);
+      queryArray.push(updateQuery);
+    }
+    try {
+      await client.query("BEGIN");
+      await Promise.all(queryArray.map((q) => client.query(q)));
+      await client.query("COMMIT");
+      return {
+        data: [],
+        code: 200,
+      };
+    } catch (err) {
+      await client.query("ROLLBACK");
+      return {
+        error: err.message || err,
+        code: 500,
+      };
+    }
+  } else {
     return {
       data: [],
       code: 200,
-    };
-  } catch (err) {
-    await client.query("ROLLBACK");
-    return {
-      error: err.message || err,
-      code: 500,
     };
   }
 }

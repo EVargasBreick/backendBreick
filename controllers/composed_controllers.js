@@ -49,135 +49,215 @@ const createInvoice = async (body, req) => {
         );
         const data = JSON.parse(invoiceResponse).data.data;
         console.log("Respuesta de la factura", data);
-        try {
-          const maxRetries = 10;
-          let retries = 0;
-          let stateData = null;
-          const delay = (ms) =>
-            new Promise((resolve) => setTimeout(resolve, ms));
-          console.log("Flag antes del while");
-          while (retries < maxRetries) {
-            console.log("Flag en el intento", retries + 1);
-            try {
-              const estadoFactura = await getEstadoFactura(
-                req,
-                data.ack_ticket
-              );
-              console.log("Estado de la factura", estadoFactura);
-              stateData = JSON.parse(estadoFactura).data.data.estado;
-            } catch (error) {
-              console.log("Error", error);
+        if (data.emision_type_code === 1) {
+          try {
+            const maxRetries = 15;
+            let retries = 0;
+            let stateData = null;
+            const delay = (ms) =>
+              new Promise((resolve) => setTimeout(resolve, ms));
+            console.log("Flag antes del while");
+            while (retries < maxRetries) {
+              console.log("Flag en el intento", retries + 1);
+              try {
+                const estadoFactura = await getEstadoFactura(
+                  req,
+                  data.ack_ticket
+                );
+                console.log("Estado de la factura", estadoFactura);
+                stateData = JSON.parse(estadoFactura).data.data.estado;
+              } catch (error) {
+                console.log("Error", error);
 
-              return {
-                code: 500,
-                error: error,
-                message: "Error al obtener el estado de la factura",
-              };
-            }
-            retries++;
-            await delay(3000); // Delay between retries
-            if (stateData === "VALIDA" || stateData === "RECHAZADA") {
-              if (stateData === "VALIDA") {
-                try {
-                  console.log("Resp de la factura", data);
-                  body.invoice.nroFactura = data.numeroFactura;
-                  body.invoice.cuf = data.cuf;
-                  body.invoice.autorizacion = data.ack_ticket;
-                  body.invoice.cufd = data.shortLink;
-                  body.invoice.fechaEmision = data.fechaEmision;
+                return {
+                  code: 500,
+                  error: error,
+                  message: "Error al obtener el estado de la factura",
+                };
+              }
+              retries++;
+              await delay(3000); // Delay between retries
+              if (stateData === "VALIDA" || stateData === "RECHAZADA") {
+                if (stateData === "VALIDA") {
                   try {
-                    const invoiceCreated = await createInvoicePos(body.invoice);
-                    console.log(
-                      "Invoice created",
-                      invoiceCreated.factura.rows[0].idFactura
-                    );
-                    body.venta.idFactura =
-                      invoiceCreated.factura.rows[0].idFactura;
+                    console.log("Resp de la factura", data);
+                    body.invoice.nroFactura = data.numeroFactura;
+                    body.invoice.cuf = data.cuf;
+                    body.invoice.autorizacion = data.ack_ticket;
+                    body.invoice.cufd = data.shortLink;
+                    body.invoice.fechaEmision = data.fechaEmision;
                     try {
-                      const saleCreated = await registerSalePos(
-                        body.venta,
+                      const invoiceCreated = await createInvoicePos(
+                        body.invoice
+                      );
+                      console.log(
+                        "Invoice created",
                         invoiceCreated.factura.rows[0].idFactura
                       );
-                      const ventaCreada = JSON.parse(saleCreated);
-                      console.log("Sale created", ventaCreada);
+                      body.venta.idFactura =
+                        invoiceCreated.factura.rows[0].idFactura;
                       try {
-                        const updatedLogs = await updateLogStockDetails(
-                          `NVAG-${ventaCreada.idCreado}`,
-                          idsCreados
+                        const saleCreated = await registerSalePos(
+                          body.venta,
+                          invoiceCreated.factura.rows[0].idFactura
+                        );
+                        const ventaCreada = JSON.parse(saleCreated);
+                        console.log("Sale created", ventaCreada);
+                        try {
+                          const updatedLogs = await updateLogStockDetails(
+                            `NVAG-${ventaCreada.idCreado}`,
+                            idsCreados
+                          );
+                          return {
+                            code: 200,
+                            data: invoiceResponse,
+                            message: "Factura correcta",
+                          };
+                        } catch (error) {
+                          return {
+                            code: 500,
+                            error: error,
+                            message: "Error al actualizar los logs",
+                          };
+                        }
+                      } catch {
+                        return {
+                          code: 500,
+                          error: error,
+                          message: "Error al crear la venta",
+                        };
+                      }
+                    } catch (error) {
+                      try {
+                        const stockBody = {
+                          accion: "add",
+                          idAlmacen: body.stock.idAlmacen,
+                          productos: body.stock.productos,
+                          detalle: `CVAGN-0`,
+                        };
+                        console.log("Stock body", stockBody);
+                        const updatedStock = await updateProductStockPos(
+                          stockBody
                         );
                         return {
-                          code: 200,
-                          data: invoiceResponse,
-                          message: "Factura correcta",
+                          code: 500,
+                          error: error,
+                          message: "Error al crear la factura",
                         };
                       } catch (error) {
                         return {
                           code: 500,
                           error: error,
-                          message: "Error al actualizar los logs",
+                          message: "Error al devolver el stock",
                         };
                       }
-                    } catch {
-                      return {
-                        code: 500,
-                        error: error,
-                        message: "Error al crear la venta",
-                      };
                     }
-                  } catch (error) {
-                    try {
-                      const stockBody = {
-                        accion: "add",
-                        idAlmacen: body.stock.idAlmacen,
-                        productos: body.stock.productos,
-                        detalle: `CVAGN-0`,
-                      };
-                      console.log("Stock body", stockBody);
-                      const updatedStock = await updateProductStockPos(
-                        stockBody
-                      );
-                      return {
-                        code: 500,
-                        error: error,
-                        message: "Error al crear la factura",
-                      };
-                    } catch (error) {
-                      return {
-                        code: 500,
-                        error: error,
-                        message: "Error al devolver el stock",
-                      };
-                    }
+                  } catch (err) {
+                    return {
+                      code: 500,
+                      error: err,
+                      message: "Error en el proceso de facturacion",
+                    };
                   }
-                } catch (err) {
+                } else {
                   return {
                     code: 500,
-                    error: err,
-                    message: "Error en el proceso de facturacion",
+                    error: "Factura rechazada",
+                    message: "Factura rechazada, intente nuevamente",
                   };
                 }
-              } else {
+              }
+              if (maxRetries === retries) {
                 return {
                   code: 500,
-                  error: "Factura rechazada",
-                  message: "Factura rechazada, intente nuevamente",
+                  error: "Maximo de intentos alcanzado",
+                  message: "Maximo de intentos alcanzado",
                 };
               }
             }
-            if (maxRetries === retries) {
-              return {
-                code: 500,
-                error: "Maximo de intentos alcanzado",
-                message: "Maximo de intentos alcanzado",
-              };
-            }
+          } catch (error) {
+            return {
+              code: 500,
+              error: error,
+              message: "Error al obtener el estado de la factura",
+            };
           }
-        } catch (error) {
-          return {
-            code: 500,
-            error: error,
-            message: "Error al obtener el estado de la factura",
-          };
+        } else {
+          try {
+            console.log("Resp de la factura", data);
+            body.invoice.nroFactura = data.numeroFactura;
+            body.invoice.cuf = data.cuf;
+            body.invoice.autorizacion = data.ack_ticket;
+            body.invoice.cufd = data.shortLink;
+            body.invoice.fechaEmision = data.fechaEmision;
+            try {
+              const invoiceCreated = await createInvoicePos(body.invoice);
+              console.log(
+                "Invoice created",
+                invoiceCreated.factura.rows[0].idFactura
+              );
+              body.venta.idFactura = invoiceCreated.factura.rows[0].idFactura;
+              try {
+                const saleCreated = await registerSalePos(
+                  body.venta,
+                  invoiceCreated.factura.rows[0].idFactura
+                );
+                const ventaCreada = JSON.parse(saleCreated);
+                console.log("Sale created", ventaCreada);
+                try {
+                  const updatedLogs = await updateLogStockDetails(
+                    `NVAG-${ventaCreada.idCreado}`,
+                    idsCreados
+                  );
+                  return {
+                    code: 200,
+                    data: invoiceResponse,
+                    message: "Factura correcta",
+                  };
+                } catch (error) {
+                  return {
+                    code: 500,
+                    error: error,
+                    message: "Error al actualizar los logs",
+                  };
+                }
+              } catch {
+                return {
+                  code: 500,
+                  error: error,
+                  message: "Error al crear la venta",
+                };
+              }
+            } catch (error) {
+              try {
+                const stockBody = {
+                  accion: "add",
+                  idAlmacen: body.stock.idAlmacen,
+                  productos: body.stock.productos,
+                  detalle: `CVAGN-0`,
+                };
+                console.log("Stock body", stockBody);
+                const updatedStock = await updateProductStockPos(stockBody);
+                return {
+                  code: 500,
+                  error: error,
+                  message: "Error al crear la factura",
+                };
+              } catch (error) {
+                return {
+                  code: 500,
+                  error: error,
+                  message: "Error al devolver el stock",
+                };
+              }
+            }
+          } catch (err) {
+            return {
+              code: 500,
+              error: err,
+              message: "Error en el proceso de facturacion",
+            };
+          }
         }
       } catch (error) {
         try {
