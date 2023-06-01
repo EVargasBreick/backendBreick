@@ -64,20 +64,23 @@ async function postOauthToken() {
 
 async function anularFactura(
   cuf_ackTicket_uniqueCode,
-  unique_code = null,
+  motivo,
   req
 ) {
   try {
     const url =
       process.env.EMIZOR_URL +
       `/api/v1/facturas/${cuf_ackTicket_uniqueCode}/anular`;
-    const params = unique_code ? { unique_code: unique_code } : null;
     const authHeader = req.headers.authorization;
+    const body = {
+      codigoMotivoAnulacion: Number(motivo),
+    };
+    console.log("body", body);
     const response = await axios.delete(url, {
-      params: params,
       headers: {
         Authorization: authHeader,
       },
+      data: body
     });
     return JSON.stringify({ data: response.data, status: response.status });
   } catch (error) {
