@@ -47,6 +47,10 @@ const createInvoice = async (body, req) => {
           body.storeInfo,
           req
         );
+        console.log(
+          "Respuesta base de la factura",
+          JSON.parse(invoiceResponse)
+        );
         const data = JSON.parse(invoiceResponse).data.data;
         console.log("Respuesta de la factura", data);
         if (data.emision_type_code === 1) {
@@ -111,6 +115,8 @@ const createInvoice = async (body, req) => {
                           return {
                             code: 200,
                             data: invoiceResponse,
+                            leyenda:
+                              JSON.parse(invoiceResponse).leyenda.descripcion,
                             message: "Factura correcta",
                           };
                         } catch (error) {
@@ -214,6 +220,7 @@ const createInvoice = async (body, req) => {
                   return {
                     code: 200,
                     data: invoiceResponse,
+                    leyenda: JSON.parse(invoiceResponse).leyenda.descripcion,
                     message: "Factura correcta",
                   };
                 } catch (error) {

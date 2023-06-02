@@ -63,11 +63,7 @@ async function postOauthToken() {
   }
 }
 
-async function anularFactura(
-  cuf_ackTicket_uniqueCode,
-  motivo,
-  req
-) {
+async function anularFactura(cuf_ackTicket_uniqueCode, motivo, req) {
   try {
     const url =
       process.env.EMIZOR_URL +
@@ -80,15 +76,15 @@ async function anularFactura(
       headers: {
         Authorization: authHeader,
       },
-      data: body
+      data: body,
     });
 
     const dateResult = dateString();
     const cancelQuery = `update Facturas set estado=1, "fechaAnulacion"='${dateResult}' where cuf='${cuf_ackTicket_uniqueCode}'`;
-    console.log("TCL: cancelQuery", cancelQuery)
+    console.log("TCL: cancelQuery", cancelQuery);
 
     await client.query(cancelQuery);
-    console.log("TCL: cancelQuery2", cancelQuery)
+    console.log("TCL: cancelQuery2", cancelQuery);
     return JSON.stringify({ data: response.data, status: response.status });
   } catch (error) {
     return JSON.stringify({
@@ -116,15 +112,38 @@ async function getPuntosVenta(req) {
   }
 }
 
+function getRandomNumber(n) {
+  return Math.floor(Math.random() * (n + 1));
+}
+
 function postFactura(bodyFacturas, bodyFacturasInfo, req) {
   return new Promise(async (resolve, reject) => {
     try {
       let codigosLeyendaResponse = {};
       getCodigosLeyenda(req)
-        .then((codigosLeyendaData) => {
+        .then(async (codigosLeyendaData) => {
           codigosLeyendaResponse = JSON.parse(codigosLeyendaData);
-          bodyFacturas.codigoLeyenda =
-            codigosLeyendaResponse.data.data[0].codigo;
+          const random = getRandomNumber(
+            codigosLeyendaResponse.data.data.length
+          );
+          const selectedLegend = codigosLeyendaResponse.data.data[random];
+          bodyFacturas.codigoLeyenda = selectedLegend.codigo;
+          const url =
+            process.env.EMIZOR_URL +
+            `/api/v1/sucursales/${bodyFacturasInfo.nroSucursal}/facturas/compra-venta`;
+          const authHeader = req.headers.authorization;
+          const response = await axios.post(url, bodyFacturas, {
+            headers: {
+              Authorization: authHeader,
+            },
+          });
+          resolve(
+            JSON.stringify({
+              data: response.data,
+              status: response.status,
+              leyenda: selectedLegend,
+            })
+          );
         })
         .catch((error) => {
           reject(
@@ -134,23 +153,6 @@ function postFactura(bodyFacturas, bodyFacturasInfo, req) {
             })
           );
         });
-
-      const url =
-        process.env.EMIZOR_URL +
-        `/api/v1/sucursales/${bodyFacturasInfo.nroSucursal}/facturas/compra-venta`;
-      const authHeader = req.headers.authorization;
-      const response = await axios.post(url, bodyFacturas, {
-        headers: {
-          Authorization: authHeader,
-        },
-      });
-      resolve(
-        JSON.stringify({
-          data: response.data,
-          status: response.status,
-          leyenda: codigosLeyendaResponse.data.data[0],
-        })
-      );
     } catch (error) {
       reject(
         JSON.stringify({
