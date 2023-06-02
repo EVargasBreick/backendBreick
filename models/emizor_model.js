@@ -199,6 +199,22 @@ async function getEstadoFactura(req, ack_ticket) {
   }
 }
 
+async function getFacturaDB(uniqueCode) {
+  try {
+    const query = `SELECT "cufd", "nroFactura" , "nitCliente" 
+    FROM Facturas
+    WHERE split_part(autorizacion, '$', 1) = '${uniqueCode}';`;
+    const response = await client.query(query);
+    return JSON.stringify({ data: response.rows[0], status: 200});
+
+  } catch (error) {
+    return JSON.stringify({
+      data: error?.response?.data ?? "Error Obteniendo Estado de Factura",
+      status: error?.response?.status ?? 500,
+    });
+  }
+}
+
 module.exports = {
   postOauthToken,
   getEmizorToken,
@@ -207,4 +223,5 @@ module.exports = {
   postFactura,
   getCodigosLeyenda,
   getEstadoFactura,
+  getFacturaDB
 };

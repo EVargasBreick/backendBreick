@@ -56,6 +56,18 @@ module.exports = {
       responseObject.code = codigosLeyendaResponse.status;
       res.status(responseObject.code).send(responseObject);
     });
+  },
+
+  getFacturaDB: async (req, res) => {
+    const { uniqueCode } = req.params;
+    const facturaPromise = emizor.getFacturaDB(uniqueCode);
+    var responseObject = {};
+    facturaPromise.then((facturaData) => {
+      facturaResponse = JSON.parse(facturaData);
+      responseObject.data = facturaResponse.data;
+      responseObject.code = facturaResponse.status;
+      res.status(responseObject.code).send(responseObject);
+    });
   }
 
 };
