@@ -51,14 +51,12 @@ const createInvoice = async (body, req) => {
         console.log("Respuesta de la factura", data);
         if (data.emision_type_code === 1) {
           try {
-            const maxRetries = 15;
+            const maxRetries = 50;
             let retries = 0;
             let stateData = null;
             const delay = (ms) =>
               new Promise((resolve) => setTimeout(resolve, ms));
-            console.log("Flag antes del while");
             while (retries < maxRetries) {
-              console.log("Flag en el intento", retries + 1);
               try {
                 const estadoFactura = await getEstadoFactura(
                   req,
@@ -78,12 +76,14 @@ const createInvoice = async (body, req) => {
               retries++;
               await delay(3000); // Delay between retries
               if (stateData === "VALIDA" || stateData === "RECHAZADA") {
+                const autorizacion = `${body.emizor.extras.facturaTicket}$${data.ack_ticket}`;
+                console.log("Autorizacion test", autorizacion);
                 if (stateData === "VALIDA") {
                   try {
                     console.log("Resp de la factura", data);
                     body.invoice.nroFactura = data.numeroFactura;
                     body.invoice.cuf = data.cuf;
-                    body.invoice.autorizacion = data.ack_ticket;
+                    body.invoice.autorizacion = autorizacion;
                     body.invoice.cufd = data.shortLink;
                     body.invoice.fechaEmision = data.fechaEmision;
                     try {
@@ -184,10 +184,12 @@ const createInvoice = async (body, req) => {
           }
         } else {
           try {
+            const autorizacion = `${body.emizor.extras.facturaTicket}$${data.ack_ticket}`;
+            console.log("Autorizacion test", autorizacion);
             console.log("Resp de la factura", data);
             body.invoice.nroFactura = data.numeroFactura;
             body.invoice.cuf = data.cuf;
-            body.invoice.autorizacion = data.ack_ticket;
+            body.invoice.autorizacion = autorizacion;
             body.invoice.cufd = data.shortLink;
             body.invoice.fechaEmision = data.fechaEmision;
             try {
