@@ -207,11 +207,29 @@ async function getFacturaDB(uniqueCode) {
     FROM Facturas
     WHERE split_part(autorizacion, '$', 1) = '${uniqueCode}';`;
     const response = await client.query(query);
-    return JSON.stringify({ data: response.rows[0], status: 200});
+    return JSON.stringify({ data: response.rows[0], status: 200 });
 
   } catch (error) {
     return JSON.stringify({
       data: error?.response?.data ?? "Error Obteniendo Estado de Factura",
+      status: error?.response?.status ?? 500,
+    });
+  }
+}
+
+
+async function getFacturasDB(nit) {
+  try {
+    const query = `SELECT *
+    FROM Facturas
+    WHERE "nitCliente" LIKE '${nit}%' 
+    ORDER BY "fechaHora" ASC;`;
+    const response = await client.query(query);
+    return JSON.stringify({ data: response.rows, status: 200 });
+  }
+  catch (error) {
+    return JSON.stringify({
+      data: error?.response?.data ?? "Error Obteniendo Facturas",
       status: error?.response?.status ?? 500,
     });
   }
@@ -225,5 +243,6 @@ module.exports = {
   postFactura,
   getCodigosLeyenda,
   getEstadoFactura,
-  getFacturaDB
+  getFacturaDB,
+  getFacturasDB
 };
