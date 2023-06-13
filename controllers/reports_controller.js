@@ -68,11 +68,11 @@ module.exports = {
       });
   },
   markdownsReport: async (req, res) => {
-    const { idAgencia, startDate, endDate } = req.query;
+    const { idAgencia, startDate, endDate, idBaja } = req.query;
 
 
     try {
-      const markdowns = await GeneralMarkdownsReport(idAgencia, startDate, endDate);
+      const markdowns = await GeneralMarkdownsReport(idAgencia, startDate, endDate, idBaja);
       res.status(200).json(markdowns);
     } catch (err) {
       res.status(500).json({ error: err || 'An error occurred while fetching markdowns.' });

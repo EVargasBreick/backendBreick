@@ -287,7 +287,7 @@ function mainPageReportPos() {
   });
 }
 
-async function GeneralMarkdownsReport(idAgencia, startDate = null, endDate = null) {
+async function GeneralMarkdownsReport(idAgencia, startDate = null, endDate = null, idBaja = null) {
   let query = `SELECT p."codInterno", p."nombreProducto", bp."cantProducto", b.*
     FROM baja_productos bp
     JOIN bajas b ON b."idBaja" = bp."idBaja"
@@ -295,17 +295,22 @@ async function GeneralMarkdownsReport(idAgencia, startDate = null, endDate = nul
     WHERE b."idAlmacen" = $1
     `;
   const params = [idAgencia];
+
   if (startDate && endDate) {
     query += `AND TO_TIMESTAMP(b."fechaBaja", 'DD/MM/YYYY HH24:MI:SS')::date >= TO_DATE($2, 'YYYY-MM-DD')
     AND TO_TIMESTAMP(b."fechaBaja", 'DD/MM/YYYY HH24:MI:SS')::date <=  TO_DATE($3, 'YYYY-MM-DD')
     `;
     params.push(startDate, endDate);
   }
-  query += `ORDER BY b."fechaBaja" ASC;`;
+
+  if (idBaja) {
+    query += `AND b."idBaja" = ${idBaja} `;
+  }
+
+  query += `ORDER BY b."fechaBaja" DESC;`;
 
   try {
     console.log(query);
-    console.log(params);
     const data = await client.query(query, [...params]);
     return data.rows;
   } catch (err) {
