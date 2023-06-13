@@ -12,6 +12,7 @@ const {
   ClosingReportPos,
   FirstAndLastPos,
   mainPageReportPos,
+  GeneralMarkdownsReport,
 } = require("../models/reports_model.js");
 app.use(session(sessionParams));
 
@@ -66,4 +67,15 @@ module.exports = {
         res.status(400).send(err);
       });
   },
-};
+  markdownsReport: async (req, res) => {
+    const { idAgencia, startDate, endDate } = req.query;
+
+
+    try {
+      const markdowns = await GeneralMarkdownsReport(idAgencia, startDate, endDate);
+      res.status(200).json(markdowns);
+    } catch (err) {
+      res.status(500).json({ error: err || 'An error occurred while fetching markdowns.' });
+    }
+  }
+}

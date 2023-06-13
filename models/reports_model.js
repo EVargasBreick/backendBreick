@@ -287,6 +287,34 @@ function mainPageReportPos() {
   });
 }
 
+async function GeneralMarkdownsReport(idAgencia, startDate = null, endDate = null) {
+  let query = `SELECT p."codInterno", p."nombreProducto", bp."cantProducto", b.*
+    FROM baja_productos bp
+    JOIN bajas b ON b."idBaja" = bp."idBaja"
+    JOIN productos p ON bp."idProducto" = p."idProducto"
+    WHERE b."idAlmacen" = $1
+    `;
+  const params = [idAgencia];
+  if (startDate && endDate) {
+    query += `AND TO_TIMESTAMP(b."fechaBaja", 'DD/MM/YYYY HH24:MI:SS')::date >= TO_DATE($2, 'YYYY-MM-DD')
+    AND TO_TIMESTAMP(b."fechaBaja", 'DD/MM/YYYY HH24:MI:SS')::date <=  TO_DATE($3, 'YYYY-MM-DD')
+    `;
+    params.push(startDate, endDate);
+  }
+  query += `ORDER BY b."fechaBaja" ASC;`;
+
+  try {
+    console.log(query);
+    console.log(params);
+    const data = await client.query(query, [...params]);
+    return data.rows;
+  } catch (err) {
+    throw err;
+  }
+}
+
+
+
 module.exports = {
   GeneralSalesReport,
   ProductsSalesReport,
@@ -297,4 +325,5 @@ module.exports = {
   ClosingReportPos,
   FirstAndLastPos,
   mainPageReportPos,
+  GeneralMarkdownsReport
 };
