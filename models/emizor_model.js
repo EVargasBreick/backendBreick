@@ -218,6 +218,22 @@ async function getFacturaDB(uniqueCode) {
   }
 }
 
+async function getFacturasDB(nit) {
+  try {
+    const query = `SELECT *
+    FROM Facturas
+    WHERE "nitCliente" LIKE '${nit}%' 
+    ORDER BY "fechaHora" ASC;`;
+    const response = await client.query(query);
+    return JSON.stringify({ data: response.rows, status: 200 });
+  } catch (error) {
+    return JSON.stringify({
+      data: error?.response?.data ?? "Error Obteniendo Facturas",
+      status: error?.response?.status ?? 500,
+    });
+  }
+}
+
 module.exports = {
   postOauthToken,
   getEmizorToken,
