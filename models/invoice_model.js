@@ -429,7 +429,7 @@ function getInvoiceToRePrint(params) {
 }
 
 function getIncompleteInvoicesList() {
-  const updateInvoice = `select * from Facturas where "cuf"='' and "nroTransaccion">0 order by cast ("idFactura" as int)`;
+  const updateInvoice = `select * from Facturas where "cuf"='' and "nroTransaccion">0 and estado=0 order by cast ("idFactura" as int)`;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       try {
