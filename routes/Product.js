@@ -12,4 +12,5 @@ router.post("/productos/nuevo", controller.createProduct);
 router.get("/productos/codigos", controller.getCodes);
 router.get("/productos/tipos", controller.getProdTypes);
 router.get("/productos/origen", controller.getProdOrigin);
+router.get("/productos/all", controller.geAllProducts);
 module.exports = router;

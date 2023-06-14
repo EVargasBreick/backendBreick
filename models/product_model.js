@@ -356,6 +356,16 @@ function getProdOriginPos() {
   });
 }
 
+async function getAllProducts() {
+  const query = `select * from Productos`;
+  try {
+    const ids = await client.query(query);
+    return ids.rows;
+  } catch (err) {
+    throw err;
+  }
+}
+
 module.exports = {
   getProducts,
   getNumberOfProducts,
@@ -366,7 +376,7 @@ module.exports = {
   getInternalAndBarcode,
   getProdTypes,
   getProdOrigin,
-
+  getAllProducts,
   getProductsPos,
   getProductsWithStockPos,
   getAvailableProductsPos,

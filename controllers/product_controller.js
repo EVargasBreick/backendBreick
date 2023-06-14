@@ -18,6 +18,7 @@ const {
   getProdOriginPos,
   getAvailableProductsPos,
   getProductsPos,
+  getAllProducts,
 } = require("../models/product_model");
 
 module.exports = {
@@ -120,4 +121,12 @@ module.exports = {
         res.status(400).send(err);
       });
   },
+  geAllProducts: async (req, res) => {
+    try {
+      const markdowns = await getAllProducts();
+      res.status(200).json(markdowns);
+    } catch (err) {
+      res.status(500).json({ error: err || 'An error occurred while fetching products.' });
+    }
+  }
 };
