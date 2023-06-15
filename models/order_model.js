@@ -1051,12 +1051,12 @@ function getOrdersToInvoicePos(params) {
   return new Promise((resolve, reject) => {
     var query;
     if (!isInterior) {
-      query = `select pd.*, cl."razonSocial", cl.nit,SUBSTRING(nombre, 1, 1)||''||"apPaterno"||'-'||tipo||'00'||cast(pd."idPedido" as varchar) as "idString" from Pedidos pd 
+      query = `select pd.*, cl."razonSocial", us.usuario, cl.nit,SUBSTRING(nombre, 1, 1)||''||"apPaterno"||'-'||tipo||'00'||cast(pd."idPedido" as varchar) as "idString" from Pedidos pd 
       inner join Clientes cl on pd."idCliente"=cl."idCliente" 
       inner join Usuarios us on pd."idUsuarioCrea"=us."idUsuario"
       where  pd.estado='1' and pd.facturado=0 and pd.listo=1 and pd.tipo='normal'`;
     } else {
-      query = `select pd.*, cl."razonSocial", cl.nit,SUBSTRING(nombre, 1, 1)||''||"apPaterno"||'-'||tipo||'00'||cast(pd."idPedido" as varchar) as "idString" from Pedidos pd 
+      query = `select pd.*, cl."razonSocial", us.usuario, cl.nit,SUBSTRING(nombre, 1, 1)||''||"apPaterno"||'-'||tipo||'00'||cast(pd."idPedido" as varchar) as "idString" from Pedidos pd 
       inner join Clientes cl on pd."idCliente"=cl."idCliente" 
       inner join Usuarios us on pd."idUsuarioCrea"=us."idUsuario" 
       where us."idDepto"=${params.idDepto} and pd.estado='1' and pd.facturado=0 and pd.listo=1 and pd.tipo='normal'`;

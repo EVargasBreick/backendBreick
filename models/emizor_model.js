@@ -123,8 +123,9 @@ function postFactura(bodyFacturas, bodyFacturasInfo, req) {
       getCodigosLeyenda(req)
         .then(async (codigosLeyendaData) => {
           codigosLeyendaResponse = JSON.parse(codigosLeyendaData);
+          console.log("Leyendas", codigosLeyendaData);
           const random = getRandomNumber(
-            codigosLeyendaResponse.data.data.length
+            codigosLeyendaResponse.data.data.length - 1
           );
           const selectedLegend = codigosLeyendaResponse.data.data[random];
           bodyFacturas.codigoLeyenda = selectedLegend.codigo;
@@ -146,6 +147,7 @@ function postFactura(bodyFacturas, bodyFacturasInfo, req) {
           );
         })
         .catch((error) => {
+          console.log("Error", error);
           reject(
             JSON.stringify({
               data: error?.response?.data ?? "Error Emizor Factura Leyenda",
@@ -208,7 +210,6 @@ async function getFacturaDB(uniqueCode) {
     WHERE split_part(autorizacion, '$', 1) = '${uniqueCode}';`;
     const response = await client.query(query);
     return JSON.stringify({ data: response.rows[0], status: 200 });
-
   } catch (error) {
     return JSON.stringify({
       data: error?.response?.data ?? "Error Obteniendo Estado de Factura",
@@ -216,7 +217,6 @@ async function getFacturaDB(uniqueCode) {
     });
   }
 }
-
 
 async function getFacturasDB(nit) {
   try {
@@ -226,8 +226,7 @@ async function getFacturasDB(nit) {
     ORDER BY "fechaHora" ASC;`;
     const response = await client.query(query);
     return JSON.stringify({ data: response.rows, status: 200 });
-  }
-  catch (error) {
+  } catch (error) {
     return JSON.stringify({
       data: error?.response?.data ?? "Error Obteniendo Facturas",
       status: error?.response?.status ?? 500,
@@ -244,5 +243,5 @@ module.exports = {
   getCodigosLeyenda,
   getEstadoFactura,
   getFacturaDB,
-  getFacturasDB
+  getFacturasDB,
 };
