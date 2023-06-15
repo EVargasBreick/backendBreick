@@ -243,4 +243,5 @@ module.exports = {
   getCodigosLeyenda,
   getEstadoFactura,
   getFacturaDB,
+  getFacturasDB,
 };
