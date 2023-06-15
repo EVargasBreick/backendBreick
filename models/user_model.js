@@ -292,7 +292,7 @@ async function changePassword(data) {
       const data = await client.query(queryChange);
       return "Contraseña actualizada";
     }
-    throw "Contraseña incorrecta";
+    throw "Contraseña Actual incorrecta";
 
   } catch (err) {
     throw err;
