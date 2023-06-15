@@ -10,6 +10,7 @@ const {
   findUserByIdPos,
   createNewUserPos,
   findUserBasicPos,
+  changePassword,
 } = require("../models/user_model.js");
 let datos;
 let response;
@@ -48,4 +49,12 @@ module.exports = {
       res.status(response.code).send(response.data);
     });
   },
+  changeUserPassword: async (req, res) => {
+    try {
+      const updated = await changePassword(req.body);
+      res.status(200).json(updated);
+    } catch (err) {
+      res.status(500).json({ error: err || 'No se pudo actualizar la contraseña.' });
+    }
+  }
 };

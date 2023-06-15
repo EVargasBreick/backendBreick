@@ -282,6 +282,24 @@ function findUserBasicPos() {
   });
 }
 
+async function changePassword(data) {
+  const { idUser, originalPassword, newPassword } = data;
+  const checkPassword = `select password from Usuarios where "idUsuario"=${idUser}`;
+  const queryChange = `update Usuarios set password='${newPassword}' where "idUsuario"=${idUser}`;
+  try {
+    const isPasswordCorrect = await client.query(checkPassword);
+    if (isPasswordCorrect.rows[0].password === originalPassword) {
+      const data = await client.query(queryChange);
+      return "Contraseña actualizada";
+    }
+    throw "Contraseña incorrecta";
+
+  } catch (err) {
+    throw err;
+  }
+
+}
+
 module.exports = {
   findUserByName,
   findUserById,
@@ -291,4 +309,5 @@ module.exports = {
   findUserByIdPos,
   createNewUserPos,
   findUserBasicPos,
+  changePassword
 };
