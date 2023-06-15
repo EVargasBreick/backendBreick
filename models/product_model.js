@@ -366,6 +366,25 @@ async function getAllProducts() {
   }
 }
 
+async function updateProduct(id, body) {
+  try {
+    const { nombreProducto, activo, aplicaDescuento, codigoBarras, gramajeProducto, precioDeFabrica, precioPDV } = body;
+
+    const query = `
+    UPDATE productos
+    SET "nombreProducto" = '${nombreProducto}', 
+    "activo" = ${activo}, "aplicaDescuento" = '${aplicaDescuento}', 
+    "codigoBarras" = '${codigoBarras}', "gramajeProducto" = ${gramajeProducto}, 
+    "precioDeFabrica" = ${precioDeFabrica}, "precioPDV" = ${precioPDV}
+    WHERE "idProducto" = ${id}
+  `;
+    const data = await client.query(query)
+    return data.rows;
+  } catch (err) {
+    throw err;
+  }
+}
+
 module.exports = {
   getProducts,
   getNumberOfProducts,
@@ -386,4 +405,5 @@ module.exports = {
   getInternalAndBarcodePos,
   getProdOriginPos,
   getProdTypesPos,
+  updateProduct
 };
