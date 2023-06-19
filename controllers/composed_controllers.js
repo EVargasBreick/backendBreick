@@ -31,7 +31,7 @@ const createInvoice = async (body, req) => {
       accion: "take",
       idAlmacen: body.stock.idAlmacen,
       productos: body.stock.productos,
-      detalle: `-`,
+      detalle: `NVAG-0`,
     };
     console.log("Stock body", stockBody);
     const updatedStock = await updateProductStockPos(stockBody);
