@@ -300,6 +300,25 @@ async function changePassword(data) {
 
 }
 
+async function findUser(params) {
+  const { search } = params
+  const query = `
+  SELECT nombre, "apPaterno",  "apMaterno", cedula , correo , rol , "idAlmacen"  FROM usuarios u
+  WHERE lower(nombre)  LIKE lower('%${search}%') 
+     OR lower("apPaterno")  LIKE lower('%${search}%')
+     or lower("apMaterno") like lower('%${search}%')
+     or lower(concat(nombre, ' ', "apPaterno", ' ', "apMaterno")) like lower('%${search}%')
+     or lower(cedula) like lower('%${search}%')
+     limit 1`;
+
+  try {
+    const data = await client.query(query)
+    return data.rows
+  } catch (err) {
+    throw err
+  }
+}
+
 module.exports = {
   findUserByName,
   findUserById,
@@ -309,5 +328,6 @@ module.exports = {
   findUserByIdPos,
   createNewUserPos,
   findUserBasicPos,
-  changePassword
+  changePassword,
+  findUser
 };

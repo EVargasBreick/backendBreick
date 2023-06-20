@@ -7,4 +7,5 @@ router.get("/user/id", controller.getUserById);
 router.post("/user", controller.createNewUser);
 router.get("/user/basic", controller.getUserBasic);
 router.post("/user/changePassword", controller.changeUserPassword);
+router.get('/user/find/:search', controller.getUser)
 module.exports = router;
