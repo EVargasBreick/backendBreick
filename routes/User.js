@@ -9,4 +9,5 @@ router.get("/user/basic", controller.getUserBasic);
 router.post("/user/changePassword", controller.changeUserPassword);
 router.get('/user/find/:search', controller.getUser);
 router.get('/user/all', controller.getAll);
+router.put('/user/update/:userId', controller.updateUser);
 module.exports = router;

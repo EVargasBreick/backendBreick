@@ -354,6 +354,24 @@ async function getAllUsers(queryParams) {
   }
 }
 
+async function updateAlmacen(userId, data) {
+  const { idAlmacen } = data
+  const query = `
+  update usuarios
+  set "idAlmacen" = '${idAlmacen}'
+  where  "idUsuario" = ${userId}
+  `
+
+  console.log("TCL: updateAlmacen -> query", query)
+  try {
+    const data = await client.query(query)
+    return data.rows
+  }
+  catch (err) {
+    throw err
+  }
+}
+
 module.exports = {
   findUserByName,
   findUserById,
@@ -365,5 +383,6 @@ module.exports = {
   findUserBasicPos,
   changePassword,
   findUser,
-  getAllUsers
+  getAllUsers,
+  updateAlmacen
 };
