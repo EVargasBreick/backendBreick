@@ -12,6 +12,7 @@ const {
   findUserBasicPos,
   changePassword,
   findUser,
+  getAllUsers,
 } = require("../models/user_model.js");
 let datos;
 let response;
@@ -67,6 +68,14 @@ module.exports = {
       res.status(500).json({
         error: err || "Error al buscar usuario"
       })
+    }
+  },
+  getAll: async (req, res) => {
+    try {
+      const users = await getAllUsers(req.query);
+      res.status(200).json(users);
+    } catch (err) {
+      res.status(500).json({ error: err || 'An error occurred while fetching users.' });
     }
   }
 };

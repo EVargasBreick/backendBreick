@@ -303,7 +303,8 @@ async function changePassword(data) {
 async function findUser(params) {
   const { search } = params
   const query = `
-  SELECT nombre, "apPaterno",  "apMaterno", cedula , correo , rol , "idAlmacen"  FROM usuarios u
+  SELECT nombre, "apPaterno",  "apMaterno", cedula , correo , rol , "idAlmacen", "idUsuario"  
+  FROM usuarios u
   WHERE lower(nombre)  LIKE lower('%${search}%') 
      OR lower("apPaterno")  LIKE lower('%${search}%')
      or lower("apMaterno") like lower('%${search}%')
@@ -319,6 +320,40 @@ async function findUser(params) {
   }
 }
 
+async function getAllUsers(queryParams) {
+  // roles are send like  /?roles=1,2,3
+  const { roles } = queryParams
+  let query = `
+  SELECT nombre, "apPaterno",  "apMaterno", cedula , correo , rol , "idAlmacen", "idUsuario"
+  FROM usuarios u
+  `
+  const rols = roles?.split(',');
+
+  if (rols && rols.length > 0) {
+    rols.forEach((rol, index) => {
+      if (index === 0) {
+        query += `WHERE rol = ${Number(rol)} `
+
+      } else {
+        query += `OR rol = ${Number(rol)} `
+      }
+      console.log("TCL: getAllUsers -> query", query)
+    }
+    )
+  }
+
+  query += `ORDER BY nombre`
+
+  console.log("TCL: getAllUsers -> query", query)
+  try {
+    const data = await client.query(query)
+    return data.rows
+  }
+  catch (err) {
+    throw err
+  }
+}
+
 module.exports = {
   findUserByName,
   findUserById,
@@ -329,5 +364,6 @@ module.exports = {
   createNewUserPos,
   findUserBasicPos,
   changePassword,
-  findUser
+  findUser,
+  getAllUsers
 };
