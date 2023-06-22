@@ -300,9 +300,10 @@ async function changePassword(data) {
 
 }
 
-async function findUser(params) {
+async function findUser(params, queryParams) {
   const { search } = params
-  const query = `
+  const { roles } = queryParams
+  let query = `
   SELECT nombre, "apPaterno",  "apMaterno", cedula , correo , rol , "idAlmacen", "idUsuario"  
   FROM usuarios u
   WHERE lower(nombre)  LIKE lower('%${search}%') 
@@ -310,8 +311,26 @@ async function findUser(params) {
      or lower("apMaterno") like lower('%${search}%')
      or lower(concat(nombre, ' ', "apPaterno", ' ', "apMaterno")) like lower('%${search}%')
      or lower(cedula) like lower('%${search}%')
-     limit 1`;
+    `;
+  const rols = roles?.split(',');
 
+  if (rols && rols.length > 0) {
+    query += `AND (`
+    rols.forEach((rol, index) => {
+      if (index === 0) {
+        query += `rol = ${Number(rol)} `
+      }
+      else {
+        query += `OR rol = ${Number(rol)} `
+      }
+    }
+    )
+    query += `)`
+  }
+
+  query += ` limit 1;`
+
+  console.log("TCL: findUser -> query", query)
   try {
     const data = await client.query(query)
     return data.rows
@@ -337,14 +356,12 @@ async function getAllUsers(queryParams) {
       } else {
         query += `OR rol = ${Number(rol)} `
       }
-      console.log("TCL: getAllUsers -> query", query)
     }
     )
   }
 
   query += `ORDER BY nombre`
 
-  console.log("TCL: getAllUsers -> query", query)
   try {
     const data = await client.query(query)
     return data.rows
@@ -362,7 +379,6 @@ async function updateAlmacen(userId, data) {
   where  "idUsuario" = ${userId}
   `
 
-  console.log("TCL: updateAlmacen -> query", query)
   try {
     const data = await client.query(query)
     return data.rows

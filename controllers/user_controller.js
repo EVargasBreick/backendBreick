@@ -58,7 +58,7 @@ module.exports = {
   },
   getUser: async (req, res) => {
     try {
-      const user = await findUser(req.params)
+      const user = await findUser(req.params, req.query)
       res.status(200).json(...user)
     }
     catch (err) {
