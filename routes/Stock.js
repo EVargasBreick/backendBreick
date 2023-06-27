@@ -11,4 +11,5 @@ router.post("/log/ingreso", controller.logEntry);
 router.get("/log/ingreso", controller.getlogEntry);
 router.get("/stock/codigos", controller.getStockCodes);
 router.get("/stock/logged", controller.getStockLogged);
+router.get("/stock/grupos", controller.getStockGrupos);
 module.exports = router;

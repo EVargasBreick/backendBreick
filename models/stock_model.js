@@ -1,3 +1,4 @@
+const { query } = require("express");
 const { client } = require("../postgressConn");
 const dbConnection = require("../server");
 
@@ -328,6 +329,16 @@ function getStockLogged(params) {
   });
 }
 
+async function getStockGrupos() {
+  const query = `select * from grupos g`;
+  try {
+    const data = await client.query(query);
+    return data.rows;
+  } catch (err) {
+    throw err;
+  }
+}
+
 module.exports = {
   getStockFromDateAndProduct,
   getStockFromDateAndStore,
@@ -343,4 +354,5 @@ module.exports = {
   getLoggedEntries,
   getStockCodes,
   getStockLogged,
+  getStockGrupos,
 };
