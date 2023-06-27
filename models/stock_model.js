@@ -339,6 +339,16 @@ async function getStockGrupos() {
   }
 }
 
+async function getStockGrupoProductos() {
+  const query = `select * from grupo_productos gp`;
+  try {
+    const data = await client.query(query);
+    return data.rows;
+  } catch (err) {
+    throw err;
+  }
+}
+
 module.exports = {
   getStockFromDateAndProduct,
   getStockFromDateAndStore,
@@ -355,4 +365,5 @@ module.exports = {
   getStockCodes,
   getStockLogged,
   getStockGrupos,
+  getStockGrupoProductos
 };
