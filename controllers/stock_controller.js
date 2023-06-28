@@ -13,6 +13,8 @@ const {
   getLoggedEntries,
   getStockCodes,
   getStockLogged,
+  getStockGrupos,
+  getStockGrupoProductos
 } = require("../models/stock_model.js");
 
 module.exports = {
@@ -106,4 +108,22 @@ module.exports = {
         res.status(400).send(error);
       });
   },
+
+  getStockGrupos: async (req, res) => {
+    try {
+      const grupos = await getStockGrupos();
+      res.status(200).send(grupos);
+    } catch (error) {
+      res.status(500).send(error);
+    }
+  },
+
+  getStockGrupoProductos: async (req, res) => {
+    try {
+      const grupos = await getStockGrupoProductos();
+      res.status(200).send(grupos);
+    } catch (error) {
+      res.status(500).send(error);
+    }
+  }
 };

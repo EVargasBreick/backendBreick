@@ -298,6 +298,88 @@ async function changePassword(data) {
   }
 }
 
+async function findUser(params, queryParams) {
+  const { search } = params;
+  const { roles } = queryParams;
+  let query = `
+  SELECT nombre, "apPaterno",  "apMaterno", cedula , correo , rol , "idAlmacen", "idUsuario"  
+  FROM usuarios u
+  WHERE lower(nombre)  LIKE lower('%${search}%') 
+     OR lower("apPaterno")  LIKE lower('%${search}%')
+     or lower("apMaterno") like lower('%${search}%')
+     or lower(concat(nombre, ' ', "apPaterno", ' ', "apMaterno")) like lower('%${search}%')
+     or lower(cedula) like lower('%${search}%')
+    `;
+  const rols = roles?.split(",");
+
+  if (rols && rols.length > 0) {
+    query += `AND (`;
+    rols.forEach((rol, index) => {
+      if (index === 0) {
+        query += `rol = ${Number(rol)} `;
+      } else {
+        query += `OR rol = ${Number(rol)} `;
+      }
+    });
+    query += `)`;
+  }
+
+  query += ` limit 1;`;
+
+  console.log("TCL: findUser -> query", query);
+  try {
+    const data = await client.query(query);
+    return data.rows;
+  } catch (err) {
+    throw err;
+  }
+}
+
+async function getAllUsers(queryParams) {
+  // roles are send like  /?roles=1,2,3
+  const { roles } = queryParams;
+  let query = `
+  SELECT nombre, "apPaterno",  "apMaterno", cedula , correo , rol , "idAlmacen", "idUsuario"
+  FROM usuarios u
+  `;
+  const rols = roles?.split(",");
+
+  if (rols && rols.length > 0) {
+    rols.forEach((rol, index) => {
+      if (index === 0) {
+        query += `WHERE rol = ${Number(rol)} `;
+      } else {
+        query += `OR rol = ${Number(rol)} `;
+      }
+    });
+  }
+
+  query += `ORDER BY nombre`;
+
+  try {
+    const data = await client.query(query);
+    return data.rows;
+  } catch (err) {
+    throw err;
+  }
+}
+
+async function updateAlmacen(userId, data) {
+  const { idAlmacen } = data;
+  const query = `
+  update usuarios
+  set "idAlmacen" = '${idAlmacen}'
+  where  "idUsuario" = ${userId}
+  `;
+
+  try {
+    const data = await client.query(query);
+    return data.rows;
+  } catch (err) {
+    throw err;
+  }
+}
+
 module.exports = {
   findUserByName,
   findUserById,
@@ -308,4 +390,7 @@ module.exports = {
   createNewUserPos,
   findUserBasicPos,
   changePassword,
+  findUser,
+  getAllUsers,
+  updateAlmacen,
 };
