@@ -263,7 +263,7 @@ function createNewUserPos(data) {
 }
 
 function findUserBasicPos() {
-  var queryFind = `select "idUsuario", nombre || ' ' || "apPaterno" || ' ' || "apMaterno" as nombre from Usuarios ORDER by nombre`;
+  var queryFind = `select "idUsuario", nombre || ' ' || "apPaterno" || ' ' || "apMaterno" as nombre, usuario from Usuarios ORDER by nombre`;
   var responseObject = {};
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
@@ -293,11 +293,9 @@ async function changePassword(data) {
       return "Contraseña actualizada";
     }
     throw "Contraseña Actual incorrecta";
-
   } catch (err) {
     throw err;
   }
-
 }
 
 module.exports = {
@@ -309,5 +307,5 @@ module.exports = {
   findUserByIdPos,
   createNewUserPos,
   findUserBasicPos,
-  changePassword
+  changePassword,
 };

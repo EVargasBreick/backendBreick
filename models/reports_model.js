@@ -287,7 +287,12 @@ function mainPageReportPos() {
   });
 }
 
-async function GeneralMarkdownsReport(idAgencia, startDate = null, endDate = null, idBaja = null) {
+async function GeneralMarkdownsReport(
+  idAgencia,
+  startDate = null,
+  endDate = null,
+  idBaja = null
+) {
   let query = `SELECT p."codInterno", p."nombreProducto", bp."cantProducto", b.*
     FROM baja_productos bp
     JOIN bajas b ON b."idBaja" = bp."idBaja"
@@ -318,7 +323,100 @@ async function GeneralMarkdownsReport(idAgencia, startDate = null, endDate = nul
   }
 }
 
+async function GroupedProductsOrderReport(
+  idAgencia,
+  startDate = null,
+  endDate = null,
+  estado = null,
+  usuario = null,
+  tipo = null,
+  facturado = null,
+  notas = null
+) {
+  let query = `select pp."idProducto", pr."codInterno", "nombreProducto", sum("cantidadProducto") as "sumaTotal" from Pedidos pd 
+  inner join Pedido_Producto pp on pp."idPedido"=pd."idPedido"
+  inner join Usuarios us on us."idUsuario"=pd."idUsuarioCrea"
+  inner join Productos pr on pr."idProducto"=pp."idProducto"
+  where us."idAlmacen" = $1 `;
+  const params = [idAgencia];
+  if (startDate && endDate) {
+    console.log("Flag 1");
+    query += `AND TO_TIMESTAMP(pd."fechaCrea", 'DD/MM/YYYY HH24:MI:SS')::date >= TO_DATE($2, 'YYYY-MM-DD')
+    AND TO_TIMESTAMP(pd."fechaCrea", 'DD/MM/YYYY HH24:MI:SS')::date <=  TO_DATE($3, 'YYYY-MM-DD')
+    `;
+    params.push(startDate, endDate);
+  }
+  if (estado) {
+    query += ` and estado= '${estado}' `;
+  }
+  if (usuario) {
+    query += ` and usuario= '${usuario}' `;
+  }
 
+  if (tipo) {
+    query += ` and tipo= '${tipo}' `;
+  }
+
+  if (facturado) {
+    query += ` and facturado= ${facturado} `;
+  }
+
+  if (notas) {
+    query += `and unaccent(pd.notas) ILIKE ALL (SELECT '%' || unaccent(value) || '%'
+    FROM regexp_split_to_table('${notas}', '\\s+') AS value)`;
+  }
+
+  query += `group by pp."idProducto", "nombreProducto", "codInterno"
+  order by cast(pp."idProducto" as int)`;
+
+  try {
+    console.log(query);
+    const data = await client.query(query, [...params]);
+    return data.rows;
+  } catch (err) {
+    console.log("Error", err);
+    throw err;
+  }
+}
+
+async function GroupedProductsTransferReport(
+  idAgencia,
+  startDate = null,
+  endDate = null,
+  estado = null,
+  usuario = null
+) {
+  let query = `select pp."idProducto", pr."codInterno", "nombreProducto", sum("cantidadProducto") as "sumaTotal" from Pedidos pd 
+  inner join Pedido_Producto pp on pp."idPedido"=pd."idPedido"
+  inner join Usuarios us on us."idUsuario"=pd."idUsuarioCrea"
+  inner join Productos pr on pr."idProducto"=pp."idProducto"
+  where us."idAlmacen" = $1 `;
+  const params = [idAgencia];
+  if (startDate && endDate) {
+    console.log("Flag 1");
+    query += `AND TO_TIMESTAMP(pd."fechaCrea", 'DD/MM/YYYY HH24:MI:SS')::date >= TO_DATE($2, 'YYYY-MM-DD')
+    AND TO_TIMESTAMP(pd."fechaCrea", 'DD/MM/YYYY HH24:MI:SS')::date <=  TO_DATE($3, 'YYYY-MM-DD')
+    `;
+    params.push(startDate, endDate);
+  }
+  if (estado) {
+    query += ` and estado= '${estado}' `;
+  }
+  if (usuario) {
+    query += ` and usuario= '${usuario}' `;
+  }
+  query += `group by pp."idProducto", "nombreProducto", "codInterno"
+  order by cast(pp."idProducto" as int)`;
+
+  try {
+    console.log(query);
+    const data = await client.query(query, [...params]);
+    return data.rows;
+  } catch (err) {
+    console.log("Error", err);
+    throw err;
+  }
+}
 
 module.exports = {
   GeneralSalesReport,
@@ -330,5 +428,6 @@ module.exports = {
   ClosingReportPos,
   FirstAndLastPos,
   mainPageReportPos,
-  GeneralMarkdownsReport
+  GeneralMarkdownsReport,
+  GroupedProductsOrderReport,
 };

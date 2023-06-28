@@ -13,6 +13,7 @@ const {
   FirstAndLastPos,
   mainPageReportPos,
   GeneralMarkdownsReport,
+  GroupedProductsOrderReport,
 } = require("../models/reports_model.js");
 app.use(session(sessionParams));
 
@@ -69,13 +70,48 @@ module.exports = {
   },
   markdownsReport: async (req, res) => {
     const { idAgencia, startDate, endDate, idBaja } = req.query;
-
-
     try {
-      const markdowns = await GeneralMarkdownsReport(idAgencia, startDate, endDate, idBaja);
+      const markdowns = await GeneralMarkdownsReport(
+        idAgencia,
+        startDate,
+        endDate,
+        idBaja
+      );
       res.status(200).json(markdowns);
     } catch (err) {
-      res.status(500).json({ error: err || 'An error occurred while fetching markdowns.' });
+      res
+        .status(500)
+        .json({ error: err || "An error occurred while fetching markdowns." });
     }
-  }
-}
+  },
+  orderGroupedProductsReport: async (req, res) => {
+    console.log("Req query", req.query);
+    const {
+      idAgencia,
+      startDate,
+      endDate,
+      estado,
+      usuario,
+      tipo,
+      facturado,
+      notas,
+    } = req.query;
+    try {
+      const markdowns = await GroupedProductsOrderReport(
+        idAgencia,
+        startDate,
+        endDate,
+        estado,
+        usuario,
+        tipo,
+        facturado,
+        notas
+      );
+      res.status(200).json(markdowns);
+    } catch (err) {
+      res
+        .status(500)
+        .json({ error: err || "An error occurred while fetching the report." });
+    }
+  },
+};
