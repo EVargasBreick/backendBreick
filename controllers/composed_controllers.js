@@ -46,7 +46,7 @@ const createInvoice = async (body, req) => {
           req
         );
         const data = JSON.parse(invoiceResponse).data.data;
-        if (data.emision_type_code === 1) {
+        if (Number(data.emission_type_code) === 1) {
           try {
             const maxRetries = 50;
             let retries = 0;
