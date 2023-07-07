@@ -40,8 +40,9 @@ function createDrop(body) {
 }
 
 function createDropPos(body) {
-  const queryBaja = `insert into Bajas (motivo, "fechaBaja", "idUsuario", "idAlmacen") 
-    values ('${body.motivo}', '${body.fechaBaja}', ${body.idUsuario},'${body.idAlmacen}') returning "idBaja"`;
+  console.log("Body recibido", body);
+  const queryBaja = `insert into Bajas (motivo, "fechaBaja", "idUsuario", "idAlmacen", "totalbaja", "vale") 
+    values ('${body.motivo}', '${body.fechaBaja}', ${body.idUsuario},'${body.idAlmacen}', ${body.totalbaja}, ${body.vale}) returning "idBaja"`;
   console.log("query baja", queryBaja);
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
@@ -50,8 +51,8 @@ function createDropPos(body) {
         const idCreado = newDrop.rows[0].idBaja;
         console.log("Id Creado:", idCreado);
         body.productos.map((pr) => {
-          const queryProd = `insert into Baja_Productos ("idBaja", "idProducto", "cantProducto") 
-                     values (${idCreado},${pr.idProducto}, ${pr.cantProducto})`;
+          const queryProd = `insert into Baja_Productos ("idBaja", "idProducto", "cantProducto", "subtotal") 
+                     values (${idCreado},${pr.idProducto}, ${pr.cantProducto}, ${pr.total})`;
           setTimeout(async () => {
             try {
               const added = await client.query(queryProd);

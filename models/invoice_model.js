@@ -168,7 +168,9 @@ function createInvoicePos(body) {
             "idOtroPago",
             vale,
             "puntoDeVenta",
-            "idAgencia"
+            "idAgencia",
+            voucher,
+            pya
         ) values (
             '${body.nroFactura}',
             ${body.idSucursal},
@@ -193,7 +195,9 @@ function createInvoicePos(body) {
              ${body.idOtroPago},
              ${body.vale},
              ${body.puntoDeVenta},
-             '${body.idAgencia}'
+             '${body.idAgencia}',
+             ${body.voucher},
+             ${body.pya ? 1 : 0}
         ) returning "idFactura"`;
 
   return new Promise((resolve, reject) => {
