@@ -159,11 +159,30 @@ const createInvoice = async (body, req) => {
                     };
                   }
                 } else {
-                  return {
-                    code: 500,
-                    error: "Factura rechazada",
-                    message: "Factura rechazada, intente nuevamente",
-                  };
+                  try {
+                    const stockBody = {
+                      accion: "add",
+                      idAlmacen: body.stock.idAlmacen,
+                      productos: body.stock.productos,
+                      detalle: `CVAGN-0`,
+                    };
+                    console.log("Stock body", stockBody);
+                    const updatedStock = await updateProductStockPos(
+                      stockBody
+                    );
+                    return {
+                      code: 500,
+                      error: "Factura rechazada",
+                      message: "Factura rechazada, intente nuevamente",
+                    };
+                  } catch (error) {
+                    return {
+                      code: 500,
+                      error: error,
+                      message: "Error al devolver el stock",
+                    };
+                  }
+
                 }
               }
               if (maxRetries === retries) {
