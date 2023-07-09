@@ -35,6 +35,7 @@ const createInvoice = async (body, req) => {
     };
     console.log("Stock body", stockBody);
     const updatedStock = await updateProductStockPos(stockBody);
+    console.log("Log log", updatedStock);
     if (updatedStock.code === 200) {
       console.log("Resultado de creacion de logs", updatedStock);
       const idsCreados = updatedStock.data;
@@ -167,9 +168,7 @@ const createInvoice = async (body, req) => {
                       detalle: `CVAGN-0`,
                     };
                     console.log("Stock body", stockBody);
-                    const updatedStock = await updateProductStockPos(
-                      stockBody
-                    );
+                    const updatedStock = await updateProductStockPos(stockBody);
                     return {
                       code: 500,
                       error: "Factura rechazada",
@@ -182,7 +181,6 @@ const createInvoice = async (body, req) => {
                       message: "Error al devolver el stock",
                     };
                   }
-
                 }
               }
               if (maxRetries === retries) {
