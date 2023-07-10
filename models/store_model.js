@@ -574,9 +574,9 @@ async function transactionOfUpdateStocks(bodies) {
       for (const prod of body.productos) {
         const updateStockQuery = `
           UPDATE ${typeStock.tableName}
-            SET "cant_Anterior" = "cant_Actual",
-                "diferencia" = ${prod.cantProducto},
-                "cant_Actual" = "cant_Actual" ${operator} ${prod.cantProducto},
+            SET "cant_Anterior" = ROUND("cant_Actual"::numeric, 4),
+                "diferencia" = ROUND(${prod.cantProducto}::numeric, 4),
+                "cant_Actual" = ROUND("cant_Actual" ${operator} ${prod.cantProducto}::numeric,4),
                 "fechaActualizacion" = '${dateResult}'
             WHERE "idProducto" = ${prod.idProducto} AND "${typeStock.idName}" = '${body.idAlmacen}'
           `;

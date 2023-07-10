@@ -123,7 +123,6 @@ function postFactura(bodyFacturas, bodyFacturasInfo, req) {
       getCodigosLeyenda(req)
         .then(async (codigosLeyendaData) => {
           codigosLeyendaResponse = JSON.parse(codigosLeyendaData);
-          console.log("Leyendas", codigosLeyendaData);
           const random = getRandomNumber(
             codigosLeyendaResponse.data.data.length - 1
           );
@@ -185,6 +184,8 @@ async function getCodigosLeyenda(req) {
 }
 
 async function getEstadoFactura(req, ack_ticket) {
+  console.log("Entrando a estado de factura", ack_ticket);
+
   try {
     const url =
       process.env.EMIZOR_URL + `/api/v1/facturas/${ack_ticket}/status`;

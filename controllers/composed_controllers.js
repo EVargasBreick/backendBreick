@@ -60,7 +60,7 @@ const createInvoice = async (body, req) => {
                   req,
                   data.ack_ticket
                 );
-                console.log("Estado de la factura", estadoFactura);
+                console.log("ESTADO DE LA FACTURA", estadoFactura);
                 stateData = JSON.parse(estadoFactura).data.data.estado;
               } catch (error) {
                 console.log("Error", error);
@@ -225,10 +225,14 @@ const createInvoice = async (body, req) => {
               }
               retries++;
               await delay(3000); // Delay between retries
-              if (stateData === "VALIDA" || stateData === "RECHAZADA") {
+              if (
+                stateData === "VALIDA" ||
+                stateData === "RECHAZADA" ||
+                stateData === "PENDIENTE"
+              ) {
                 const autorizacion = `${body.emizor.extras.facturaTicket}$${data.ack_ticket}`;
                 console.log("Autorizacion test", autorizacion);
-                if (stateData === "VALIDA") {
+                if (stateData === "VALIDA" || stateData === "PENDIENTE") {
                   try {
                     const autorizacion = `${body.emizor.extras.facturaTicket}$${data.ack_ticket}`;
                     console.log("Autorizacion test", autorizacion);
@@ -239,12 +243,15 @@ const createInvoice = async (body, req) => {
                     body.invoice.cufd = data.shortLink;
                     body.invoice.fechaEmision = data.fechaEmision;
                     try {
-                      const invoiceCreated = await createInvoicePos(body.invoice);
+                      const invoiceCreated = await createInvoicePos(
+                        body.invoice
+                      );
                       console.log(
                         "Invoice created",
                         invoiceCreated.factura.rows[0].idFactura
                       );
-                      body.venta.idFactura = invoiceCreated.factura.rows[0].idFactura;
+                      body.venta.idFactura =
+                        invoiceCreated.factura.rows[0].idFactura;
                       try {
                         const saleCreated = await registerSalePos(
                           body.venta,
@@ -260,7 +267,8 @@ const createInvoice = async (body, req) => {
                           return {
                             code: 200,
                             data: invoiceResponse,
-                            leyenda: JSON.parse(invoiceResponse).leyenda.descripcion,
+                            leyenda:
+                              JSON.parse(invoiceResponse).leyenda.descripcion,
                             message: "Factura correcta",
                           };
                         } catch (error) {
@@ -286,7 +294,9 @@ const createInvoice = async (body, req) => {
                           detalle: `CVAGN-0`,
                         };
                         console.log("Stock body", stockBody);
-                        const updatedStock = await updateProductStockPos(stockBody);
+                        const updatedStock = await updateProductStockPos(
+                          stockBody
+                        );
                         return {
                           code: 500,
                           error: error,
@@ -307,7 +317,6 @@ const createInvoice = async (body, req) => {
                       message: "Error en el proceso de facturacion",
                     };
                   }
-
                 } else {
                   try {
                     const stockBody = {
@@ -317,9 +326,7 @@ const createInvoice = async (body, req) => {
                       detalle: `CVAGN-0`,
                     };
                     console.log("Stock body", stockBody);
-                    const updatedStock = await updateProductStockPos(
-                      stockBody
-                    );
+                    const updatedStock = await updateProductStockPos(stockBody);
                     return {
                       code: 500,
                       error: "Factura rechazada",
@@ -332,7 +339,6 @@ const createInvoice = async (body, req) => {
                       message: "Error al devolver el stock",
                     };
                   }
-
                 }
               }
               if (maxRetries === retries) {
@@ -350,8 +356,6 @@ const createInvoice = async (body, req) => {
               message: "Error al obtener el estado de la factura",
             };
           }
-
-
         }
       } catch (error) {
         try {
@@ -394,7 +398,6 @@ const createInvoice = async (body, req) => {
   }
 };
 
-
 const isValid = async () => {
   if (stateData === "VALIDA" || stateData === "RECHAZADA") {
     const autorizacion = `${body.emizor.extras.facturaTicket}$${data.ack_ticket}`;
@@ -406,15 +409,12 @@ const isValid = async () => {
         body.invoice.cufd = data.shortLink;
         body.invoice.fechaEmision = data.fechaEmision;
         try {
-          const invoiceCreated = await createInvoicePos(
-            body.invoice
-          );
+          const invoiceCreated = await createInvoicePos(body.invoice);
           console.log(
             "Invoice created",
             invoiceCreated.factura.rows[0].idFactura
           );
-          body.venta.idFactura =
-            invoiceCreated.factura.rows[0].idFactura;
+          body.venta.idFactura = invoiceCreated.factura.rows[0].idFactura;
           try {
             const saleCreated = await registerSalePos(
               body.venta,
@@ -429,8 +429,7 @@ const isValid = async () => {
               return {
                 code: 200,
                 data: invoiceResponse,
-                leyenda:
-                  JSON.parse(invoiceResponse).leyenda.descripcion,
+                leyenda: JSON.parse(invoiceResponse).leyenda.descripcion,
                 message: "Factura correcta",
               };
             } catch (error) {
@@ -456,9 +455,7 @@ const isValid = async () => {
               detalle: `CVAGN-0`,
             };
             console.log("Stock body", stockBody);
-            const updatedStock = await updateProductStockPos(
-              stockBody
-            );
+            const updatedStock = await updateProductStockPos(stockBody);
             return {
               code: 500,
               error: error,
@@ -488,9 +485,7 @@ const isValid = async () => {
           detalle: `CVAGN-0`,
         };
         console.log("Stock body", stockBody);
-        const updatedStock = await updateProductStockPos(
-          stockBody
-        );
+        const updatedStock = await updateProductStockPos(stockBody);
         return {
           code: 500,
           error: "Factura rechazada",
@@ -503,7 +498,6 @@ const isValid = async () => {
           message: "Error al devolver el stock",
         };
       }
-
     }
   }
   if (maxRetries === retries) {
@@ -513,7 +507,7 @@ const isValid = async () => {
       message: "Maximo de intentos alcanzado",
     };
   }
-}
+};
 
 const createEmizorInvoice = async () => {
   return new Promise((resolve) =>
