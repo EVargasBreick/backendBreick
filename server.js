@@ -2,6 +2,7 @@ const express = require("express");
 const session = require("express-session");
 const https = require("https");
 const fs = require("fs");
+const path = require("path");
 var cors = require("cors");
 require("dotenv").config();
 const serverConfig = require("./config/serverConfig.json");
@@ -22,11 +23,17 @@ var corsOptions = {
 };
 
 var bodyParser = require("body-parser");
+const keyPath = path.resolve(__dirname, "./breickventas.tech.key");
+const certPath = path.resolve(__dirname, "./breickventas_tech.crt");
+const caPath = path.resolve(__dirname, "./breickventas_tech.ca-bundle");
+
 const options = {
-  key: fs.readFileSync("./breickkey.key"),
-  cert: fs.readFileSync("./breickventas_lat.crt"),
-  ca: fs.readFileSync("./breickventas_lat.ca-bundle"),
+  key: fs.readFileSync(keyPath),
+  cert: fs.readFileSync(certPath),
+  ca: fs.readFileSync(caPath),
+  passphrase: "BreickEVK2023!",
 };
+
 const maxAge = 60 * 60 * 12;
 const app = express();
 const sessionParams = {
@@ -70,6 +77,10 @@ const getInvoicesIncomplete = require("./services/getIncompleteInvoices");
 const logIncompleteInvoices = require("./services/logIncompleteInvoices");
 const emizorRoutes = require("./routes/emizorRoute");
 const middlewareEmizor = require("./services/isAuthEmizor");
+const {
+  readAndStabilizeStocks,
+  updateInvoices,
+} = require("./services/stabilizeStocks");
 
 app.use("/", loginRoutes);
 app.use("/", emizorRoutes);

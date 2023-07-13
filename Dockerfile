@@ -6,9 +6,12 @@ COPY package*.json ./
 RUN npm install
 
 COPY . . 
-COPY breickventas_lat.crt /etc/ssl/certs/
-COPY breickkey.key /etc/ssl/private/
-COPY breickventas_lat.ca-bundle /etc/ssl/certs/
+
+
+COPY breickventas_tech.crt /etc/ssl/certs/
+COPY breickventas.tech.key /etc/ssl/private/
+COPY breickventas_tech.ca-bundle /etc/ssl/certs/
+
 
 EXPOSE 443
 EXPOSE 5432
