@@ -80,5 +80,17 @@ module.exports = {
       responseObject.code = facturasResponse.status;
       res.status(responseObject.code).send(responseObject);
     });
+  },
+
+  getFacturasEmizor: async (req, res) => {
+    const { cuf } = req.params;
+    const facturasPromise = emizor.getFacturasEmizor(cuf, req);
+    var responseObject = {};
+    facturasPromise.then((facturasData) => {
+      facturasResponse = JSON.parse(facturasData);
+      responseObject.data = facturasResponse.data;
+      responseObject.code = facturasResponse.status;
+      res.status(responseObject.code).send(responseObject);
+    });
   }
 };

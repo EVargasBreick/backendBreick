@@ -235,6 +235,25 @@ async function getFacturasDB(nit) {
   }
 }
 
+async function getFacturasEmizor(cuf, req){
+  try{
+    const url = process.env.EMIZOR_URL + `/api/v1/facturas/${cuf}`;
+    const authHeader = req.headers.authorization;
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: authHeader,
+      },
+    });
+    return JSON.stringify({ data: response.data, status: response.status });
+  }
+  catch(error){
+    return JSON.stringify({
+      data: error?.response?.data ?? "Error Obteniendo Facturas",
+      status: error?.response?.status ?? 500,
+    });
+  }
+}
+
 module.exports = {
   postOauthToken,
   getEmizorToken,
@@ -245,4 +264,5 @@ module.exports = {
   getEstadoFactura,
   getFacturaDB,
   getFacturasDB,
+  getFacturasEmizor
 };
