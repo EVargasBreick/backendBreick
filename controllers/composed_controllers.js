@@ -54,12 +54,10 @@ const createInvoice = async (body, req) => {
             let stateData = null;
             const delay = (ms) =>
               new Promise((resolve) => setTimeout(resolve, ms));
+            let estadoFactura = null;
             while (retries < maxRetries) {
               try {
-                const estadoFactura = await getEstadoFactura(
-                  req,
-                  data.ack_ticket
-                );
+                estadoFactura = await getEstadoFactura(req, data.ack_ticket);
                 console.log("ESTADO DE LA FACTURA", estadoFactura);
                 stateData = JSON.parse(estadoFactura).data.data.estado;
               } catch (error) {
@@ -169,11 +167,13 @@ const createInvoice = async (body, req) => {
                     };
                     console.log("Stock body", stockBody);
                     const updatedStock = await updateProductStockPos(stockBody);
-                    return {
-                      code: 500,
-                      error: "Factura rechazada",
-                      message: "Factura rechazada, intente nuevamente",
-                    };
+                    setTimeout(() => {
+                      return {
+                        code: 500,
+                        error: estadoFactura,
+                        message: "Factura rechazada, intente nuevamente",
+                      };
+                    }, 500);
                   } catch (error) {
                     return {
                       code: 500,
@@ -329,7 +329,7 @@ const createInvoice = async (body, req) => {
                     const updatedStock = await updateProductStockPos(stockBody);
                     return {
                       code: 500,
-                      error: "Factura rechazada",
+                      error: stateData,
                       message: "Factura rechazada, intente nuevamente",
                     };
                   } catch (error) {
