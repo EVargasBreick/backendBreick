@@ -34,18 +34,21 @@ const createInvoice = async (body, req) => {
       detalle: `NVAG-0`,
     };
     console.log("Stock body", stockBody);
+    // TODO? : Update stock
     const updatedStock = await updateProductStockPos(stockBody);
-    console.log("Log log", updatedStock);
     if (updatedStock.code === 200) {
       console.log("Resultado de creacion de logs", updatedStock);
       const idsCreados = updatedStock.data;
-      console.log("Flag 1");
       try {
+        // TODO? : Create factura
+        console.log("Body de la factura", body);
+
         const invoiceResponse = await postFactura(
           body.emizor,
           body.storeInfo,
           req
         );
+        console.log("Respuesta de la factura", invoiceResponse);
         const data = JSON.parse(invoiceResponse).data.data;
         if (Number(data.emission_type_code) === 1) {
           try {
@@ -94,38 +97,53 @@ const createInvoice = async (body, req) => {
                       );
                       body.venta.idFactura =
                         invoiceCreated.factura.rows[0].idFactura;
-                      try {
-                        const saleCreated = await registerSalePos(
-                          body.venta,
-                          invoiceCreated.factura.rows[0].idFactura
-                        );
-                        const ventaCreada = JSON.parse(saleCreated);
-                        console.log("Sale created", ventaCreada);
+                      const maxRetries = 50;
+                      let retriesSale = 0;
+                      const delay = (ms) =>
+                        new Promise((resolve) => setTimeout(resolve, ms));
+                      while (retriesSale < maxRetries) {
                         try {
-                          const updatedLogs = await updateLogStockDetails(
-                            `NVAG-${ventaCreada.idCreado}`,
-                            idsCreados
+                          const saleCreated = await registerSalePos(
+                            body.venta,
+                            invoiceCreated.factura.rows[0].idFactura
                           );
-                          return {
-                            code: 200,
-                            data: invoiceResponse,
-                            leyenda:
-                              JSON.parse(invoiceResponse).leyenda.descripcion,
-                            message: "Factura correcta",
-                          };
-                        } catch (error) {
-                          return {
-                            code: 500,
-                            error: error,
-                            message: "Error al actualizar los logs",
-                          };
+                          const ventaCreada = JSON.parse(saleCreated);
+                          console.log("Sale created", ventaCreada);
+                          try {
+                            const updatedLogs = await updateLogStockDetails(
+                              `NVAG-${ventaCreada.idCreado}`,
+                              idsCreados
+                            );
+                            console.log("Updated logs", updatedLogs);
+                            console.log("Invoice response", invoiceResponse);
+                            console.log("retries", retriesSale);
+                            return {
+                              code: 200,
+                              data: invoiceResponse,
+                              leyenda:
+                                JSON.parse(invoiceResponse).leyenda.descripcion,
+                              message: "Factura correcta",
+                            };
+                          } catch (error) {
+                            return {
+                              code: 500,
+                              error: error,
+                              message: "Error al actualizar los logs",
+                            };
+                          }
+                        } catch {
+                          if (retries < maxRetries) {
+                            retries++;
+                            console.log("Retrying sale creation", retries);
+                            await delay(3000); // Delay between retries
+                          } else {
+                            return {
+                              code: 500,
+                              error: error,
+                              message: "Error al crear la venta",
+                            };
+                          }
                         }
-                      } catch {
-                        return {
-                          code: 500,
-                          error: error,
-                          message: "Error al crear la venta",
-                        };
                       }
                     } catch (error) {
                       try {
@@ -358,6 +376,8 @@ const createInvoice = async (body, req) => {
           }
         }
       } catch (error) {
+        console.log("Error", error);
+        // TODO? : ERROR at create factura
         try {
           const stockBody = {
             accion: "add",
