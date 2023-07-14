@@ -6,6 +6,10 @@ const client = new Client({
   password: process.env.POSTGRES_PASS,
   database: process.env.POSTGRES_DATABASE,
 });
+try {
+  client.connect();
+} catch (err) {
+  console.log("Erroooor", err);
+}
 
-client.connect();
 module.exports = { client };

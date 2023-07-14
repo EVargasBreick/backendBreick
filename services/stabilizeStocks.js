@@ -1,4 +1,4 @@
-const { Client } = require("pg");
+/*const { Client } = require("pg");
 const sourceDb = new Client({
   host: "localhost",
   user: "postgres",
@@ -202,5 +202,4 @@ function regProds(query) {
     }
   });
 }
-
-module.exports = { updateInvoices };
+*/
