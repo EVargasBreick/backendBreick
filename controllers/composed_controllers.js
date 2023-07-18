@@ -184,14 +184,14 @@ const createInvoice = async (body, req) => {
                       detalle: `CVAGN-0`,
                     };
                     console.log("Stock body", stockBody);
+                    console.log("Resp de la factura", data);
+
                     const updatedStock = await updateProductStockPos(stockBody);
-                    setTimeout(() => {
-                      return {
-                        code: 500,
-                        error: estadoFactura,
-                        message: "Factura rechazada, intente nuevamente",
-                      };
-                    }, 500);
+                    return {
+                      code: 500,
+                      error: estadoFactura,
+                      message: JSON.stringify(JSON.parse(estadoFactura)?.data?.data?.errores[0]?.description) + " Factura rechazada, intente nuevamente",
+                    };
                   } catch (error) {
                     return {
                       code: 500,
@@ -218,6 +218,7 @@ const createInvoice = async (body, req) => {
           }
         } else {
           console.log("Is not electronic invoice");
+          let estadoFactura = ""
           try {
             const maxRetries = 50;
             let retries = 0;
@@ -226,11 +227,11 @@ const createInvoice = async (body, req) => {
               new Promise((resolve) => setTimeout(resolve, ms));
             while (retries < maxRetries) {
               try {
-                const estadoFactura = await getEstadoFactura(
+                estadoFactura = await getEstadoFactura(
                   req,
                   data.ack_ticket
                 );
-                console.log("Estado de la factura", estadoFactura);
+                console.log("Estado de la factura no emmision type", estadoFactura);
                 stateData = JSON.parse(estadoFactura).data.data.estado;
               } catch (error) {
                 console.log("Error", error);
@@ -345,10 +346,14 @@ const createInvoice = async (body, req) => {
                     };
                     console.log("Stock body", stockBody);
                     const updatedStock = await updateProductStockPos(stockBody);
+                    console.log("update Stock", updatedStock)
+                    console.log("Resp de la factura", data);
+
+                    console.log("estado factura", JSON.parse(estadoFactura))
                     return {
                       code: 500,
                       error: stateData,
-                      message: "Factura rechazada, intente nuevamente",
+                      message: JSON.stringify(JSON.parse(estadoFactura)?.data?.data?.errores[0]?.description) + " Factura rechazada, intente nuevamente",
                     };
                   } catch (error) {
                     return {
@@ -414,117 +419,6 @@ const createInvoice = async (body, req) => {
       error: error,
       message:
         "Error al actualizar stock, algún producto no cuenta con la cantidad solicitada 2",
-    };
-  }
-};
-
-const isValid = async () => {
-  if (stateData === "VALIDA" || stateData === "RECHAZADA") {
-    const autorizacion = `${body.emizor.extras.facturaTicket}$${data.ack_ticket}`;
-    if (stateData === "VALIDA") {
-      try {
-        body.invoice.nroFactura = data.numeroFactura;
-        body.invoice.cuf = data.cuf;
-        body.invoice.autorizacion = autorizacion;
-        body.invoice.cufd = data.shortLink;
-        body.invoice.fechaEmision = data.fechaEmision;
-        try {
-          const invoiceCreated = await createInvoicePos(body.invoice);
-          console.log(
-            "Invoice created",
-            invoiceCreated.factura.rows[0].idFactura
-          );
-          body.venta.idFactura = invoiceCreated.factura.rows[0].idFactura;
-          try {
-            const saleCreated = await registerSalePos(
-              body.venta,
-              invoiceCreated.factura.rows[0].idFactura
-            );
-            const ventaCreada = JSON.parse(saleCreated);
-            try {
-              const updatedLogs = await updateLogStockDetails(
-                `NVAG-${ventaCreada.idCreado}`,
-                idsCreados
-              );
-              return {
-                code: 200,
-                data: invoiceResponse,
-                leyenda: JSON.parse(invoiceResponse).leyenda.descripcion,
-                message: "Factura correcta",
-              };
-            } catch (error) {
-              return {
-                code: 500,
-                error: error,
-                message: "Error al actualizar los logs",
-              };
-            }
-          } catch {
-            return {
-              code: 500,
-              error: error,
-              message: "Error al crear la venta",
-            };
-          }
-        } catch (error) {
-          try {
-            const stockBody = {
-              accion: "add",
-              idAlmacen: body.stock.idAlmacen,
-              productos: body.stock.productos,
-              detalle: `CVAGN-0`,
-            };
-            console.log("Stock body", stockBody);
-            const updatedStock = await updateProductStockPos(stockBody);
-            return {
-              code: 500,
-              error: error,
-              message: "Error al crear la factura",
-            };
-          } catch (error) {
-            return {
-              code: 500,
-              error: error,
-              message: "Error al devolver el stock",
-            };
-          }
-        }
-      } catch (err) {
-        return {
-          code: 500,
-          error: err,
-          message: "Error en el proceso de facturacion",
-        };
-      }
-    } else {
-      try {
-        const stockBody = {
-          accion: "add",
-          idAlmacen: body.stock.idAlmacen,
-          productos: body.stock.productos,
-          detalle: `CVAGN-0`,
-        };
-        console.log("Stock body", stockBody);
-        const updatedStock = await updateProductStockPos(stockBody);
-        return {
-          code: 500,
-          error: "Factura rechazada",
-          message: "Factura rechazada, intente nuevamente",
-        };
-      } catch (error) {
-        return {
-          code: 500,
-          error: error,
-          message: "Error al devolver el stock",
-        };
-      }
-    }
-  }
-  if (maxRetries === retries) {
-    return {
-      code: 500,
-      error: "Maximo de intentos alcanzado",
-      message: "Maximo de intentos alcanzado",
     };
   }
 };
