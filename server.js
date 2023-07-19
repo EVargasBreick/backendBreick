@@ -81,6 +81,7 @@ const {
   readAndStabilizeStocks,
   updateInvoices,
 } = require("./services/stabilizeStocks");
+const { logIncompleteSales } = require("./services/registerErrorSales");
 
 app.use("/", loginRoutes);
 app.use("/", emizorRoutes);
@@ -160,5 +161,6 @@ if (serverType === "web") {
   app.listen(serverConfig.port, () => {
     console.log("Cors options", corsOptions);
     console.log("Server listening on port ", 5200);
+    logIncompleteSales();
   });
 }
