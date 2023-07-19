@@ -190,7 +190,11 @@ const createInvoice = async (body, req) => {
                     return {
                       code: 500,
                       error: estadoFactura,
-                      message: JSON.stringify(JSON.parse(estadoFactura)?.data?.data?.errores[0]?.description) + " Factura rechazada, intente nuevamente",
+                      message:
+                        JSON.stringify(
+                          JSON.parse(estadoFactura)?.data?.data?.errores[0]
+                            ?.description
+                        ) + " Factura rechazada, intente nuevamente",
                     };
                   } catch (error) {
                     return {
@@ -218,7 +222,7 @@ const createInvoice = async (body, req) => {
           }
         } else {
           console.log("Is not electronic invoice");
-          let estadoFactura = ""
+          let estadoFactura = "";
           try {
             const maxRetries = 50;
             let retries = 0;
@@ -227,11 +231,11 @@ const createInvoice = async (body, req) => {
               new Promise((resolve) => setTimeout(resolve, ms));
             while (retries < maxRetries) {
               try {
-                estadoFactura = await getEstadoFactura(
-                  req,
-                  data.ack_ticket
+                estadoFactura = await getEstadoFactura(req, data.ack_ticket);
+                console.log(
+                  "Estado de la factura no emmision type",
+                  estadoFactura
                 );
-                console.log("Estado de la factura no emmision type", estadoFactura);
                 stateData = JSON.parse(estadoFactura).data.data.estado;
               } catch (error) {
                 console.log("Error", error);
@@ -346,14 +350,18 @@ const createInvoice = async (body, req) => {
                     };
                     console.log("Stock body", stockBody);
                     const updatedStock = await updateProductStockPos(stockBody);
-                    console.log("update Stock", updatedStock)
+                    console.log("update Stock", updatedStock);
                     console.log("Resp de la factura", data);
 
-                    console.log("estado factura", JSON.parse(estadoFactura))
+                    console.log("estado factura", JSON.parse(estadoFactura));
                     return {
                       code: 500,
                       error: stateData,
-                      message: JSON.stringify(JSON.parse(estadoFactura)?.data?.data?.errores[0]?.description) + " Factura rechazada, intente nuevamente",
+                      message:
+                        JSON.stringify(
+                          JSON.parse(estadoFactura)?.data?.data?.errores[0]
+                            ?.description
+                        ) + " Factura rechazada, intente nuevamente",
                     };
                   } catch (error) {
                     return {

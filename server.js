@@ -151,8 +151,9 @@ if (serverType === "web") {
       }
 
       setTimeout(function () {
-        getInvoicesIncomplete();
-        setInterval(getInvoicesIncomplete, 24 * 60 * 60 * 1000);
+        //getInvoicesIncomplete();
+        logIncompleteSales();
+        setInterval(logIncompleteSales, 24 * 60 * 60 * 1000);
       }, millisTill1040AM);
     }
     setupInterval();
@@ -161,6 +162,6 @@ if (serverType === "web") {
   app.listen(serverConfig.port, () => {
     console.log("Cors options", corsOptions);
     console.log("Server listening on port ", 5200);
-    logIncompleteSales();
+    //logIncompleteSales();
   });
 }
