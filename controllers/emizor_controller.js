@@ -92,5 +92,31 @@ module.exports = {
       responseObject.code = facturasResponse.status;
       res.status(responseObject.code).send(responseObject);
     });
+  },
+
+  postProductoHomologado: async (req, res) => {
+    const { bodyProducto } = req.params;
+    const productoPromise = emizor.postProductoHomologado(bodyProducto, req);
+    var responseObject = {};
+    productoPromise.then((productoData) => {
+      productoResponse = JSON.parse(productoData);
+      responseObject.data = productoResponse.data;
+      responseObject.code = productoResponse.status;
+      res.status(responseObject.code).send(responseObject);
+    }
+    );
+  },
+
+  getProductoHomologado: async (req, res) => {
+    const productoPromise = emizor.getProductoHomologado(req);
+    var responseObject = {};
+    productoPromise.then((productoData) => {
+      productoResponse = JSON.parse(productoData);
+      responseObject.data = productoResponse.data;
+      responseObject.code = productoResponse.status;
+      res.status(responseObject.code).send(responseObject);
+    }
+    );
   }
+
 };

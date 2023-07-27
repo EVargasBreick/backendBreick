@@ -10,5 +10,7 @@ router.get("/emizor/api/v1/parametros/leyendas", middlewareEmizor, controller.ge
 router.get("/emizor/facuradb/:uniqueCode", middlewareEmizor, controller.getFacturaDB); // * get factura from db
 router.get("/emizor/facturasdb/:nit", middlewareEmizor, controller.getFacturasDB); // * get facturas from db
 router.get("/emizor/facturas/:cuf", middlewareEmizor, controller.getFacturasEmizor); // * get factura from emizor
+router.post("/emizor/api/v1/productos", middlewareEmizor, controller.postProductoHomologado);
+router.get("/emizor/api/v1/productos", middlewareEmizor, controller.getProductoHomologado);
 
 module.exports = router;

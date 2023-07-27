@@ -254,6 +254,43 @@ async function getFacturasEmizor(cuf, req) {
   }
 }
 
+async function postProductoHomologado(bodyProducto, req) {
+  try {
+    const url = process.env.EMIZOR_URL + `/api/v1/productos`;
+    const authHeader = req.headers.authorization;
+    const response = await axios.post(url, bodyProducto, {
+      headers: {
+        Authorization: authHeader,
+      },
+    });
+    return JSON.stringify({ data: response.data, status: response.status });
+  } catch (error) {
+    return JSON.stringify({
+      data: error?.response?.data ?? "Error Emizor Producto",
+      status: error?.response?.status ?? 500,
+    });
+  }
+}
+
+async function getProductoHomologado(req) {
+  try {
+    const url = process.env.EMIZOR_URL + `/api/v1/productos`;
+    const authHeader = req.headers.authorization;
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: authHeader,
+      },
+    });
+    return JSON.stringify({ data: response.data, status: response.status });
+  } catch (error) {
+    return JSON.stringify({
+      data: error?.response?.data ?? "Error Emizor Producto",
+      status: error?.response?.status ?? 500,
+    });
+  }
+}
+
+
 module.exports = {
   postOauthToken,
   getEmizorToken,
@@ -265,4 +302,6 @@ module.exports = {
   getFacturaDB,
   getFacturasDB,
   getFacturasEmizor,
+  postProductoHomologado,
+  getProductoHomologado,
 };
