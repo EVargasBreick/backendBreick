@@ -562,6 +562,7 @@ async function transactionOfUpdateStocks(bodies) {
       });
       const dateResult = dateString();
       const operator = body.accion === "add" ? "+" : "-";
+      console.log(operator == "+" ? "Sumando stock" : "Restando Stock");
       const typeStock = body.idAlmacen.includes(
         TiposStock.AGENCIA.identificador
       )

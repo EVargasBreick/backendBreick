@@ -13,4 +13,6 @@ router.get(
   "/reportes/productos/pedidos",
   controller.orderGroupedProductsReport
 );
+router.get("/reportes/totales/agencia", controller.salesByStoreReport);
+router.get("/reportes/totales/vendedor", controller.salesBySalespersonReport);
 module.exports = router;

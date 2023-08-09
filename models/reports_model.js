@@ -418,6 +418,67 @@ async function GroupedProductsTransferReport(
   }
 }
 
+function SalesByStoreReport(startDate, endDate) {
+  const query = `SELECT 
+  (select nombre from Agencias where "idAgencia"=f."idAgencia" union 
+   select nombre from Bodegas where "idBodega"=f."idAgencia" union 
+   select 'Agencia Movil '|| placa as nombre from vehiculos v where v.placa=f."idAgencia") ,
+  ROUND(SUM(CASE WHEN f.estado = 0 THEN "montoFacturar" ELSE 0 END)::numeric, 2) AS "totalFacturado",
+  ROUND(SUM(CASE WHEN f.estado = 1 THEN "montoFacturar" ELSE 0 END)::numeric, 2) AS "totalAnulado"
+FROM 
+  facturas f
+INNER JOIN 
+  ventas v ON f."idFactura" = v."idFactura" 
+where 
+to_date(f."fechaHora", 'DD/MM/YYYY')>=to_date(${startDate}, 'YYYY-MM-DD') and 
+to_date(f."fechaHora", 'DD/MM/YYYY')<=to_date(${endDate}, 'YYYY-MM-DD')
+GROUP BY 
+  f."idAgencia"
+  order by f."idAgencia" desc
+  ;
+`;
+  console.log("Llamando", query);
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      try {
+        const data = await client.query(query);
+        resolve(data.rows);
+      } catch (err) {
+        reject(err);
+      }
+    }, 100);
+  });
+}
+
+function SalesBySalespersonReport(startDate, endDate) {
+  const query = `
+  SELECT 
+      (select nombre || ' ' || "apPaterno" || ' ' || "apMaterno" as "nombreVendedor" from Usuarios where "idUsuario"=v."idUsuarioCrea"),
+      ROUND(SUM(CASE WHEN f.estado = 0 THEN "montoFacturar" ELSE 0 END)::numeric, 2) AS "totalFacturado",
+      ROUND(SUM(CASE WHEN f.estado = 1 THEN "montoFacturar" ELSE 0 END)::numeric, 2) AS "totalAnulado"
+  FROM 
+      facturas f
+  INNER JOIN 
+      ventas v ON f."idFactura" = v."idFactura" 
+  where 
+    to_date(f."fechaHora", 'DD/MM/YYYY')>=to_date(${startDate}, 'YYYY-MM-DD') and 
+    to_date(f."fechaHora", 'DD/MM/YYYY')<=to_date(${endDate}, 'YYYY-MM-DD')
+  GROUP BY 
+      v."idUsuarioCrea"
+`;
+
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      try {
+        const data = await client.query(query);
+        resolve(data.rows);
+      } catch (err) {
+        reject(err);
+      }
+    }, 100);
+  });
+}
+
 module.exports = {
   GeneralSalesReport,
   ProductsSalesReport,
@@ -430,4 +491,6 @@ module.exports = {
   mainPageReportPos,
   GeneralMarkdownsReport,
   GroupedProductsOrderReport,
+  SalesByStoreReport,
+  SalesBySalespersonReport,
 };
