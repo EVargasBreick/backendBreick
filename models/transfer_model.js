@@ -72,8 +72,8 @@ function getTransferList(params) {
     params.crit === "todo"
       ? ``
       : params.crit === "ac"
-      ? `where estado>0 and movil=0`
-      : `where estado=0 and movil=0`;
+        ? `where estado>0 and movil=0`
+        : `where estado=0 and movil=0`;
   var queryGetList = `select a.estado, a.impreso, a.listo, a.idUsuario, b.nombre as nombreOrigen, a.idOrigen, a.idDestino,
     (select x.nombre from Agencias x where x.idAgencia=a.idDestino union 
     select x.nombre from Bodegas x where x.idBodega=a.idDestino union 
@@ -302,10 +302,12 @@ function acceptTransfer(params) {
 function createTransferPos(body) {
   const dateResult = dateString();
   console.log("body del traspaso", body);
+  const { listo } = body;
+  console.log("TCL: createTransferPos -> listo", listo)
   const movil = body.movil ? body.movil : 0;
   const imp = body.impreso != undefined ? body.impreso : 0;
   var queryTransfer = `insert into Traspasos ("fechaCrea", "fechaActu", "idOrigen", "idDestino", "idUsuario", estado, movil, listo, impreso, transito)
-    values ('${dateResult}','','${body.idOrigen}','${body.idDestino}',${body.idUsuario},0,${movil},0,${imp},${body.transito}) returning "idTraspaso"`;
+    values ('${dateResult}','','${body.idOrigen}','${body.idDestino}',${body.idUsuario},0,${movil},${listo === 1 ? listo : 0},${imp},${body.transito}) returning "idTraspaso"`;
   return new Promise((resolve, reject) => {
     console.log("Query traspaso", queryTransfer);
     setTimeout(async () => {
@@ -369,8 +371,8 @@ function getTransferListPos(params) {
     params.crit === "todo"
       ? ``
       : params.crit === "ac"
-      ? `where estado>0 and movil=0`
-      : `where estado='0' and movil=0`;
+        ? `where estado>0 and movil=0`
+        : `where estado='0' and movil=0`;
   var queryGetList = `select a.estado, a.impreso, a.listo, a."idUsuario", b.nombre as "nombreOrigen", a."idOrigen", a."idDestino",
     (select x.nombre from Agencias x where x."idAgencia"=a."idDestino" union 
     select x.nombre from Bodegas x where x."idBodega"=a."idDestino" union 
