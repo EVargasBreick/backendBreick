@@ -14,6 +14,8 @@ const {
   mainPageReportPos,
   GeneralMarkdownsReport,
   GroupedProductsOrderReport,
+  SalesByStoreReport,
+  SalesBySalespersonReport,
 } = require("../models/reports_model.js");
 app.use(session(sessionParams));
 
@@ -112,6 +114,28 @@ module.exports = {
       res
         .status(500)
         .json({ error: err || "An error occurred while fetching the report." });
+    }
+  },
+  salesByStoreReport: async (req, res) => {
+    const { startDate, endDate } = req.query;
+    try {
+      const storeData = await SalesByStoreReport(startDate, endDate);
+      res.status(200).json(storeData);
+    } catch (err) {
+      res
+        .status(500)
+        .json({ error: err || "An error occurred while fetching markdowns." });
+    }
+  },
+  salesBySalespersonReport: async (req, res) => {
+    const { startDate, endDate } = req.query;
+    try {
+      const personData = await SalesBySalespersonReport(startDate, endDate);
+      res.status(200).json(personData);
+    } catch (err) {
+      res
+        .status(500)
+        .json({ error: err || "An error occurred while fetching markdowns." });
     }
   },
 };

@@ -776,8 +776,8 @@ function getUserOrderListPos(params) {
     var queryList = `select a."idPedido", substring(b.nombre,1,1) || '' || b."apPaterno"||'-'||tipo||'00'||cast(a."idPedido" as varchar) as "codigoPedido" , b."idAlmacen"
     from Pedidos a inner join Usuarios b on a."idUsuarioCrea"=b."idUsuario" where b."idUsuario"=${params.id} ${params.condition}`;
   }
+  console.log("Query de lista para editar", queryList);
   return new Promise((resolve) => {
-    console.log("Query", queryList);
     setTimeout(async () => {
       try {
         const orderList = await client.query(queryList);
@@ -1229,12 +1229,13 @@ function orderPrintedPos(params) {
 
 function orderToReadyPos(params) {
   console.log("Params del query", params);
+  const central = params.idDepto == 1 ? ` and "idOrigen"='AL001' ` : "";
   const query = `
   select pd."idPedido" as "idOrden", concat(upper(pd.tipo),'0',cast(pd."idPedido" as varchar)) as "nroOrden", pd."fechaCrea",'P' as tipo, us.usuario, us."idDepto"
   from Pedidos pd inner join Usuarios us on us."idUsuario"=pd."idUsuarioCrea" where pd.impreso=1 and pd.listo=0 and pd.estado!='2' and us."idDepto"=${params.idDepto}
   union
   select tp."idTraspaso" as "idOrden", tp."nroOrden", tp."fechaCrea", 'T' as tipo, us.usuario, us."idDepto"
-  from Traspasos tp inner join Usuarios us on us."idUsuario"=tp."idUsuario" where tp.impreso=1 and tp.listo=0 and tp.estado!='2' and us."idDepto"=${params.idDepto}`;
+  from Traspasos tp inner join Usuarios us on us."idUsuario"=tp."idUsuario" where tp.impreso=1 and tp.listo=0 and tp.estado!='2' and us."idDepto"=${params.idDepto} ${central}`;
   return new Promise((resolve, reject) => {
     console.log("Query ", query);
     setTimeout(async () => {
