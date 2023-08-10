@@ -162,6 +162,7 @@ if (serverType === "web") {
   app.listen(serverConfig.port, () => {
     console.log("Cors options", corsOptions);
     console.log("Server listening on port ", 5200);
+    console.log("Tipo de corrida", process.env.TYPE);
     //logIncompleteSales();
   });
 }

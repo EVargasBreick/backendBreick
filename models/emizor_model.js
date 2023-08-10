@@ -36,12 +36,26 @@ function getEmizorToken() {
 }
 
 async function postOauthToken() {
+  const url =
+    process.env.TYPE == "local"
+      ? process.env.TESTEMIZOR_URL
+      : process.env.EMIZOR_URL;
+
+  const client_secret =
+    process.env.TYPE == "local"
+      ? process.env.TESTEMIZOR_CLIENT_SECRET
+      : process.env.EMIZOR_CLIENT_SECRET;
+  const client_id =
+    process.env.TYPE == "local"
+      ? process.env.TESTEMIZOR_CLIENT_ID
+      : process.env.EMIZOR_CLIENT_ID;
+  console.log("Datos para emizor", url, client_id, client_secret);
   try {
     const response = await axios.post(
-      process.env.EMIZOR_URL + "/oauth/token",
+      url + "/oauth/token",
       {
-        client_id: process.env.EMIZOR_CLIENT_ID,
-        client_secret: process.env.EMIZOR_CLIENT_SECRET,
+        client_id: client_id,
+        client_secret: client_secret,
         grant_type: "client_credentials",
       },
       {
@@ -64,15 +78,18 @@ async function postOauthToken() {
 }
 
 async function anularFactura(cuf_ackTicket_uniqueCode, motivo, req) {
+  const url =
+    process.env.TYPE == "local"
+      ? process.env.TESTEMIZOR_URL
+      : process.env.EMIZOR_URL;
+  console.log("URl para emizor", url);
   try {
-    const url =
-      process.env.EMIZOR_URL +
-      `/api/v1/facturas/${cuf_ackTicket_uniqueCode}/anular`;
+    const urls = url + `/api/v1/facturas/${cuf_ackTicket_uniqueCode}/anular`;
     const authHeader = req.headers.authorization;
     const body = {
       codigoMotivoAnulacion: Number(motivo),
     };
-    const response = await axios.delete(url, {
+    const response = await axios.delete(urls, {
       headers: {
         Authorization: authHeader,
       },
@@ -95,10 +112,15 @@ async function anularFactura(cuf_ackTicket_uniqueCode, motivo, req) {
 }
 
 async function getPuntosVenta(req) {
+  const url =
+    process.env.TYPE == "local"
+      ? process.env.TESTEMIZOR_URL
+      : process.env.EMIZOR_URL;
+  console.log("URl para emizor", url);
   try {
-    const url = process.env.EMIZOR_URL + `/api/v1/puntos-de-venta`;
+    const urls = url + `/api/v1/puntos-de-venta`;
     const authHeader = req.headers.authorization;
-    const response = await axios.get(url, {
+    const response = await axios.get(urls, {
       headers: {
         Authorization: authHeader,
       },
@@ -117,6 +139,11 @@ function getRandomNumber(n) {
 }
 
 function postFactura(bodyFacturas, bodyFacturasInfo, req) {
+  const urls =
+    process.env.TYPE == "local"
+      ? process.env.TESTEMIZOR_URL
+      : process.env.EMIZOR_URL;
+  console.log("URl para emizor", urls);
   return new Promise(async (resolve, reject) => {
     try {
       let codigosLeyendaResponse = {};
@@ -130,7 +157,7 @@ function postFactura(bodyFacturas, bodyFacturasInfo, req) {
           const selectedLegend = codigosLeyendaResponse.data.data[random];
           bodyFacturas.codigoLeyenda = selectedLegend.codigo;
           const url =
-            process.env.EMIZOR_URL +
+            urls +
             `/api/v1/sucursales/${bodyFacturasInfo.nroSucursal}/facturas/compra-venta`;
           const authHeader = req.headers.authorization;
           const response = await axios.post(url, bodyFacturas, {
@@ -167,10 +194,15 @@ function postFactura(bodyFacturas, bodyFacturasInfo, req) {
 }
 
 async function getCodigosLeyenda(req) {
+  const url =
+    process.env.TYPE == "local"
+      ? process.env.TESTEMIZOR_URL
+      : process.env.EMIZOR_URL;
+  console.log("URl para emizor", url);
   try {
-    const url = process.env.EMIZOR_URL + `/api/v1/parametricas/leyendas`;
+    const urls = url + `/api/v1/parametricas/leyendas`;
     const authHeader = req.headers.authorization;
-    const response = await axios.get(url, {
+    const response = await axios.get(urls, {
       headers: {
         Authorization: authHeader,
       },
@@ -186,12 +218,15 @@ async function getCodigosLeyenda(req) {
 
 async function getEstadoFactura(req, ack_ticket) {
   console.log("Entrando a estado de factura", ack_ticket);
-
+  const url =
+    process.env.TYPE == "local"
+      ? process.env.TESTEMIZOR_URL
+      : process.env.EMIZOR_URL;
+  console.log("URl para emizor", url);
   try {
-    const url =
-      process.env.EMIZOR_URL + `/api/v1/facturas/${ack_ticket}/status`;
+    const urls = url + `/api/v1/facturas/${ack_ticket}/status`;
     const authHeader = req.headers.authorization;
-    const response = await axios.get(url, {
+    const response = await axios.get(urls, {
       headers: {
         Authorization: authHeader,
       },
@@ -237,10 +272,15 @@ async function getFacturasDB(nit) {
 }
 
 async function getFacturasEmizor(cuf, req) {
+  const url =
+    process.env.TYPE == "local"
+      ? process.env.TESTEMIZOR_URL
+      : process.env.EMIZOR_URL;
+  console.log("URl para emizor", url);
   try {
-    const url = process.env.EMIZOR_URL + `/api/v1/facturas/${cuf}`;
+    const urls = url + `/api/v1/facturas/${cuf}`;
     const authHeader = req.headers.authorization;
-    const response = await axios.get(url, {
+    const response = await axios.get(urls, {
       headers: {
         Authorization: authHeader,
       },
@@ -256,10 +296,15 @@ async function getFacturasEmizor(cuf, req) {
 }
 
 async function postProductoHomologado(bodyProducto, req) {
+  const url =
+    process.env.TYPE == "local"
+      ? process.env.TESTEMIZOR_URL
+      : process.env.EMIZOR_URL;
+  console.log("URl para emizor", url);
   try {
-    const url = process.env.EMIZOR_URL + `/api/v1/productos`;
+    const urls = url + `/api/v1/productos`;
     const authHeader = req.headers.authorization;
-    const response = await axios.post(url, bodyProducto, {
+    const response = await axios.post(urls, bodyProducto, {
       headers: {
         Authorization: authHeader,
       },
@@ -274,10 +319,15 @@ async function postProductoHomologado(bodyProducto, req) {
 }
 
 async function getProductoHomologado(req) {
+  const url =
+    process.env.TYPE == "local"
+      ? process.env.TESTEMIZOR_URL
+      : process.env.EMIZOR_URL;
+  console.log("URl para emizor", url);
   try {
-    const url = process.env.EMIZOR_URL + `/api/v1/productos`;
+    const urls = url + `/api/v1/productos`;
     const authHeader = req.headers.authorization;
-    const response = await axios.get(url, {
+    const response = await axios.get(urls, {
       headers: {
         Authorization: authHeader,
       },
@@ -290,7 +340,6 @@ async function getProductoHomologado(req) {
     });
   }
 }
-
 
 module.exports = {
   postOauthToken,
