@@ -368,7 +368,15 @@ async function getAllProducts() {
 
 async function updateProduct(id, body) {
   try {
-    const { nombreProducto, activo, aplicaDescuento, codigoBarras, gramajeProducto, precioDeFabrica, precioPDV } = body;
+    const {
+      nombreProducto,
+      activo,
+      aplicaDescuento,
+      codigoBarras,
+      gramajeProducto,
+      precioDeFabrica,
+      precioPDV,
+    } = body;
 
     const query = `
     UPDATE productos
@@ -378,11 +386,22 @@ async function updateProduct(id, body) {
     "precioDeFabrica" = ${precioDeFabrica}, "precioPDV" = ${precioPDV}
     WHERE "idProducto" = ${id}
   `;
-    const data = await client.query(query)
+    const data = await client.query(query);
     return data.rows;
   } catch (err) {
     throw err;
   }
+}
+
+function getVirtualProductsWithStock(params) {
+  const prodQuery = `select p.*, av."cant_Actual" from Productos p inner join almacen_virtual av on p."idProducto"=av."idProducto"
+  where av."nitCliente"='${params.nitCliente}' and "idDepto"=(select "idDepartamento" from Zonas where "idZona"=${params.idZona})`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      const products = await client.query(prodQuery);
+      resolve(JSON.stringify(products.rows));
+    }, 1000);
+  });
 }
 
 module.exports = {
@@ -405,5 +424,6 @@ module.exports = {
   getInternalAndBarcodePos,
   getProdOriginPos,
   getProdTypesPos,
-  updateProduct
+  updateProduct,
+  getVirtualProductsWithStock,
 };

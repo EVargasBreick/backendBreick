@@ -49,6 +49,7 @@ const {
   getAlltOrderListPos,
   rejectReadyPos,
   updateVirtualStock,
+  updateMultipleVirtualStock,
 } = require("../models/order_model");
 
 const app = express();
@@ -268,6 +269,16 @@ module.exports = {
   },
   updateVirtual: (req, res) => {
     const changed = updateVirtualStock(req.body);
+    changed
+      .then((list) => {
+        res.status(200).send(list);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
+  updateMultipleVirtual: (req, res) => {
+    const changed = updateMultipleVirtualStock(req.body);
     changed
       .then((list) => {
         res.status(200).send(list);

@@ -28,4 +28,8 @@ router.get("/pedidos/reimprimir", controller.toRePrint);
 router.put("/pedidos/alistar", controller.changeReady);
 router.put("/pedidos/rechazar", controller.rejectReady);
 router.post("/stock/virtual/actualizar", controller.updateVirtual);
+router.post(
+  "/stock/virtual/actualizar/multiple",
+  controller.updateMultipleVirtual
+);
 module.exports = router;

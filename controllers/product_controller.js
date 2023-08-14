@@ -19,7 +19,8 @@ const {
   getAvailableProductsPos,
   getProductsPos,
   getAllProducts,
-  updateProduct
+  updateProduct,
+  getVirtualProductsWithStock,
 } = require("../models/product_model");
 
 module.exports = {
@@ -127,7 +128,9 @@ module.exports = {
       const markdowns = await getAllProducts();
       res.status(200).json(markdowns);
     } catch (err) {
-      res.status(500).json({ error: err || 'An error occurred while fetching products.' });
+      res
+        .status(500)
+        .json({ error: err || "An error occurred while fetching products." });
     }
   },
   updateProduct: async (req, res) => {
@@ -136,7 +139,19 @@ module.exports = {
       const updated = await updateProduct(id, req.body);
       res.status(200).json(updated);
     } catch (err) {
-      res.status(500).json({ error: err || 'An error occurred while updating product.' });
+      res
+        .status(500)
+        .json({ error: err || "An error occurred while updating product." });
     }
-  }
+  },
+  getVirtualStock: async (req, res) => {
+    try {
+      const updated = await getVirtualProductsWithStock(req.query);
+      res.status(200).json(updated);
+    } catch (err) {
+      res
+        .status(500)
+        .json({ error: err || "An error occurred while fetching products." });
+    }
+  },
 };
