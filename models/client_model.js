@@ -248,7 +248,7 @@ function getClientsPos(params) {
   if (search_record) {
     return new Promise(async (resolve, reject) => {
       try {
-        const query = `select distinct av."nitCliente" ,z.zona, c."razonSocial", c."idZona", d.departamento 
+        const query = `select distinct av."nitCliente" ,z.zona, c."razonSocial", c."idZona", d.departamento, c.correo 
         FROM almacen_virtual av 
         INNER JOIN clientes c  ON av."nitCliente"  = c.nit and av."idzona"=c."idZona"
         inner join departamentos d on av."idDepto" = d."idDepto"
