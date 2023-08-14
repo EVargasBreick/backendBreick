@@ -1302,6 +1302,78 @@ function rejectReadyPos(params) {
   });
 }
 
+async function updateVirtualStock(body) {
+  console.log("Funcion de actualizar stock de almacen virtual");
+  return new Promise(async (resolve, reject) => {
+    const products = body.productos;
+    const clientInfo = body.clientInfo;
+    if (body.accion === "add") {
+      client.query("BEGIN");
+      var errCount = 0;
+      for (var product of products) {
+        const verifQuery = `select * from almacen_virtual where "idDepto"=(select "idDepartamento" from Zonas 
+        where "idZona"=${clientInfo.idZona}) and "nitCliente"='${clientInfo.nitCliente}' and "idProducto"=${product.idProducto}`;
+        try {
+          const verified = await client.query(verifQuery);
+          if (verified.rows.length > 0) {
+            const updateQuery = `update almacen_virtual set "cant_Actual"="cant_Actual"+${product.cantProducto} where "nitCliente"='${clientInfo.nitCliente}' and "idDepto"=(select "idDepartamento" from Zonas 
+            where "idZona"=${clientInfo.idZona}) and "idProducto"=${product.idProducto}`;
+            try {
+              const updated = await client.query(updateQuery);
+              console.log("Stock updateado", updated);
+            } catch (error) {
+              errCount += 1;
+              console.log("Error al actualizar stock virtual", error);
+            }
+          } else {
+            const insertQuery = `insert into almacen_virtual ("idDepto","nitCliente","idProducto","cant_Actual") 
+            values ((select "idDepartamento" from Zonas where "idZona"=${clientInfo.idZona}),
+            '${clientInfo.nitCliente}', ${product.idProducto}, ${product.cantProducto})`;
+            try {
+              const inserted = await client.query(insertQuery);
+              console.log("Producto insertado", inserted);
+            } catch (error) {
+              errCount += 1;
+              console.log("Error al insertar", error);
+            }
+          }
+        } catch (err) {
+          client.query("ROLLBACK");
+          reject(err);
+        }
+      }
+      if (errCount > 0) {
+        client.query("ROLLBACK");
+        reject("Error al actualizar o insertar", errCount);
+      } else {
+        client.query("COMMIT");
+        resolve(true);
+      }
+    } else {
+      client.query("BEGIN");
+      var errCount = 0;
+      for (var product of products) {
+        const updateQuery = `update almacen_virtual set "cant_Actual"="cant_Actual"-${product.cantProducto} where "nitCliente"='${clientInfo.nitCliente}' and "idDepto"=(select "idDepartamento" from Zonas 
+        where "idZona"=${clientInfo.idZona}) and "idProducto"=${product.idProducto}`;
+        try {
+          const updated = await client.query(updateQuery);
+          console.log("Stock updateado para restar", updated);
+        } catch (error) {
+          errCount += 1;
+          console.log("Error al actualizar stock virtual", error);
+        }
+      }
+      if (errCount > 0) {
+        client.query("ROLLBACK");
+        reject("Error al actualizar o insertar", errCount);
+      } else {
+        client.query("COMMIT");
+        resolve(true);
+      }
+    }
+  });
+}
+
 module.exports = {
   registerOrder,
   getOrderStatus,
@@ -1351,4 +1423,5 @@ module.exports = {
   changeReadyPos,
   getAlltOrderListPos,
   rejectReadyPos,
+  updateVirtualStock,
 };

@@ -48,6 +48,7 @@ const {
   changeReadyPos,
   getAlltOrderListPos,
   rejectReadyPos,
+  updateVirtualStock,
 } = require("../models/order_model");
 
 const app = express();
@@ -257,6 +258,16 @@ module.exports = {
   },
   rejectReady: (req, res) => {
     const changed = rejectReadyPos(req.query);
+    changed
+      .then((list) => {
+        res.status(200).send(list);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
+  updateVirtual: (req, res) => {
+    const changed = updateVirtualStock(req.body);
     changed
       .then((list) => {
         res.status(200).send(list);
