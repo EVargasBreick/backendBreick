@@ -235,13 +235,38 @@ function updateClientPos(data, params) {
 }
 
 function getClientsPos(params) {
+  const { search_record } = params;
   const queryGetClient = params.search
     ? `select a.*, b.zona, c.dias from Clientes a, Zonas b, Dias_Frecuencia c where a."razonSocial" like ('%${params.search}%') 
     and a."idZona"=b."idZona" and a.frecuencia=c."idDiasFrec" and a.activo=1 union 
     select a.*, b.zona, c.dias from Clientes a, Zonas b, Dias_Frecuencia c where a.nit='${params.search}' 
     and a."idZona"=b."idZona" and a.frecuencia=c."idDiasFrec" and a.activo=1`
     : `select a.*, b.zona, c.dias from Clientes a, Zonas b, Dias_Frecuencia c where a."idZona"=b."idZona" and a.frecuencia=c."idDiasFrec" and a.activo=1`;
+
   const responseObject = {};
+
+  if (search_record) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const query = `select distinct av."nitCliente" ,z.zona, c."razonSocial", c."idZona", d.departamento 
+        FROM almacen_virtual av 
+        INNER JOIN clientes c  ON av."nitCliente"  = c.nit and av."idzona"=c."idZona"
+        inner join departamentos d on av."idDepto" = d."idDepto"
+        inner join zonas z on z."idZona" = av."idzona"
+        where ("razonSocial" ilike '%${search_record}%'  or nit like '%${search_record}%') and c.activo =1;`
+
+        const foundClient = await client.query(query);
+        responseObject.code = 201;
+        responseObject.data = foundClient.rows;
+      } catch (err) {
+        responseObject.code = 400;
+        responseObject.data = "Error";
+        responseObject.message = err;
+      }
+      resolve(JSON.stringify(responseObject));
+    });
+  }
+
   return new Promise((resolve, reject) => {
     console.log("Buscando cliente", queryGetClient);
     setTimeout(async () => {

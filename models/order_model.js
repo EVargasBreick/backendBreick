@@ -686,7 +686,7 @@ function registerOrderPos(data) {
                     })
                   );
                 });
-              } catch (err) {}
+              } catch (err) { }
             }
           }, 100);
         });
@@ -713,7 +713,7 @@ function getOrderStatusPos() {
         responseObject.code = 201;
         responseObject.data = statusList.rows;
         resolve(JSON.stringify(responseObject));
-      } catch (err) {}
+      } catch (err) { }
     }, 100);
   });
 }
@@ -787,7 +787,7 @@ function getUserOrderListPos(params) {
             data: orderList.rows,
           })
         );
-      } catch (err) {}
+      } catch (err) { }
     }, 100);
   });
 }
@@ -853,7 +853,7 @@ function getOrderTypePos() {
             data: orderType.rows,
           })
         );
-      } catch (err) {}
+      } catch (err) { }
     }, 100);
   });
 }
@@ -872,7 +872,7 @@ function getOrderProductListPos(params) {
             data: prodList.rows,
           })
         );
-      } catch (err) {}
+      } catch (err) { }
     }, 100);
   });
 }
@@ -911,7 +911,7 @@ function cancelOrderPos(id) {
             data: prodList.rows,
           })
         );
-      } catch (err) {}
+      } catch (err) { }
     }, 100);
   });
 }
@@ -931,7 +931,7 @@ function addProductOrderPos(body) {
                 data: addedProduct.rows,
               })
             );
-          } catch (err) {}
+          } catch (err) { }
         }, 200);
       });
     } else {
@@ -962,7 +962,7 @@ function deleteProductOrderPos(body) {
                 data: deleted.rows,
               })
             );
-          } catch {}
+          } catch { }
         }, 100);
       });
     } else {
@@ -1326,9 +1326,9 @@ async function updateVirtualStock(body) {
               console.log("Error al actualizar stock virtual", error);
             }
           } else {
-            const insertQuery = `insert into almacen_virtual ("idDepto","nitCliente","idProducto","cant_Actual") 
+            const insertQuery = `insert into almacen_virtual ("idDepto","nitCliente","idProducto","cant_Actual", "idzona") 
             values ((select "idDepartamento" from Zonas where "idZona"=${clientInfo.idZona}),
-            '${clientInfo.nitCliente}', ${product.idProducto}, ${product.cantProducto})`;
+            '${clientInfo.nitCliente}', ${product.idProducto}, ${product.cantProducto}, ${clientInfo.idZona})`;
             try {
               const inserted = await client.query(insertQuery);
               console.log("Producto insertado", inserted);
