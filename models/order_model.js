@@ -821,7 +821,7 @@ function getOrderDetailsPos(params) {
   d.nombre||' '||d."apPaterno" as "nombreVendedor", e.nit, b."descuentoProducto", d.usuario,
   e."razonSocial", d."idAlmacen",
   substring(d.nombre,1,1) || '' ||d."apPaterno"||'-'||a.tipo||'00'||cast(a."idPedido" as varchar) as "codigoPedido",
-  f.zona, d.rol
+  f.zona, d.rol, e."idZona"
   from Pedidos a inner join Pedido_Producto b on a."idPedido" = b."idPedido"
   inner join Productos c on b."idProducto"=c."idProducto" 
   inner join Usuarios d on d."idUsuario"=a."idUsuarioCrea"
@@ -1374,6 +1374,24 @@ async function updateVirtualStock(body) {
   });
 }
 
+async function updateMultipleVirtualStock(bodies) {
+  var errCount = 0;
+  for (body of bodies) {
+    try {
+      await updateVirtualStock(body);
+    } catch (err) {
+      errCount += 1;
+    }
+  }
+  return new Promise((resolve, reject) => {
+    if (errCount > 0) {
+      reject("Error al actualizar multiple");
+    } else {
+      resolve(true);
+    }
+  });
+}
+
 module.exports = {
   registerOrder,
   getOrderStatus,
@@ -1424,4 +1442,5 @@ module.exports = {
   getAlltOrderListPos,
   rejectReadyPos,
   updateVirtualStock,
+  updateMultipleVirtualStock,
 };

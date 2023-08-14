@@ -14,4 +14,5 @@ router.get("/productos/tipos", controller.getProdTypes);
 router.get("/productos/origen", controller.getProdOrigin);
 router.get("/productos/all", controller.geAllProducts);
 router.put("/productos/editar/:id", controller.updateProduct);
+router.get("/productos/stock/virtual", controller.getVirtualStock);
 module.exports = router;
