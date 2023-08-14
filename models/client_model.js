@@ -248,12 +248,13 @@ function getClientsPos(params) {
   if (search_record) {
     return new Promise(async (resolve, reject) => {
       try {
-        const query = `select distinct av."nitCliente" ,z.zona, c."razonSocial", c."idZona", d.departamento, c.correo 
+        const query = `select distinct av."nitCliente" ,z.zona, c."razonSocial", c."idZona", d.departamento, c.correo, c."tipoDocumento" 
         FROM almacen_virtual av 
         INNER JOIN clientes c  ON av."nitCliente"  = c.nit and av."idzona"=c."idZona"
         inner join departamentos d on av."idDepto" = d."idDepto"
         inner join zonas z on z."idZona" = av."idzona"
-        where ("razonSocial" ilike '%${search_record}%'  or nit like '%${search_record}%') and c.activo =1;`
+        where ("razonSocial" ilike '%${search_record}%'  or nit like '%${search_record}%') and c.activo =1
+        `
 
         const foundClient = await client.query(query);
         responseObject.code = 201;
