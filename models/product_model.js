@@ -395,7 +395,8 @@ async function updateProduct(id, body) {
 
 function getVirtualProductsWithStock(params) {
   const prodQuery = `select p.*, av."cant_Actual" from Productos p inner join almacen_virtual av on p."idProducto"=av."idProducto"
-  where av."nitCliente"='${params.nitCliente}' and "idDepto"=(select "idDepartamento" from Zonas where "idZona"=${params.idZona})`;
+  where av."nitCliente"='${params.nitCliente}' and "idDepto"=(select "idDepartamento" from Zonas where "idZona"=${params.idZona})
+  and "cant_Actual"::integer>0`;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       const products = await client.query(prodQuery);
