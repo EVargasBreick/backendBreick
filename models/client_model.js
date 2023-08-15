@@ -247,15 +247,12 @@ function getClientsPos(params) {
 
   if (search_record) {
     return new Promise(async (resolve, reject) => {
+      const query = `select distinct a.*, b.zona, c.dias from Clientes a, Zonas b, Dias_Frecuencia c where a."razonSocial" like ('%${search_record}%') 
+      and a."idZona"=b."idZona" and a.frecuencia=c."idDiasFrec" and a.activo=1 union 
+      select distinct a.*, b.zona, c.dias from Clientes a, Zonas b, Dias_Frecuencia c where a.nit='${search_record}' 
+      and a."idZona"=b."idZona" and a.frecuencia=c."idDiasFrec" and a.activo=1`;
+      console.log("Query", query);
       try {
-        const query = `select distinct av."nitCliente" ,z.zona, c."razonSocial", c."idZona", d.departamento, c.correo, c."tipoDocumento" 
-        FROM almacen_virtual av 
-        INNER JOIN clientes c  ON av."nitCliente"  = c.nit and av."idzona"=c."idZona"
-        inner join departamentos d on av."idDepto" = d."idDepto"
-        inner join zonas z on z."idZona" = av."idzona"
-        where ("razonSocial" ilike '%${search_record}%'  or nit like '%${search_record}%') and c.activo =1
-        `
-
         const foundClient = await client.query(query);
         responseObject.code = 201;
         responseObject.data = foundClient.rows;
@@ -390,5 +387,5 @@ module.exports = {
   getClientByIdPos,
   getFullClientPos,
   getNumberOfClientsPos,
-  updateTheClientMail
+  updateTheClientMail,
 };
