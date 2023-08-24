@@ -8,6 +8,7 @@ const {
   updateLogStockDetails,
 } = require("../models/store_model");
 const { postFactura, getEstadoFactura } = require("../models/emizor_model");
+const { updateVirtualStock } = require("../models/order_model");
 const app = express();
 
 app.use(session(sessionParams));
@@ -23,7 +24,37 @@ module.exports = {
         res.status(error.code).send(error);
       });
   },
+  recordInvoiceProcess: (req, res) => {
+    const createdAndUpdated = recordInvoice(req);
+    createdAndUpdated
+      .then((invoice) => {
+        res.status(200).send(invoice.createdInvoice);
+      })
+      .catch((error) => {
+        res.status(error.code).send(error);
+      });
+  },
 };
+
+async function recordInvoice(req) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const createdInvoice = await createInvoice(req.body, req);
+      try {
+        const updatedVirtual = await updateVirtualStock(req.body);
+        const responseObject = {
+          createdInvoice,
+          updatedVirtual,
+        };
+        resolve(responseObject);
+      } catch (err) {
+        reject(err);
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
 
 const createInvoice = async (body, req) => {
   try {

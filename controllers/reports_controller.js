@@ -16,6 +16,7 @@ const {
   GroupedProductsOrderReport,
   SalesByStoreReport,
   SalesBySalespersonReport,
+  virtualStockReport,
 } = require("../models/reports_model.js");
 app.use(session(sessionParams));
 
@@ -132,6 +133,16 @@ module.exports = {
     try {
       const personData = await SalesBySalespersonReport(startDate, endDate);
       res.status(200).json(personData);
+    } catch (err) {
+      res
+        .status(500)
+        .json({ error: err || "An error occurred while fetching markdowns." });
+    }
+  },
+  virtualStockReport: async (req, res) => {
+    try {
+      const reportData = await virtualStockReport(req.query);
+      res.status(200).json(reportData);
     } catch (err) {
       res
         .status(500)

@@ -479,6 +479,23 @@ function SalesBySalespersonReport(startDate, endDate) {
   });
 }
 
+function virtualStockReport(params) {
+  const query = `select av."idProducto","codInterno","nombreProducto", "cant_Actual", (dp.departamento) from almacen_virtual av 
+    inner join productos pr on pr."idProducto"=av."idProducto"
+    inner join departamentos dp on dp."idDepto"=(select "idDepartamento" from Zonas where "idZona"=${params.idZona})
+    where "nitCliente"=${params.nitCliente} and av."idDepto"=(select "idDepartamento" from Zonas where "idZona"=${params.idZona})`;
+  console.log("Query stock", query);
+  return new Promise(async (resolve, reject) => {
+    try {
+      const data = await client.query(query);
+      console.log("RESULTADOS", data);
+      resolve(data.rows);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
 module.exports = {
   GeneralSalesReport,
   ProductsSalesReport,
@@ -493,4 +510,5 @@ module.exports = {
   GroupedProductsOrderReport,
   SalesByStoreReport,
   SalesBySalespersonReport,
+  virtualStockReport,
 };

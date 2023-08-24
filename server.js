@@ -18,7 +18,7 @@ const dbConnection = 1; /*= new (require("rest-mssql-nodejs"))({
 });*/
 
 var corsOptions = {
-  origin: process.env.TYPE ? "http://localhost:3006" : process.env.URL_SERVER,
+  origin: process.env.TYPE ? "*" : process.env.URL_SERVER,
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204,
 };
 
