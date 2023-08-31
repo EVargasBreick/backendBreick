@@ -686,7 +686,7 @@ function registerOrderPos(data) {
                     })
                   );
                 });
-              } catch (err) { }
+              } catch (err) {}
             }
           }, 100);
         });
@@ -713,7 +713,7 @@ function getOrderStatusPos() {
         responseObject.code = 201;
         responseObject.data = statusList.rows;
         resolve(JSON.stringify(responseObject));
-      } catch (err) { }
+      } catch (err) {}
     }, 100);
   });
 }
@@ -745,7 +745,7 @@ function getOrderListPos(params) {
 
 function getAlltOrderListPos(params) {
   if (params.id === "") {
-    var queryList = `select a."idPedido", substring(b.nombre,1,1) || '' ||b."apPaterno"||'-'||tipo||'00'||cast(a."idPedido" as varchar) as "codigoPedido" 
+    var queryList = `select a."idPedido", substring(b.nombre,1,1) || '' ||b."apPaterno"||'-'||tipo||'00'||cast(a."idPedido" as varchar) as "codigoPedido"
     from Pedidos a inner join Usuarios b on a."idUsuarioCrea"=b."idUsuario"`;
   } else {
     var queryList = `select a."idPedido", substring(b.nombre,1,1) || '' ||b."apPaterno"||'-'||tipo||'00'||cast(a."idPedido" as varchar) as "codigoPedido"
@@ -787,7 +787,7 @@ function getUserOrderListPos(params) {
             data: orderList.rows,
           })
         );
-      } catch (err) { }
+      } catch (err) {}
     }, 100);
   });
 }
@@ -853,7 +853,7 @@ function getOrderTypePos() {
             data: orderType.rows,
           })
         );
-      } catch (err) { }
+      } catch (err) {}
     }, 100);
   });
 }
@@ -872,7 +872,7 @@ function getOrderProductListPos(params) {
             data: prodList.rows,
           })
         );
-      } catch (err) { }
+      } catch (err) {}
     }, 100);
   });
 }
@@ -911,7 +911,7 @@ function cancelOrderPos(id) {
             data: prodList.rows,
           })
         );
-      } catch (err) { }
+      } catch (err) {}
     }, 100);
   });
 }
@@ -931,7 +931,7 @@ function addProductOrderPos(body) {
                 data: addedProduct.rows,
               })
             );
-          } catch (err) { }
+          } catch (err) {}
         }, 200);
       });
     } else {
@@ -962,7 +962,7 @@ function deleteProductOrderPos(body) {
                 data: deleted.rows,
               })
             );
-          } catch { }
+          } catch {}
         }, 100);
       });
     } else {
