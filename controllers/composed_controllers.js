@@ -100,7 +100,8 @@ const createInvoice = async (body, req) => {
                 return {
                   code: 500,
                   error: error,
-                  message: "Error al obtener el estado de la factura",
+                  message:
+                    "Error al obtener el estado de la factura, espere un momento e intente reimprimir",
                 };
               }
               retries++;
@@ -155,9 +156,11 @@ const createInvoice = async (body, req) => {
                             };
                           } catch (error) {
                             return {
-                              code: 500,
-                              error: error,
-                              message: "Error al actualizar los logs",
+                              code: 200,
+                              data: invoiceResponse,
+                              leyenda:
+                                JSON.parse(invoiceResponse).leyenda.descripcion,
+                              message: "Factura correcta",
                             };
                           }
                         } catch {
@@ -190,6 +193,7 @@ const createInvoice = async (body, req) => {
                           code: 500,
                           error: error,
                           message: "Error al crear la factura",
+                          updatedStock,
                         };
                       } catch (error) {
                         return {
@@ -200,10 +204,19 @@ const createInvoice = async (body, req) => {
                       }
                     }
                   } catch (err) {
+                    const stockBody = {
+                      accion: "add",
+                      idAlmacen: body.stock.idAlmacen,
+                      productos: body.stock.productos,
+                      detalle: `CVAGN-0`,
+                    };
+                    console.log("Stock body", stockBody);
+                    const updatedStock = await updateProductStockPos(stockBody);
                     return {
                       code: 500,
                       error: err,
                       message: "Error en el proceso de facturacion",
+                      updatedStock,
                     };
                   }
                 } else {
@@ -215,8 +228,6 @@ const createInvoice = async (body, req) => {
                       detalle: `CVAGN-0`,
                     };
                     console.log("Stock body", stockBody);
-                    console.log("Resp de la factura", data);
-
                     const updatedStock = await updateProductStockPos(stockBody);
                     return {
                       code: 500,
@@ -226,6 +237,7 @@ const createInvoice = async (body, req) => {
                           JSON.parse(estadoFactura)?.data?.data?.errores[0]
                             ?.description
                         ) + " Factura rechazada, intente nuevamente",
+                      updatedStock,
                     };
                   } catch (error) {
                     return {
@@ -248,11 +260,12 @@ const createInvoice = async (body, req) => {
             return {
               code: 500,
               error: error,
-              message: "Error al obtener el estado de la factura",
+              message:
+                "Error al obtener el estado de la factura, intente encontrala en reimprimir",
             };
           }
         } else {
-          console.log("Is not electronic invoice");
+          console.log("Is not online invoice");
           let estadoFactura = "";
           try {
             const maxRetries = 50;
@@ -270,7 +283,6 @@ const createInvoice = async (body, req) => {
                 stateData = JSON.parse(estadoFactura).data.data.estado;
               } catch (error) {
                 console.log("Error", error);
-
                 return {
                   code: 500,
                   error: error,
