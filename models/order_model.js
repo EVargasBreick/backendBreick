@@ -745,10 +745,10 @@ function getOrderListPos(params) {
 
 function getAlltOrderListPos(params) {
   if (params.id === "") {
-    var queryList = `select a."idPedido", substring(b.nombre,1,1) || '' ||b."apPaterno"||'-'||tipo||'00'||cast(a."idPedido" as varchar) as "codigoPedido"
+    var queryList = `select a."idPedido", substring(b.nombre,1,1) || '' ||b."apPaterno"||'-'||tipo||'00'||cast(a."idPedido" as varchar) as "codigoPedido", b."idUsuario"
     from Pedidos a inner join Usuarios b on a."idUsuarioCrea"=b."idUsuario"`;
   } else {
-    var queryList = `select a."idPedido", substring(b.nombre,1,1) || '' ||b."apPaterno"||'-'||tipo||'00'||cast(a."idPedido" as varchar) as "codigoPedido"
+    var queryList = `select a."idPedido", substring(b.nombre,1,1) || '' ||b."apPaterno"||'-'||tipo||'00'||cast(a."idPedido" as varchar) as "codigoPedido", b."idUsuario"
     from Pedidos a inner join Usuarios b on a."idUsuarioCrea"=b."idUsuario" and "idPedido"=${params.id}`;
   }
   return new Promise((resolve) => {
