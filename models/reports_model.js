@@ -186,6 +186,7 @@ function ProductsSalesReportPos(params) {
     fc."razonSocial",
     vn."montoFacturar",
     fc."debitoFiscal",
+    fc."estado",
     pr."nombreProducto",
     pr."codInterno",
     vp."cantidadProducto",
@@ -205,6 +206,7 @@ inner join Zonas zn on zn."idZona"=cl."idZona"
 inner join Usuarios us on vn."idUsuarioCrea"=us."idUsuario"
 where TO_DATE(SUBSTRING(fc."fechaHora",1,10),'DD/MM/YYYY')
 BETWEEN TO_DATE('${params.idate}','DD/MM/YYYY') and TO_DATE('${params.fdate}','DD/MM/YYYY')
+and fc."estado"!=1
 ${isSudo}
       order by ${params.sort}
       `;
