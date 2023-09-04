@@ -4,7 +4,6 @@ const dbConnection = require("../server");
 function findUserByName(nombre) {
   var queryAll = `select * from Usuarios where nombre='${nombre}'`;
   var queryFind = "select * from Usuarios";
-
   var query = nombre === undefined ? queryFind : queryAll;
   var responseObject = {};
   return new Promise((resolve, reject) => {
