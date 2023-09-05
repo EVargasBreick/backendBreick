@@ -27,6 +27,8 @@
     "pdfkit-table": "^0.1.99",
     "pdfmake": "^0.2.7",
     "pg": "^8.9.0",
+    "pino": "^8.15.0",
+    "pino-pretty": "^10.2.0",
     "qr-image": "^3.2.0",
     "rest-mssql-nodejs": "^1.0.10",
     "sequelize": "^6.21.4",

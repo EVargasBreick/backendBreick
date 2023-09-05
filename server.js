@@ -82,6 +82,7 @@ const {
   updateInvoices,
 } = require("./services/stabilizeStocks");
 const { logIncompleteSales } = require("./services/registerErrorSales");
+const log = require("./logger-pino");
 
 app.use("/", loginRoutes);
 app.use("/", emizorRoutes);
@@ -111,6 +112,8 @@ app.use("/", rejectedRoutes);
 app.use("/", dropRoutes);
 app.use("/", composedRoutes);
 const serverType = process.env.TYPE ? "local" : "web";
+
+log.info(`Tipo de corrida ${serverType}`);
 
 if (serverType === "web") {
   https.createServer(options, app).listen(443, () => {
