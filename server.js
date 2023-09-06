@@ -113,7 +113,7 @@ app.use("/", dropRoutes);
 app.use("/", composedRoutes);
 const serverType = process.env.TYPE ? "local" : "web";
 
-log.info(`Tipo de corrida ${serverType}`);
+// log.info(`Tipo de corrida ${serverType}`);
 
 if (serverType === "web") {
   https.createServer(options, app).listen(443, () => {

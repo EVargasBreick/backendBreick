@@ -1,3 +1,4 @@
+const { updateUser } = require("../controllers/user_controller");
 const { client } = require("../postgressConn");
 const dbConnection = require("../server");
 
@@ -379,7 +380,45 @@ async function updateAlmacen(userId, data) {
   }
 }
 
+async function updateAllUser(idUser, data) {
+  const {
+    nombre,
+    apPaterno,
+    apMaterno,
+    cedula,
+    correo,
+    acceso,
+    idDepto,
+    rol,
+    idioma,
+    usuario } = data;
+  const query = `
+  update usuarios
+  set "nombre" = '${nombre}'
+  , "apPaterno" = '${apPaterno}'
+  , "apMaterno" = '${apMaterno}'
+  , "cedula" = '${cedula}'
+  , "correo" = '${correo}'
+  , "acceso" = ${acceso}
+  , "rol" = ${rol}
+  , "usuario" = '${usuario}'
+  , "idioma" = ${idioma}
+  , "idDepto" = ${idDepto}
+  where  "idUsuario" = ${idUser}
+  `;
+  try {
+    const data = await client.query(query);
+    return data.rows;
+  }
+  catch (err) {
+    throw err;
+  }
+}
+
+
+
 module.exports = {
+  updateAllUser,
   findUserByName,
   findUserById,
   createNewUser,
