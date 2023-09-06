@@ -10,4 +10,5 @@ router.post("/user/changePassword", controller.changeUserPassword);
 router.get('/user/find/:search', controller.getUser);
 router.get('/user/all', controller.getAll);
 router.put('/user/update/:userId', controller.updateUser);
+router.put('/user/update/all/:userId', controller.updateAllUser);
 module.exports = router;

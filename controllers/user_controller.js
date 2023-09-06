@@ -10,6 +10,7 @@ const {
   findUser,
   getAllUsers,
   updateAlmacen,
+  updateAllUser,
 } = require("../models/user_model.js");
 let datos;
 let response;
@@ -84,5 +85,16 @@ module.exports = {
     } catch (err) {
       res.status(500).json({ error: err || 'An error occurred while updating user.' });
     }
+  },
+
+  updateAllUser: async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const updated = await updateAllUser(userId, req.body);
+      res.status(200).json(updated);
+    } catch (err) {
+      res.status(500).json({ error: err || 'An error occurred while updating user.' });
+    }
   }
+
 };
