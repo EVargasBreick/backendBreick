@@ -608,6 +608,7 @@ function changeReady(params) {
 
 function registerOrderPos(data) {
   const imp = data.pedido.impreso != undefined ? data.pedido.impreso : 0;
+  console.log("Notas", data.pedido.notas);
   var query = `insert into Pedidos 
     (
         "idUsuarioCrea",
@@ -690,6 +691,7 @@ function registerOrderPos(data) {
             }
           }, 100);
         });
+        ujm;
       } catch (err) {
         resolve(
           JSON.stringify({

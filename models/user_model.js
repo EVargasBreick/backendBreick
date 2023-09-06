@@ -338,7 +338,7 @@ async function getAllUsers(queryParams) {
   // roles are send like  /?roles=1,2,3
   const { roles } = queryParams;
   let query = `
-  SELECT nombre, "apPaterno",  "apMaterno", cedula , correo , rol , "idAlmacen", "idUsuario"
+  SELECT *
   FROM usuarios u
   `;
   const rols = roles?.split(",");
