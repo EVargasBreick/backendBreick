@@ -112,11 +112,6 @@ app.use("/", rejectedRoutes);
 app.use("/", dropRoutes);
 app.use("/", composedRoutes);
 const serverType = process.env.TYPE ? "local" : "web";
-
-// logger.info("Server type", serverType);
-
-logger.info("Server type", serverType);
-
 if (serverType === "web") {
   https.createServer(options, app).listen(443, () => {
     console.log("Server listening on port 443");
