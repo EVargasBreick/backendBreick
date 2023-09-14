@@ -17,7 +17,8 @@ const {
   SalesByStoreReport,
   SalesBySalespersonReport,
   virtualStockReport,
-  traspasosAgencyReport
+  traspasosAgencyReport,
+  GroupedProductReport,
 } = require("../models/reports_model.js");
 app.use(session(sessionParams));
 
@@ -160,5 +161,16 @@ module.exports = {
         .status(500)
         .json({ error: err || "An error occurred while fetching markdowns." });
     }
-  }
+  },
+  groupedProdReport: async (req, res) => {
+    const { idAgencia, startDate, endDate } = req.query;
+    try {
+      const repData = await GroupedProductReport(idAgencia, startDate, endDate);
+      res.status(200).json(repData);
+    } catch (err) {
+      res
+        .status(500)
+        .json({ error: err || "An error occurred while fetching reports." });
+    }
+  },
 };

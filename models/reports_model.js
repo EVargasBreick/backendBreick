@@ -520,6 +520,38 @@ async function traspasosAgencyReport(startDate, endDate) {
     throw err;
   }
 }
+function GroupedProductReport(idAgencia, startDate, endDate) {
+  let query = `select pr."idProducto","codInterno", "nombreProducto",  
+  CASE
+  WHEN SUM("cantidadProducto")::numeric % 1 = 0
+      THEN CAST(SUM("cantidadProducto") AS integer)
+  ELSE
+    ROUND(SUM("cantidadProducto")::numeric, 2) 
+  END AS "sumaTotal" 
+  from Facturas fc inner join Ventas vn on vn."idFactura"=fc."idFactura"
+  inner join venta_productos vp on vp."idVenta"=vn."idVenta"
+  inner join Productos pr on pr."idProducto"=vp."idProducto"
+  where estado=0 and 
+   to_date(fc."fechaHora", 'DD/,MM/YYYY')>=to_date('${startDate}', 'YYYY-MM-DD') and 
+   to_date(fc."fechaHora", 'DD/MM/YYYY')<=to_date('${endDate}', 'YYYY-MM-DD')
+  `;
+
+  if (idAgencia != "") {
+    query += `and "idAgencia"='${idAgencia}'`;
+  }
+
+  query += `group by (pr."idProducto","codInterno", "nombreProducto")
+  order by "nombreProducto"`;
+  console.log("Query", query);
+  return new Promise(async (resolve, reject) => {
+    try {
+      const data = await client.query(query);
+      resolve(data.rows);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
 
 module.exports = {
   GeneralSalesReport,
@@ -536,5 +568,6 @@ module.exports = {
   SalesByStoreReport,
   SalesBySalespersonReport,
   virtualStockReport,
-  traspasosAgencyReport
+  traspasosAgencyReport,
+  GroupedProductReport
 };
