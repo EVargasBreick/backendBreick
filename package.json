@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server",
-    "dev": " set TYPE=local& set POSTGRES_PASS=1123581321&&set POSTGRES_SERVER=127.0.0.1& nodemon server "
+    "dev": " set TYPE=local& set POSTGRES_PASS=postgres&&set POSTGRES_SERVER=127.0.0.1& nodemon server"
   },
   "keywords": [],
   "author": "",
@@ -28,6 +28,7 @@
     "pdfmake": "^0.2.7",
     "pg": "^8.9.0",
     "pino": "^8.15.0",
+    "pino-abstract-transport": "^1.1.0",
     "pino-pretty": "^10.2.0",
     "qr-image": "^3.2.0",
     "rest-mssql-nodejs": "^1.0.10",
