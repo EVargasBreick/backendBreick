@@ -498,6 +498,29 @@ function virtualStockReport(params) {
   });
 }
 
+async function traspasosAgencyReport(startDate, endDate) {
+  const query = `
+  SELECT COUNT(p."idProducto") AS product_count, t."idDestino" , p."nombreProducto" , p."idProducto", COALESCE(a.nombre , b.nombre , v.placa) AS destination_name
+  FROM traspaso_producto tp 
+  JOIN traspasos t  ON tp."idTraspaso" = t."idTraspaso" 
+  JOIN productos p  ON tp."idProducto"  = p."idProducto"
+  LEFT JOIN agencias a on a."idAgencia"  = t."idDestino" 
+  LEFT JOIN bodegas b on b."idBodega" = t."idDestino" 
+  LEFT JOIN vehiculos v ON v.placa = t."idDestino" 
+  WHERE TO_TIMESTAMP(t."fechaCrea", 'DD/MM/YYYY HH24.MI.SS')::DATE  BETWEEN ${startDate}::DATE AND ${endDate}::DATE
+  GROUP BY t."idDestino", p."nombreProducto", p."idProducto", COALESCE(a.nombre , b.nombre , v.placa)
+  ORDER BY product_count desc;
+  `;
+
+  try {
+    const res = await client.query(query);
+    return res.rows;
+  }
+  catch (err) {
+    throw err;
+  }
+}
+
 module.exports = {
   GeneralSalesReport,
   ProductsSalesReport,
@@ -513,4 +536,5 @@ module.exports = {
   SalesByStoreReport,
   SalesBySalespersonReport,
   virtualStockReport,
+  traspasosAgencyReport
 };
