@@ -131,7 +131,7 @@ function addIdToPackPos(params) {
 async function updatePack(products, total) {
   try {
     await client.query('BEGIN');
-    const { nombrePack, idPack } = products[0];
+    const { nombrePack, idPack, idPackProd } = products[0];
 
     const list_of_ids_original = await client.query('SELECT "idProductoPack" FROM productos_pack WHERE "idPack" = $1', [idPack]);
     const list_of_ids = products.map((product) => product.idProductoPack);
@@ -141,13 +141,14 @@ async function updatePack(products, total) {
       .map((product) => product.idProducto);
     const productsToUpdate = products.filter((product) => product.idProductoPack);
 
-    console.log("TCL: updatePack -> idsToCreate", idsToCreate)
-    console.log("TCL: updatePack -> idsToDelete", idsToDelete)
-
-
     await client.query(
       'UPDATE packs SET "precioPack" = $1 WHERE "nombrePack" = $2',
       [total, nombrePack]
+    );
+
+    await client.query(
+      'UPDATE productos SET "precioDeFabrica" = $1, "precioPDV" = $1 , "precioDescuentoFijo" = $1  WHERE "idProducto" = $2',
+      [Number(total), Number(idPackProd)]
     );
 
     for (const product of productsToUpdate) {
