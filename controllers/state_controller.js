@@ -11,6 +11,9 @@ module.exports = {
     const roles = getDepartamentos.getDepartamentosPos();
     roles.then((rol) => {
       res.status(200).send(JSON.parse(rol));
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
 };

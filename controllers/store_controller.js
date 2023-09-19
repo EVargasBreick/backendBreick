@@ -30,25 +30,37 @@ module.exports = {
     const stores = getStoresPos();
     stores.then((store) => {
       res.status(200).send(store);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
   getOnlyStores: (req, res) => {
     const stores = getOnlyStoresPos();
     stores.then((store) => {
       res.status(200).send(store);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
   getUserStock: (req, res) => {
     const stock = getUserStockPos(req.query);
     stock.then((st) => {
       res.status(200).send(JSON.parse(st));
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
   getProductAvailability: (req, res) => {
     const available = verifyAvailabilityPos(req.body);
     available.then((ava) => {
       res.status(200).send(ava);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
   updateProductStock: (req, res) => {
     const updated = updateProductStockPos(req.body);

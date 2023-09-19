@@ -51,7 +51,10 @@ async function getInvoicesIncomplete() {
         console.log("Catcheo");
       }
     }
-  });
+  }).catch((err) => {
+    console.log(err);
+    res.status(500).send(err);
+  });;
 }
 
 async function runEverything(invoiceObject, products, fr) {
@@ -224,8 +227,7 @@ async function runEverything(invoiceObject, products, fr) {
           };
           doc.pipe(
             fs.createWriteStream(
-              `factura-${nroFac}-${fr.nitCliente}-caja_${
-                fr.puntoDeVenta + 1
+              `factura-${nroFac}-${fr.nitCliente}-caja_${fr.puntoDeVenta + 1
               }.pdf`
             )
           );
@@ -289,8 +291,7 @@ async function runEverything(invoiceObject, products, fr) {
           doc
             .moveDown()
             .text(
-              ` Son: ${convertido?.texto.toUpperCase()} CON ${
-                convertido.resto
+              ` Son: ${convertido?.texto.toUpperCase()} CON ${convertido.resto
               }/100`
             )
             .text(" Bolivianos");
@@ -355,8 +356,7 @@ async function runEverything(invoiceObject, products, fr) {
                 const pdfPath = path.join(
                   __dirname,
                   "..",
-                  `factura-${nroFac}-${fr.nitCliente}-caja_${
-                    fr.puntoDeVenta + 1
+                  `factura-${nroFac}-${fr.nitCliente}-caja_${fr.puntoDeVenta + 1
                   }.pdf`
                 );
                 const mailArray =
@@ -366,8 +366,7 @@ async function runEverything(invoiceObject, products, fr) {
                 const sended = sendInvoiceGmail(
                   mailArray,
                   pdfPath,
-                  `factura-${nroFac}-${fr.nitCliente}-caja_${
-                    fr.puntoDeVenta + 1
+                  `factura-${nroFac}-${fr.nitCliente}-caja_${fr.puntoDeVenta + 1
                   }.pdf`
                 );
                 sended
@@ -387,7 +386,10 @@ async function runEverything(invoiceObject, products, fr) {
                   .catch((err) => {
                     console.log(err);
                   });
-              });
+              }).catch((err) => {
+                console.log(err);
+              })
+                ;
             })
             .catch((err) => {
               console.log("Error al actualizar", err);
@@ -399,7 +401,9 @@ async function runEverything(invoiceObject, products, fr) {
             setTimeout(() => {
               resolve(true);
             }, 4000);
-          });
+          }).catch((err) => {
+            console.log(err);
+          });;
         }
       })
       .catch((err) => {
@@ -409,7 +413,9 @@ async function runEverything(invoiceObject, products, fr) {
           setTimeout(() => {
             resolve(true);
           }, 4000);
-        });
+        }).catch((err) => {
+          console.log(err);
+        });;
       });
   });
 }

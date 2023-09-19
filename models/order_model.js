@@ -83,7 +83,9 @@ function registerOrder(data) {
                     message: "Products: " + prods.message,
                   })
                 );
-              });
+              }).catch((err) => {
+                throw err;
+              });;
             }
           }, 1000);
         });
@@ -686,8 +688,10 @@ function registerOrderPos(data) {
                       message: "Products: " + error,
                     })
                   );
-                });
-              } catch (err) {}
+                }).catch((err) => {
+                  throw err;
+                });;
+              } catch (err) { }
             }
           }, 100);
         });
@@ -714,7 +718,7 @@ function getOrderStatusPos() {
         responseObject.code = 201;
         responseObject.data = statusList.rows;
         resolve(JSON.stringify(responseObject));
-      } catch (err) {}
+      } catch (err) { }
     }, 100);
   });
 }
@@ -788,7 +792,7 @@ function getUserOrderListPos(params) {
             data: orderList.rows,
           })
         );
-      } catch (err) {}
+      } catch (err) { }
     }, 100);
   });
 }
@@ -854,7 +858,7 @@ function getOrderTypePos() {
             data: orderType.rows,
           })
         );
-      } catch (err) {}
+      } catch (err) { }
     }, 100);
   });
 }
@@ -873,7 +877,7 @@ function getOrderProductListPos(params) {
             data: prodList.rows,
           })
         );
-      } catch (err) {}
+      } catch (err) { }
     }, 100);
   });
 }
@@ -912,7 +916,7 @@ function cancelOrderPos(id) {
             data: prodList.rows,
           })
         );
-      } catch (err) {}
+      } catch (err) { }
     }, 100);
   });
 }
@@ -932,7 +936,7 @@ function addProductOrderPos(body) {
                 data: addedProduct.rows,
               })
             );
-          } catch (err) {}
+          } catch (err) { }
         }, 200);
       });
     } else {
@@ -963,7 +967,7 @@ function deleteProductOrderPos(body) {
                 data: deleted.rows,
               })
             );
-          } catch {}
+          } catch { }
         }, 100);
       });
     } else {

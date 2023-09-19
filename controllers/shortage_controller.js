@@ -12,6 +12,9 @@ module.exports = {
     const roles = logShortagePos(req.body);
     roles.then((rol) => {
       res.status(200).send(rol);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
 };

@@ -10,6 +10,9 @@ module.exports = {
     const zonas = getZonesPos();
     zonas.then((zona) => {
       res.status(200).send(zona);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
 };

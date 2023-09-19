@@ -19,7 +19,10 @@ module.exports = {
       response = JSON.parse(data);
       console.log(data);
       res.status(response.code).send(response);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
   updateContact: (req, res) => {
     console.log("Body en controller:", req.body);
@@ -28,7 +31,10 @@ module.exports = {
       response = JSON.parse(data);
       console.log(data);
       res.status(response.code).send(response);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
   getContactsByUser: (req, res) => {
     const promise = getMainContactPos(req.query);
@@ -36,6 +42,9 @@ module.exports = {
       response = JSON.parse(data);
       console.log(data);
       res.status(response.code).send(response);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
 };

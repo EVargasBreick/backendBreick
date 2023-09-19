@@ -27,6 +27,9 @@ module.exports = {
         res.status(responseObject.code).send(JSON.stringify(responseObject));
         req.session.destroy();
       }
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
 };
