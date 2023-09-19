@@ -5,6 +5,7 @@ const {
   registerPackPos,
   getPacksPos,
   addIdToPackPos,
+  updatePack,
 } = require("../models/pack_model");
 
 module.exports = {
@@ -38,4 +39,15 @@ module.exports = {
         res.status(500).send(err);
       });
   },
+  update_pack: (req, res) => {
+    const { productos = [], total = 0 } = req.body
+    const updatedPack = updatePack(productos, total)
+    updatedPack
+      .then((resp) => {
+        res.status(200).send(resp);
+      }
+      ).catch((err) => {
+        res.status(500).send(err);
+      })
+  }
 };
