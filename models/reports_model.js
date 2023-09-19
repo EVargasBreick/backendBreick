@@ -227,12 +227,12 @@ function ClosingReportPos(params) {
   console.log("Es ruta", params.ruta);
   const generalQuery = params.ruta
     ? `select  fc."idSucursal", fc."puntoDeVenta", fc."idOtroPago", fc."tipoPago", sum(fc.pagado) as "totalPagado", sum(fc.cambio) as "totalCambio", sum(fc.vale) as "totalVale", sum(fc.voucher) as "totalVoucher"
- from Facturas fc inner join Sucursales sc on fc."idSucursal"=sc."idImpuestos"
+ from Facturas fc 
  where fc."idSucursal"=${params.idSucursal} and fc."puntoDeVenta"=${params.idPdv} and TO_DATE(SUBSTRING(fc."fechaHora",1,10),'DD/MM/YYYY')=CAST(${params.fecha} AS Date )
  and fc."idAgencia"=${params.idAgencia} and fc.estado!=1 and fc."nroFactura"!='0'
  group by fc."idSucursal", "puntoDeVenta", fc."idOtroPago", fc."tipoPago" `
     : `select  fc."idSucursal", fc."puntoDeVenta", fc."idOtroPago", fc."tipoPago", sum(fc.pagado) as "totalPagado", sum(fc.cambio) as "totalCambio", sum(fc.vale) as "totalVale", sum(fc.voucher) as "totalVoucher"
- from Facturas fc inner join Sucursales sc on fc."idSucursal"=sc."idImpuestos"
+ from Facturas fc
  where fc."idSucursal"=${params.idSucursal} and fc.estado!=1 and fc."nroFactura"!='0'and fc."puntoDeVenta"=${params.idPdv} and TO_DATE(SUBSTRING(fc."fechaHora",1,10),'DD/MM/YYYY')=CAST(${params.fecha} AS Date )
  group by fc."idSucursal", "puntoDeVenta", fc."idOtroPago", fc."tipoPago" `;
   console.log("Query fechas:", generalQuery);
@@ -452,8 +452,8 @@ GROUP BY
   });
 }
 
-function SalesBySalespersonReport(startDate, endDate) {
-  const query = `
+function SalesBySalespersonReport(startDate, endDate, startHour, endHour) {
+  let query = `
   SELECT 
       (select nombre || ' ' || "apPaterno" || ' ' || "apMaterno" as "nombreVendedor" from Usuarios where "idUsuario"=v."idUsuarioCrea"),
       ROUND(SUM(CASE WHEN f.estado = 0 THEN "montoFacturar" ELSE 0 END)::numeric, 2) AS "totalFacturado",
@@ -463,12 +463,22 @@ function SalesBySalespersonReport(startDate, endDate) {
   INNER JOIN 
       ventas v ON f."idFactura" = v."idFactura" 
   where 
-    to_date(f."fechaHora", 'DD/MM/YYYY')>=to_date(${startDate}, 'YYYY-MM-DD') and 
-    to_date(f."fechaHora", 'DD/MM/YYYY')<=to_date(${endDate}, 'YYYY-MM-DD')
-  GROUP BY 
-      v."idUsuarioCrea"
 `;
 
+  if (startHour != "" && endHour != "") {
+    const complexStart = startDate + " " + startHour;
+    const complexEnd = endDate + " " + endHour;
+    query += `TO_TIMESTAMP(f."fechaHora", 'DD/MM/YYYY HH24:MI:SS') >= TO_TIMESTAMP('${complexStart}', 'YYYY-MM-DD HH24:MI:SS')
+    AND TO_TIMESTAMP(f."fechaHora", 'DD/MM/YYYY HH24:MI:SS') <= TO_TIMESTAMP('${complexEnd}', 'YYYY-MM-DD HH24:MI:SS')`;
+  } else {
+    query += `to_date(f."fechaHora", 'DD/MM/YYYY')>=to_date('${startDate}', 'YYYY-MM-DD') and 
+    to_date(f."fechaHora", 'DD/MM/YYYY')<=to_date('${endDate}', 'YYYY-MM-DD')`;
+  }
+
+  query += `GROUP BY 
+  v."idUsuarioCrea"`;
+
+  console.log("Query", query);
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       try {
@@ -515,8 +525,7 @@ async function traspasosAgencyReport(startDate, endDate) {
   try {
     const res = await client.query(query);
     return res.rows;
-  }
-  catch (err) {
+  } catch (err) {
     throw err;
   }
 }
@@ -553,6 +562,27 @@ function GroupedProductReport(idAgencia, startDate, endDate) {
   });
 }
 
+function GroupedSalesByProdSellerReport(startDate, endDate) {
+  const query = `select pr."idProducto", pr."codInterno", pr."nombreProducto",us."idUsuario",us.rol , us."nombre", us."apPaterno", sum(vp."cantidadProducto")  as "totalVendido"
+  from ventas vn inner join venta_productos vp on vp."idVenta"=vn."idVenta"
+  inner join productos pr on pr."idProducto" =vp."idProducto" 
+  inner join usuarios us on us."idUsuario" =vn."idUsuarioCrea"
+  where  to_date(vn."fechaCrea", 'DD/,MM/YYYY')>=to_date(${startDate}, 'YYYY-MM-DD') and 
+  to_date(vn."fechaCrea", 'DD/MM/YYYY')<=to_date(${endDate}, 'YYYY-MM-DD')
+  and us.rol!=1 and us.rol!=7 and us.rol!=11
+  group by (pr."idProducto", pr."codInterno", pr."nombreProducto", us."idUsuario",us.rol, us."nombre", us."apPaterno")
+  order by pr."codInterno"`;
+  console.log("Data", query);
+  return new Promise(async (resolve, reject) => {
+    try {
+      const data = await client.query(query);
+      resolve(data.rows);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
 module.exports = {
   GeneralSalesReport,
   ProductsSalesReport,
@@ -569,5 +599,6 @@ module.exports = {
   SalesBySalespersonReport,
   virtualStockReport,
   traspasosAgencyReport,
-  GroupedProductReport
+  GroupedProductReport,
+  GroupedSalesByProdSellerReport,
 };
