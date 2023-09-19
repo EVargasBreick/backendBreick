@@ -1,4 +1,4 @@
-const { updateUser } = require("../controllers/user_controller");
+//const { updateUser } = require("../controllers/user_controller");
 const { client } = require("../postgressConn");
 const dbConnection = require("../server");
 
@@ -391,7 +391,8 @@ async function updateAllUser(idUser, data) {
     idDepto,
     rol,
     idioma,
-    usuario } = data;
+    usuario,
+  } = data;
   const query = `
   update usuarios
   set "nombre" = '${nombre}'
@@ -409,13 +410,10 @@ async function updateAllUser(idUser, data) {
   try {
     const data = await client.query(query);
     return data.rows;
-  }
-  catch (err) {
+  } catch (err) {
     throw err;
   }
 }
-
-
 
 module.exports = {
   updateAllUser,
