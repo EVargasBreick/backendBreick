@@ -17,4 +17,8 @@ router.get("/reportes/totales/agencia", controller.salesByStoreReport);
 router.get("/reportes/totales/vendedor", controller.salesBySalespersonReport);
 router.get("/reportes/stock/virtual", controller.virtualStockReport);
 router.get("/reportes/agrupado/productos", controller.groupedProdReport);
+router.get(
+  "/reportes/agrupado/productos/vendedor",
+  controller.groupedSalesProdSeller
+);
 module.exports = router;

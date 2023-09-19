@@ -18,6 +18,7 @@ const {
   SalesBySalespersonReport,
   virtualStockReport,
   GroupedProductReport,
+  GroupedSalesByProdSellerReport,
 } = require("../models/reports_model.js");
 app.use(session(sessionParams));
 
@@ -130,9 +131,14 @@ module.exports = {
     }
   },
   salesBySalespersonReport: async (req, res) => {
-    const { startDate, endDate } = req.query;
+    const { startDate, endDate, startHour, endHour } = req.query;
     try {
-      const personData = await SalesBySalespersonReport(startDate, endDate);
+      const personData = await SalesBySalespersonReport(
+        startDate,
+        endDate,
+        startHour,
+        endHour
+      );
       res.status(200).json(personData);
     } catch (err) {
       res
@@ -154,6 +160,17 @@ module.exports = {
     const { idAgencia, startDate, endDate } = req.query;
     try {
       const repData = await GroupedProductReport(idAgencia, startDate, endDate);
+      res.status(200).json(repData);
+    } catch (err) {
+      res
+        .status(500)
+        .json({ error: err || "An error occurred while fetching reports." });
+    }
+  },
+  groupedSalesProdSeller: async (req, res) => {
+    const { startDate, endDate } = req.query;
+    try {
+      const repData = await GroupedSalesByProdSellerReport(startDate, endDate);
       res.status(200).json(repData);
     } catch (err) {
       res
