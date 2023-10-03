@@ -604,7 +604,7 @@ async function transactionOfUpdateStocks(bodies) {
   } catch (err) {
     await client.query("ROLLBACK");
     console.log("error", err);
-    reject(err);
+    // reject(err);
     return {
       error: err.message || err,
       code: 400,

@@ -1,6 +1,7 @@
 const { client } = require("../postgressConn");
 const dbConnection = require("../server");
 const dateString = require("../services/dateServices");
+const { transactionOfUpdateStocks } = require("./store_model");
 
 function createTransfer(body) {
   const dateResult = dateString();
@@ -447,26 +448,37 @@ function getTransferProductsPos(params) {
   });
 }
 
-function updateTransferPos(body) {
-  const dateResult = dateString();
-  var queryUpdate = `update Traspasos set estado='${body.estado}', "fechaActu"='${dateResult}' where "idTraspaso"=${body.idTraspaso}`;
-  const queryLog = `insert into Log_traspasos ("idTraspaso", "idUsuario", "fechaHora", estado) values (${body.idTraspaso}, ${body.idUsuario}, '${body.fechaHora}', ${body.estado})`;
-  console.log("Loggedo", queryLog);
-  return new Promise((resolve) => {
-    setTimeout(async () => {
-      try {
-        const update = await client.query(queryUpdate);
-        const logged = await client.query(queryLog);
-        console.log("Logged", logged);
-        resolve({
-          response: update.rows,
-          code: 200,
-        });
-      } catch (err) {
-        console.log("Error al updatear traspaso", err);
+async function updateTransferPos(body) {
+  const { stock } = body;
+  try {
+    const dateResult = dateString();
+    const queryUpdate = `UPDATE Traspasos SET estado=$1, "fechaActu"=$2 WHERE "idTraspaso"=$3`;
+    const queryLog = `INSERT INTO Log_traspasos ("idTraspaso", "idUsuario", "fechaHora", estado) VALUES ($1, $2, $3, $4)`;
+
+    await client.query("BEGIN");
+
+    const update = await client.query(queryUpdate, [body.estado, dateResult, body.idTraspaso]);
+    const logged = await client.query(queryLog, [body.idTraspaso, body.idUsuario, body.fechaHora, body.estado]);
+
+    if (stock) {
+      const updateProducts = await transactionOfUpdateStocks([stock]);
+
+      if (updateProducts.code !== 200) {
+        throw updateProducts.response;
       }
-    }, 500);
-  });
+    }
+
+    await client.query("COMMIT");
+
+    return {
+      response: update.rows,
+      code: 200,
+    };
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error("Error updating transfer position:", err);
+    throw err;
+  }
 }
 
 function printTransferPos(params) {
