@@ -22,4 +22,5 @@ router.get(
   "/reportes/agrupado/productos/vendedor",
   controller.groupedSalesProdSeller
 );
+router.get("/reportes/diario/vendedor", controller.salesByDay);
 module.exports = router;

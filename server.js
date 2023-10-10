@@ -72,6 +72,7 @@ const packRoutes = require("./routes/pack");
 const rejectedRoutes = require("./routes/rejected");
 const dropRoutes = require("./routes/drop");
 const composedRoutes = require("./routes/composed");
+const discountRoutes = require("./routes/discount");
 const testLogging = require("./services/logDailyKardex");
 const getInvoicesIncomplete = require("./services/getIncompleteInvoices");
 const logIncompleteInvoices = require("./services/logIncompleteInvoices");
@@ -111,6 +112,7 @@ app.use("/", packRoutes);
 app.use("/", rejectedRoutes);
 app.use("/", dropRoutes);
 app.use("/", composedRoutes);
+app.use("/", discountRoutes);
 const serverType = process.env.TYPE ? "local" : "web";
 if (serverType === "web") {
   https.createServer(options, app).listen(443, () => {

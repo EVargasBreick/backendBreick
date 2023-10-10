@@ -20,6 +20,7 @@ const {
   traspasosAgencyReport,
   GroupedProductReport,
   GroupedSalesByProdSellerReport,
+  SalesByDayReport,
 } = require("../models/reports_model.js");
 app.use(session(sessionParams));
 
@@ -183,6 +184,17 @@ module.exports = {
     const { startDate, endDate } = req.query;
     try {
       const repData = await GroupedSalesByProdSellerReport(startDate, endDate);
+      res.status(200).json(repData);
+    } catch (err) {
+      res
+        .status(500)
+        .json({ error: err || "An error occurred while fetching reports." });
+    }
+  },
+  salesByDay: async (req, res) => {
+    const { month, year } = req.query;
+    try {
+      const repData = await SalesByDayReport(month, year);
       res.status(200).json(repData);
     } catch (err) {
       res

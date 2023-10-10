@@ -567,11 +567,29 @@ function GroupedSalesByProdSellerReport(startDate, endDate) {
   from ventas vn inner join venta_productos vp on vp."idVenta"=vn."idVenta"
   inner join productos pr on pr."idProducto" =vp."idProducto" 
   inner join usuarios us on us."idUsuario" =vn."idUsuarioCrea"
-  where  to_date(vn."fechaCrea", 'DD/,MM/YYYY')>=to_date(${startDate}, 'YYYY-MM-DD') and 
+  where  to_date(vn."fechaCrea", 'DD/MM/YYYY')>=to_date(${startDate}, 'YYYY-MM-DD') and 
   to_date(vn."fechaCrea", 'DD/MM/YYYY')<=to_date(${endDate}, 'YYYY-MM-DD')
   and us.rol!=1 and us.rol!=7 and us.rol!=11
   group by (pr."idProducto", pr."codInterno", pr."nombreProducto", us."idUsuario",us.rol, us."nombre", us."apPaterno")
   order by pr."codInterno"`;
+  console.log("Data", query);
+  return new Promise(async (resolve, reject) => {
+    try {
+      const data = await client.query(query);
+      resolve(data.rows);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
+function SalesByDayReport(month, year) {
+  const query = `select "idUsuario","nombre", "apPaterno", split_part("fechaHora", ' ',1), ROUND(SUM("importeBase")::numeric, 2)  from
+  Facturas fc inner join Ventas vn on fc."idFactura"=vn."idFactura"
+  inner join Usuarios us on us."idUsuario" =vn."idUsuarioCrea" 
+  where "fechaHora" like '%/${month}/${year}%' and fc.estado=0
+  group by ("idUsuario","nombre", "apPaterno", split_part("fechaHora", ' ',1))
+  order by ("nombre",split_part("fechaHora", ' ',1))`;
   console.log("Data", query);
   return new Promise(async (resolve, reject) => {
     try {
@@ -601,4 +619,5 @@ module.exports = {
   traspasosAgencyReport,
   GroupedProductReport,
   GroupedSalesByProdSellerReport,
+  SalesByDayReport,
 };

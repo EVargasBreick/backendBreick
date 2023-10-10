@@ -820,9 +820,9 @@ function approveOrderPos(params) {
 function getOrderDetailsPos(params) {
   var queryDet = `select a.*, b."idProducto", b."cantidadProducto" ,c."nombreProducto", 
   d.nombre||' '||d."apPaterno" as "nombreVendedor", e.nit, b."descuentoProducto", d.usuario,
-  e."razonSocial", d."idAlmacen",
+  e."razonSocial", d."idAlmacen", e.issuper,
   substring(d.nombre,1,1) || '' ||d."apPaterno"||'-'||a.tipo||'00'||cast(a."idPedido" as varchar) as "codigoPedido",
-  f.zona, d.rol, e."idZona"
+  f.zona, d.rol, e."idZona", d."tipoUsuario"
   from Pedidos a inner join Pedido_Producto b on a."idPedido" = b."idPedido"
   inner join Productos c on b."idProducto"=c."idProducto" 
   inner join Usuarios d on d."idUsuario"=a."idUsuarioCrea"
@@ -860,10 +860,11 @@ function getOrderTypePos() {
 }
 
 function getOrderProductListPos(params) {
-  var queryList = `select a.*, c."nombreProducto", c."precioDeFabrica", c."codInterno", c."tipoProducto", c."codigoBarras", c."precioDescuentoFijo", a."cantidadProducto" as "cantProducto" from Pedido_Producto a inner JOIN Pedidos b on a."idPedido"=b."idPedido"
+  var queryList = `select a.*, c."nombreProducto", c."precioDeFabrica", c."codInterno", c."tipoProducto", c."codigoBarras", c."precioDescuentoFijo", a."cantidadProducto" as "cantProducto", c."precioSuper" from Pedido_Producto a inner JOIN Pedidos b on a."idPedido"=b."idPedido"
     inner join Productos c on c."idProducto"=a."idProducto"
     where a."idPedido"=${params.id}`;
   return new Promise((resolve) => {
+    console.log("QUery prods", queryList);
     setTimeout(async () => {
       try {
         const prodList = await client.query(queryList);
@@ -1086,7 +1087,7 @@ function getOrdersToInvoicePos(params) {
 
 function getOrderToInvoiceDetailsPos(params) {
   return new Promise((resolve, reject) => {
-    const query = `select pd.*, pp.*, cl.nit, cl."razonSocial", cl."tipoDocumento", cl.correo, us."idAlmacen", pr."nombreProducto", pr."codInterno", pr."codigoUnidad", pr."precioDeFabrica" from Pedidos pd 
+    const query = `select pd.*, pp.*, cl.nit, cl."razonSocial", cl."tipoDocumento",cl.issuper, cl.correo, us."idAlmacen", pr."nombreProducto", pr."codInterno", pr."codigoUnidad", pr."precioDeFabrica", pr."precioSuper" from Pedidos pd 
     inner join Pedido_Producto pp on pd."idPedido"=pp."idPedido"
     inner join Clientes cl on pd."idCliente"=cl."idCliente"
     inner join Usuarios us on pd."idUsuarioCrea"=us."idUsuario"

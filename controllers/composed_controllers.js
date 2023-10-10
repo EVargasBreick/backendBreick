@@ -7,7 +7,10 @@ const {
   updateProductStockPos,
   updateLogStockDetails,
 } = require("../models/store_model");
-const { postFactura: postFacture, getEstadoFactura } = require("../models/emizor_model");
+const {
+  postFactura: postFacture,
+  getEstadoFactura,
+} = require("../models/emizor_model");
 const { updateVirtualStock } = require("../models/order_model");
 const logger = require("../logger-pino");
 const app = express();
@@ -69,7 +72,9 @@ const createInvoice = async (body, req) => {
     // TODO? : Update stock
     const updatedStock = await updateProductStockPos(stockBody);
     if (updatedStock.code === 200) {
-      logger.info(`Resultado de creacion de logs  ${JSON.stringify(updatedStock)}`);
+      logger.info(
+        `Resultado de creacion de logs  ${JSON.stringify(updatedStock)}`
+      );
       const idsCreados = updatedStock.data;
       try {
         // TODO? : Create factura
@@ -91,7 +96,9 @@ const createInvoice = async (body, req) => {
             while (retries < maxRetries) {
               try {
                 estadoFactura = await getEstadoFactura(req, data.ack_ticket);
-                logger.info(`ESTADO DE LA FACTURA ${JSON.stringify(estadoFactura)}`);
+                logger.info(
+                  `ESTADO DE LA FACTURA ${JSON.stringify(estadoFactura)}`
+                );
                 stateData = JSON.parse(estadoFactura).data.data.estado;
               } catch (error) {
                 logger.error(JSON.stringify(error));
@@ -115,7 +122,9 @@ const createInvoice = async (body, req) => {
                         const invoiceCreated = await createInvoicePos(
                           body.invoice
                         );
-                        logger.info(`Invoice created ${invoiceCreated.factura.rows[0].idFactura}`);
+                        logger.info(
+                          `Invoice created ${invoiceCreated.factura.rows[0].idFactura}`
+                        );
                         body.venta.idFactura =
                           invoiceCreated.factura.rows[0].idFactura;
                         const maxRetries = 50;
@@ -129,7 +138,9 @@ const createInvoice = async (body, req) => {
                               invoiceCreated.factura.rows[0].idFactura
                             );
                             const ventaCreada = JSON.parse(saleCreated);
-                            logger.info(`Sale created ${JSON.stringify(ventaCreada)}`);
+                            logger.info(
+                              `Sale created ${JSON.stringify(ventaCreada)}`
+                            );
                             try {
                               const updatedLogs = await updateLogStockDetails(
                                 `NVAG-${ventaCreada.idCreado}`,
@@ -186,7 +197,9 @@ const createInvoice = async (body, req) => {
                               productos: body.stock.productos,
                               detalle: `CVAGN-0`,
                             };
-                            logger.info(`Stock body ${JSON.stringify(stockBody)}`);
+                            logger.info(
+                              `Stock body ${JSON.stringify(stockBody)}`
+                            );
                             const updatedStock = await updateProductStockPos(
                               stockBody
                             );
@@ -200,7 +213,7 @@ const createInvoice = async (body, req) => {
                             return {
                               code: 500,
                               error: error,
-                              message: "Error al devolver el stock",
+                              message: "Error al devolver el stock 1",
                             };
                           }
                         }
@@ -246,7 +259,7 @@ const createInvoice = async (body, req) => {
                     return {
                       code: 500,
                       error: error,
-                      message: "Error al devolver el stock",
+                      message: "Error al devolver el stock 2",
                     };
                   }
                 }
@@ -281,8 +294,7 @@ const createInvoice = async (body, req) => {
                 estadoFactura = await getEstadoFactura(req, data.ack_ticket);
                 logger.info(`
                   Estado de la factura no emmision type,
-                  ${JSON.stringify(estadoFactura)}`
-                );
+                  ${JSON.stringify(estadoFactura)}`);
                 stateData = JSON.parse(estadoFactura).data.data.estado;
               } catch (error) {
                 logger.error(JSON.stringify(error));
@@ -299,7 +311,9 @@ const createInvoice = async (body, req) => {
                 if (stateData === "VALIDA" || stateData === "PENDIENTE") {
                   try {
                     const autorizacion = `${body.emizor.extras.facturaTicket}$${data.ack_ticket}`;
-                    logger.info(`Autorizacion test, ${JSON.stringify(autorizacion)}`);
+                    logger.info(
+                      `Autorizacion test, ${JSON.stringify(autorizacion)}`
+                    );
                     logger.info(`Resp de la factura, ${JSON.stringify(data)}`);
                     body.invoice.nroFactura = data.numeroFactura;
                     body.invoice.cuf = data.cuf;
@@ -316,7 +330,7 @@ const createInvoice = async (body, req) => {
                           `
                           Invoice created,
                           ${invoiceCreated.factura.rows[0].idFactura}`
-                        )
+                        );
                         body.venta.idFactura =
                           invoiceCreated.factura.rows[0].idFactura;
                         let salesRetries = 0;
@@ -355,7 +369,8 @@ const createInvoice = async (body, req) => {
                                 `
                                 Retrying sale creation,
                                 ${salesRetries}
-                                `)
+                                `
+                              );
                               await delay(2000); // Delay between retries
                             } else {
                               return {
@@ -373,7 +388,7 @@ const createInvoice = async (body, req) => {
                           logger.warn(`
                             Retrying invoice creation,
                             ${invRetries}
-                          `)
+                          `);
                           await delay(2000); // Delay between retries
                         } else {
                           try {
@@ -385,7 +400,7 @@ const createInvoice = async (body, req) => {
                             };
                             logger.info(`
                               Updated stock,
-                              ${JSON.stringify(updatedStock)}`)
+                              ${JSON.stringify(updatedStock)}`);
                             const updatedStock = await updateProductStockPos(
                               stockBody
                             );
@@ -398,7 +413,7 @@ const createInvoice = async (body, req) => {
                             return {
                               code: 500,
                               error: error,
-                              message: "Error al devolver el stock",
+                              message: "Error al devolver el stock 3",
                             };
                           }
                         }
@@ -421,14 +436,14 @@ const createInvoice = async (body, req) => {
                     };
                     logger.info(`
                       Updated stock,
-                      ${updatedStock}`)
+                      ${updatedStock}`);
                     const updatedStock = await updateProductStockPos(stockBody);
                     logger.info(`
                       Resp de la factura,
-                      ${JSON.stringify(data)}`)
+                      ${JSON.stringify(data)}`);
                     logger.info(`
                       Estado factura,
-                      ${JSON.stringify(estadoFactura)}`)
+                      ${JSON.stringify(estadoFactura)}`);
                     return {
                       code: 500,
                       error: stateData,
@@ -442,7 +457,7 @@ const createInvoice = async (body, req) => {
                     return {
                       code: 500,
                       error: error,
-                      message: "Error al devolver el stock",
+                      message: "Error al devolver el stock 4",
                     };
                   }
                 }
@@ -465,6 +480,7 @@ const createInvoice = async (body, req) => {
         }
       } catch (error) {
         logger.error(JSON.stringify(error));
+        console.log("ERROR AL ENVIAR FACTURA", error);
         // TODO? : ERROR at create factura
         try {
           const stockBody = {
@@ -473,20 +489,22 @@ const createInvoice = async (body, req) => {
             productos: body.stock.productos,
             detalle: `CVAGN-0`,
           };
-          logger.info(`
-            Updated stock,
-            ${JSON.stringify(updatedStock)}`)
+
           const updatedStock = await updateProductStockPos(stockBody);
+          logger.info(`
+          Updated stock,
+          ${JSON.stringify(updatedStock)}`);
           return {
             code: JSON.parse(error).status,
             error: error,
             message: "Error al enviar la factura a emizor",
           };
         } catch (error) {
+          console.log("ERROR DE EMIZOR", error);
           return {
             code: 500,
             error: error,
-            message: "Error al devolver el stock",
+            message: "Error al devolver el stock 5",
           };
         }
       }
@@ -677,7 +695,7 @@ const createInvoiceAlt = async (body, req) => {
                           return {
                             code: 500,
                             error: error,
-                            message: "Error al devolver el stock",
+                            message: "Error al devolver el stock 6",
                           };
                         }
                       }
@@ -722,7 +740,7 @@ const createInvoiceAlt = async (body, req) => {
                     return {
                       code: 500,
                       error: error,
-                      message: "Error al devolver el stock",
+                      message: "Error al devolver el stock 7",
                     };
                   }
                 }
@@ -851,7 +869,7 @@ const createInvoiceAlt = async (body, req) => {
                         return {
                           code: 500,
                           error: error,
-                          message: "Error al devolver el stock",
+                          message: "Error al devolver el stock 8",
                         };
                       }
                     }
@@ -889,7 +907,7 @@ const createInvoiceAlt = async (body, req) => {
                     return {
                       code: 500,
                       error: error,
-                      message: "Error al devolver el stock",
+                      message: "Error al devolver el stock 9",
                     };
                   }
                 }
@@ -931,7 +949,7 @@ const createInvoiceAlt = async (body, req) => {
           return {
             code: 500,
             error: error,
-            message: "Error al devolver el stock",
+            message: "Error al devolver el stock 10",
           };
         }
       }
