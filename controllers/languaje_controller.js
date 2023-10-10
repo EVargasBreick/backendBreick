@@ -10,6 +10,9 @@ module.exports = {
     const languajes = getLangPos();
     languajes.then((lang) => {
       res.status(200).send(lang);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
 };

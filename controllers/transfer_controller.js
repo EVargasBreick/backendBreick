@@ -55,7 +55,10 @@ module.exports = {
     const update = updateTransferPos(req.body);
     update.then((resp) => {
       res.status(200).send(resp);
-    });
+    }).catch((error) => {
+      res.status(400).send(error);
+    }
+    );
   },
   transferPrinted: (req, res) => {
     const update = printTransferPos(req.query);

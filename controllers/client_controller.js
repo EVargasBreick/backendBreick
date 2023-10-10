@@ -26,7 +26,10 @@ module.exports = {
       response = JSON.parse(data);
       console.log(data);
       res.status(response.code).send(response);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
   createNewClientPos: (req, res) => {
     const promise = registerClientPos(req.body);
@@ -34,7 +37,10 @@ module.exports = {
       response = JSON.parse(data);
       console.log(data);
       res.status(response.code).send(response);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
   getClient: (req, res) => {
     const promise = getClientsPos(req.query);
@@ -42,7 +48,10 @@ module.exports = {
       response = JSON.parse(data);
       console.log(data);
       res.status(response.code).send(response);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
   getClientById: (req, res) => {
     const promise = getClientByIdPos(req.query);
@@ -50,7 +59,10 @@ module.exports = {
       response = JSON.parse(data);
       console.log(data);
       res.status(response.code).send(response);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
   getFullClient: (req, res) => {
     const promise = getFullClientPos(req.query);
@@ -58,7 +70,10 @@ module.exports = {
       response = JSON.parse(data);
       console.log(data);
       res.status(response.code).send(response);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
   updateClient: (req, res) => {
     console.log("Body en controller:", req.body);
@@ -67,14 +82,20 @@ module.exports = {
       response = JSON.parse(data);
       console.log(data);
       res.status(response.code).send(response);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
   getNumberClients: (req, res) => {
     const clients = getNumberOfClientsPos();
     clients.then((response) => {
       var resp = JSON.parse(response);
       res.status(resp.code).send(resp);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
   updateClientMail: (req, res) => {
     console.log("Body en controller:", req.body);

@@ -20,7 +20,9 @@ function logIncompleteInvoices() {
         console.log("ERROR");
       }
     }
-  });
+  }).catch((err) => {
+    console.log(err);
+  });;
 }
 
 async function runEverything(requestBody, item) {

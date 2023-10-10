@@ -17,7 +17,10 @@ module.exports = {
       var resp = JSON.parse(data);
       console.log(data);
       res.status(200).send(resp);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
   deleteSale: (req, res) => {
     const deleted = deleteSale(req.query);

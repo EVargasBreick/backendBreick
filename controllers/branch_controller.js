@@ -12,12 +12,18 @@ module.exports = {
     const roles = getBranches();
     roles.then((rol) => {
       res.status(200).send(JSON.parse(rol));
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
     });
   },
   getBranchesPos: (req, res) => {
     const roles = getBranchesPostgres();
     roles.then((rol) => {
       res.status(200).send(JSON.parse(rol));
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
 };

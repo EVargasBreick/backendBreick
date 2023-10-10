@@ -41,7 +41,10 @@ module.exports = {
         responseObject.code = 200;
         res.status(responseObject.code).send(responseObject);
       }
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
   getAvailableProduct: (req, res) => {
     const products = getAvailableProductsPos(req.query.id);
@@ -60,28 +63,40 @@ module.exports = {
         responseObject.code = 200;
         res.status(responseObject.code).send(responseObject);
       }
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
   numberOfProducts: (req, res) => {
     const number = getNumberOfProductsPos();
     number.then((response) => {
       var resp = JSON.parse(response);
       res.status(resp.code).send(resp);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
   productsWithStock: (req, res) => {
     const plist = getProductsWithStockPos(req.query);
     plist.then((response) => {
       var resp = JSON.parse(response);
       res.status(200).send(resp);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
   productsDiscount: (req, res) => {
     const pdisc = getProductsDiscountPos(req.query);
     pdisc.then((response) => {
       var resp = JSON.parse(response);
       res.status(200).send(resp);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
   createProduct: (req, res) => {
     const created = createProductPos(req.body);

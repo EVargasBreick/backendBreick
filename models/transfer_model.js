@@ -1,6 +1,7 @@
 const { client } = require("../postgressConn");
 const dbConnection = require("../server");
 const dateString = require("../services/dateServices");
+const { transactionOfUpdateStocks } = require("./store_model");
 
 function createTransfer(body) {
   const dateResult = dateString();
@@ -45,7 +46,9 @@ function createTransfer(body) {
                     message: "Productos: " + addedProd.message,
                   })
                 );
-              });
+              }).catch((err) => {
+                throw err;
+              });;
             }
           }, 200);
         });
@@ -72,8 +75,8 @@ function getTransferList(params) {
     params.crit === "todo"
       ? ``
       : params.crit === "ac"
-      ? `where estado>0 and movil=0`
-      : `where estado=0 and movil=0`;
+        ? `where estado>0 and movil=0`
+        : `where estado=0 and movil=0`;
   var queryGetList = `select a.estado, a.impreso, a.listo, a.idUsuario, b.nombre as nombreOrigen, a.idOrigen, a.idDestino,
     (select x.nombre from Agencias x where x.idAgencia=a.idDestino union 
     select x.nombre from Bodegas x where x.idBodega=a.idDestino union 
@@ -307,11 +310,9 @@ function createTransferPos(body) {
   const movil = body.movil ? body.movil : 0;
   const imp = body.impreso != undefined ? body.impreso : 0;
   var queryTransfer = `insert into Traspasos ("fechaCrea", "fechaActu", "idOrigen", "idDestino", "idUsuario", estado, movil, listo, impreso, transito)
-    values ('${dateResult}','','${body.idOrigen}','${body.idDestino}',${
-    body.idUsuario
-  },0,${movil},${listo === 1 ? listo : 0},${imp},${
-    body.transito
-  }) returning "idTraspaso"`;
+    values ('${dateResult}','','${body.idOrigen}','${body.idDestino}',${body.idUsuario
+    },0,${movil},${listo === 1 ? listo : 0},${imp},${body.transito
+    }) returning "idTraspaso"`;
   return new Promise((resolve, reject) => {
     console.log("Query traspaso", queryTransfer);
     setTimeout(async () => {
@@ -347,7 +348,9 @@ function createTransferPos(body) {
                     message: "Productos: " + err,
                   })
                 );
-              });
+              }).catch((err) => {
+                throw err;
+              });;
             }
           }, 100);
         });
@@ -375,8 +378,8 @@ function getTransferListPos(params) {
     params.crit === "todo"
       ? ``
       : params.crit === "ac"
-      ? `where estado>0 and movil=0`
-      : `where estado='0' and movil=0`;
+        ? `where estado>0 and movil=0`
+        : `where estado='0' and movil=0`;
   var queryGetList = `select a.estado, a.impreso, a.listo, a."idUsuario", b.nombre as "nombreOrigen", a."idOrigen", a."idDestino",
     (select x.nombre from Agencias x where x."idAgencia"=a."idDestino" union 
     select x.nombre from Bodegas x where x."idBodega"=a."idDestino" union 
@@ -445,26 +448,37 @@ function getTransferProductsPos(params) {
   });
 }
 
-function updateTransferPos(body) {
-  const dateResult = dateString();
-  var queryUpdate = `update Traspasos set estado='${body.estado}', "fechaActu"='${dateResult}' where "idTraspaso"=${body.idTraspaso}`;
-  const queryLog = `insert into Log_traspasos ("idTraspaso", "idUsuario", "fechaHora", estado) values (${body.idTraspaso}, ${body.idUsuario}, '${body.fechaHora}', ${body.estado})`;
-  console.log("Loggedo", queryLog);
-  return new Promise((resolve) => {
-    setTimeout(async () => {
-      try {
-        const update = await client.query(queryUpdate);
-        const logged = await client.query(queryLog);
-        console.log("Logged", logged);
-        resolve({
-          response: update.rows,
-          code: 200,
-        });
-      } catch (err) {
-        console.log("Error al updatear traspaso", err);
+async function updateTransferPos(body) {
+  const { stock } = body;
+  try {
+    const dateResult = dateString();
+    const queryUpdate = `UPDATE Traspasos SET estado=$1, "fechaActu"=$2 WHERE "idTraspaso"=$3`;
+    const queryLog = `INSERT INTO Log_traspasos ("idTraspaso", "idUsuario", "fechaHora", estado) VALUES ($1, $2, $3, $4)`;
+
+    await client.query("BEGIN");
+
+    const update = await client.query(queryUpdate, [body.estado, dateResult, body.idTraspaso]);
+    const logged = await client.query(queryLog, [body.idTraspaso, body.idUsuario, body.fechaHora, body.estado]);
+
+    if (stock) {
+      const updateProducts = await transactionOfUpdateStocks([stock]);
+
+      if (updateProducts.code !== 200) {
+        throw updateProducts.response;
       }
-    }, 500);
-  });
+    }
+
+    await client.query("COMMIT");
+
+    return {
+      response: update.rows,
+      code: 200,
+    };
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error("Error updating transfer position:", err);
+    throw err;
+  }
 }
 
 function printTransferPos(params) {

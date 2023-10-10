@@ -76,7 +76,9 @@ function registerSale(data) {
                     message: "Products: " + prods.message,
                   })
                 );
-              });
+              }).catch((err) => {
+                throw err;
+              });;
             }
           }, 1000);
         });
@@ -168,7 +170,9 @@ function registerSalePos(data, idFactura) {
                     message: "Products: " + err,
                   })
                 );
-              });
+              }).catch((err) => {
+                throw err;
+              });;
             }
           }, 1000);
         });

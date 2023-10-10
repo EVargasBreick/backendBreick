@@ -16,7 +16,10 @@ module.exports = {
       responseObject.data = userResponse.data;
       responseObject.code = userResponse.status;
       res.status(responseObject.code).send(responseObject);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
 
 
@@ -33,7 +36,10 @@ module.exports = {
       responseObject.data = anularDataJSON;
       responseObject.code = anularDataJSON.status;
       res.status(responseObject.code).send(responseObject);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
 
   getPuntosVenta: async (req, res) => {
@@ -44,7 +50,10 @@ module.exports = {
       responseObject.data = puntosVentaResponse.data;
       responseObject.code = puntosVentaResponse.status;
       res.status(responseObject.code).send(responseObject);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
 
   getCodigosLeyenda: async (req, res) => {
@@ -55,7 +64,10 @@ module.exports = {
       responseObject.data = codigosLeyendaResponse.data;
       responseObject.code = codigosLeyendaResponse.status;
       res.status(responseObject.code).send(responseObject);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
 
   getFacturaDB: async (req, res) => {
@@ -67,7 +79,10 @@ module.exports = {
       responseObject.data = facturaResponse.data;
       responseObject.code = facturaResponse.status;
       res.status(responseObject.code).send(responseObject);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
 
   getFacturasDB: async (req, res) => {
@@ -79,7 +94,10 @@ module.exports = {
       responseObject.data = facturasResponse.data;
       responseObject.code = facturasResponse.status;
       res.status(responseObject.code).send(responseObject);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
 
   getFacturasEmizor: async (req, res) => {
@@ -91,6 +109,9 @@ module.exports = {
       responseObject.data = facturasResponse.data;
       responseObject.code = facturasResponse.status;
       res.status(responseObject.code).send(responseObject);
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
     });
   },
 
@@ -104,7 +125,10 @@ module.exports = {
       responseObject.code = productoResponse.status;
       res.status(responseObject.code).send(responseObject);
     }
-    );
+    ).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
 
   getProductoHomologado: async (req, res) => {
@@ -116,7 +140,10 @@ module.exports = {
       responseObject.code = productoResponse.status;
       res.status(responseObject.code).send(responseObject);
     }
-    );
+    ).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   }
 
 };

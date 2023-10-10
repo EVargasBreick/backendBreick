@@ -10,6 +10,9 @@ module.exports = {
     const dias = getDays.getDaysPos();
     dias.then((dia) => {
       res.status(200).send(dia);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
 };

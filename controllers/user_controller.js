@@ -22,7 +22,10 @@ module.exports = {
       response = JSON.parse(data);
       console.log("Respuesta", response.data);
       res.status(response.code).send(response.data);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
   getUserById: (req, res) => {
     const promise = findUserByIdPos(req.query.id);
@@ -31,7 +34,10 @@ module.exports = {
       response = JSON.parse(data);
       console.log("Respuesta", response.data);
       res.status(response.code).send(response.data);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
   createNewUser: (req, res) => {
     console.log("Body en controller:", req.body);
@@ -40,14 +46,20 @@ module.exports = {
       response = JSON.parse(data);
       console.log(data);
       res.status(response.code).send(response);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
   getUserBasic: (req, res) => {
     const promise = findUserBasicPos();
     promise.then((data) => {
       response = JSON.parse(data);
       res.status(response.code).send(response.data);
-    });
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });;
   },
   changeUserPassword: async (req, res) => {
     try {
