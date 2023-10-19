@@ -652,7 +652,6 @@ async function registerOrderPos(data) {
 
     const newOrder = await client.query(orderQuery, orderValues);
     const idCreado = newOrder.rows[0].idPedido;
-    throw 'Error'
 
     await Promise.all(
       data.productos.map(async (producto) => {
