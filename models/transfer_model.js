@@ -38,17 +38,19 @@ function createTransfer(body) {
               const del = await dbConnection.executeQuery(
                 `delete from Pedidos where idPedido=${idCreado.data[0][0].idCreado}`
               );
-              del.then(() => {
-                reject(
-                  JSON.stringify({
-                    code: 400,
-                    data: "Error",
-                    message: "Productos: " + addedProd.message,
-                  })
-                );
-              }).catch((err) => {
-                throw err;
-              });;
+              del
+                .then(() => {
+                  reject(
+                    JSON.stringify({
+                      code: 400,
+                      data: "Error",
+                      message: "Productos: " + addedProd.message,
+                    })
+                  );
+                })
+                .catch((err) => {
+                  throw err;
+                });
             }
           }, 200);
         });
@@ -75,8 +77,8 @@ function getTransferList(params) {
     params.crit === "todo"
       ? ``
       : params.crit === "ac"
-        ? `where estado>0 and movil=0`
-        : `where estado=0 and movil=0`;
+      ? `where estado>0 and movil=0`
+      : `where estado=0 and movil=0`;
   var queryGetList = `select a.estado, a.impreso, a.listo, a.idUsuario, b.nombre as nombreOrigen, a.idOrigen, a.idDestino,
     (select x.nombre from Agencias x where x.idAgencia=a.idDestino union 
     select x.nombre from Bodegas x where x.idBodega=a.idDestino union 
@@ -310,9 +312,11 @@ function createTransferPos(body) {
   const movil = body.movil ? body.movil : 0;
   const imp = body.impreso != undefined ? body.impreso : 0;
   var queryTransfer = `insert into Traspasos ("fechaCrea", "fechaActu", "idOrigen", "idDestino", "idUsuario", estado, movil, listo, impreso, transito)
-    values ('${dateResult}','','${body.idOrigen}','${body.idDestino}',${body.idUsuario
-    },0,${movil},${listo === 1 ? listo : 0},${imp},${body.transito
-    }) returning "idTraspaso"`;
+    values ('${dateResult}','','${body.idOrigen}','${body.idDestino}',${
+    body.idUsuario
+  },0,${movil},${listo === 1 ? listo : 0},${imp},${
+    body.transito
+  }) returning "idTraspaso"`;
   return new Promise((resolve, reject) => {
     console.log("Query traspaso", queryTransfer);
     setTimeout(async () => {
@@ -340,17 +344,19 @@ function createTransferPos(body) {
               const del = await client.query(
                 `delete from Pedidos where "idPedido"=${idCreado}`
               );
-              del.then(() => {
-                reject(
-                  JSON.stringify({
-                    code: 400,
-                    data: "Error",
-                    message: "Productos: " + err,
-                  })
-                );
-              }).catch((err) => {
-                throw err;
-              });;
+              del
+                .then(() => {
+                  reject(
+                    JSON.stringify({
+                      code: 400,
+                      data: "Error",
+                      message: "Productos: " + err,
+                    })
+                  );
+                })
+                .catch((err) => {
+                  throw err;
+                });
             }
           }, 100);
         });
@@ -378,8 +384,8 @@ function getTransferListPos(params) {
     params.crit === "todo"
       ? ``
       : params.crit === "ac"
-        ? `where estado>0 and movil=0`
-        : `where estado='0' and movil=0`;
+      ? `where estado>0 and movil=0`
+      : `where estado='0' and movil=0`;
   var queryGetList = `select a.estado, a.impreso, a.listo, a."idUsuario", b.nombre as "nombreOrigen", a."idOrigen", a."idDestino",
     (select x.nombre from Agencias x where x."idAgencia"=a."idDestino" union 
     select x.nombre from Bodegas x where x."idBodega"=a."idDestino" union 
@@ -457,8 +463,17 @@ async function updateTransferPos(body) {
 
     await client.query("BEGIN");
 
-    const update = await client.query(queryUpdate, [body.estado, dateResult, body.idTraspaso]);
-    const logged = await client.query(queryLog, [body.idTraspaso, body.idUsuario, body.fechaHora, body.estado]);
+    const update = await client.query(queryUpdate, [
+      body.estado,
+      dateResult,
+      body.idTraspaso,
+    ]);
+    const logged = await client.query(queryLog, [
+      body.idTraspaso,
+      body.idUsuario,
+      body.fechaHora,
+      body.estado,
+    ]);
 
     if (stock) {
       const updateProducts = await transactionOfUpdateStocks([stock]);
@@ -621,7 +636,7 @@ function getTransitTransfersPos(params) {
   inner join Traspaso_Producto tp on tp."idTraspaso"=tr."idTraspaso"
   inner join Productos pr on pr."idProducto"=tp."idProducto"
   inner join Usuarios us on us."idUsuario"=tr."idUsuario"
-  where tr.transito=0 and  ((tr.listo=1) or (tr.estado=1)) and tr."idDestino"='${params.storeId}'`;
+  where tr.transito=0 and  ((tr.listo=1) or (tr.estado=1)) and tr."idDestino"='${params.storeId}' and estado!=2`;
   return new Promise((resolve, reject) => {
     console.log("Query de transito ", query);
     setTimeout(async () => {

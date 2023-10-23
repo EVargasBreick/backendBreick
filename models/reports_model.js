@@ -601,6 +601,47 @@ function SalesByDayReport(month, year) {
   });
 }
 
+function MonthlyGoalReport(month, year) {
+  const query = `select * from metas_diarias where fecha like '%/${month}/${year}%'`;
+  console.log("Data", query);
+  return new Promise(async (resolve, reject) => {
+    try {
+      const data = await client.query(query);
+      resolve(data.rows);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
+async function GetRemainingGoal(date, userId) {
+  const totalQuery = `select sum("importeBase") from Facturas fc inner join Ventas vn on vn."idFactura" =fc."idFactura" 
+  where "idUsuarioCrea"=${userId} and to_date(fc."fechaHora",'DD/MM/YYYY')=to_date('${date}', 'DD/MM/YYYY') and fc.estado=0
+  group by "idUsuarioCrea"`;
+  const goalQuery = `select * from metas_diarias md where to_date("fecha",'DD/MM/YYYY')=to_date('${date}', 'DD/MM/YYYY') and "idUsuario"=${userId}`;
+  return new Promise(async (resolve, reject) => {
+    try {
+      const total = await client.query(totalQuery);
+      const goal = await client.query(goalQuery);
+      const totalData = total.rows.length > 0 ? total.rows[0].sum : 0;
+      const metaObj = goal.rows.length > 0 ? goal.rows[0].meta : 0;
+
+      const respObj = {
+        meta: metaObj,
+        total: totalData,
+        restante: metaObj - totalData,
+        resultado: metaObj - totalData < 0,
+      };
+
+      console.log("Total data", totalData, goal.rows[0]);
+
+      resolve(respObj);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
 module.exports = {
   GeneralSalesReport,
   ProductsSalesReport,
@@ -620,4 +661,6 @@ module.exports = {
   GroupedProductReport,
   GroupedSalesByProdSellerReport,
   SalesByDayReport,
+  MonthlyGoalReport,
+  GetRemainingGoal,
 };

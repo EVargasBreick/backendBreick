@@ -23,9 +23,11 @@ function getSeasonDiscount(currentDate, tipo) {
 function currentSeasonDiscount(startDate, endDate) {
   var queryList = `
   select * from descuento_estacional de inner join lista_descuento_estacional lde on lde."idDescEst" =de."idDescEst"
-  	inner join tipos_producto tp on tp."idTiposProducto" = de."tipoProducto"
-	where ((to_date("fechaInicio",'DD/MM/YYYY') between to_date('${startDate}','YYYY-MM-DD') and to_date('${endDate}','YYYY-MM-DD'))
-or (to_date("fechaFin",'DD/MM/YYYY') between to_date('${startDate}','YYYY-MM-DD') and to_date('${endDate}','YYYY-MM-DD'))) and activo=1`;
+  inner join tipos_producto tp on tp."idTiposProducto" = de."tipoProducto"
+  where ((to_date("fechaInicio",'DD/MM/YYYY') between to_date('${startDate}','YYYY-MM-DD') and to_date('${endDate}','YYYY-MM-DD'))
+  or (to_date("fechaFin",'DD/MM/YYYY') between to_date('${startDate}','YYYY-MM-DD') and to_date('${endDate}','YYYY-MM-DD'))or 
+  (to_date('${startDate}','YYYY-MM-DD') between to_Date("fechaInicio",'DD/MM/YYYY') and to_date("fechaFin",'DD/MM/YYYY') or
+  to_date('${endDate}','YYYY-MM-DD') between to_Date("fechaInicio",'DD/MM/YYYY') and to_date("fechaFin",'DD/MM/YYYY'))) and activo=1`;
   return new Promise((resolve) => {
     console.log("Query efectuado", queryList);
     setTimeout(async () => {

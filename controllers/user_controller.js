@@ -11,6 +11,8 @@ const {
   getAllUsers,
   updateAlmacen,
   updateAllUser,
+  insertAndUpdateUserGoals,
+  getWeeklyGoals,
 } = require("../models/user_model.js");
 let datos;
 let response;
@@ -18,66 +20,75 @@ module.exports = {
   getUserByName: (req, res) => {
     const promise = findUserByNamePos(req.query.name);
     console.log("paramssss ", req.query.name);
-    promise.then((data) => {
-      response = JSON.parse(data);
-      console.log("Respuesta", response.data);
-      res.status(response.code).send(response.data);
-    }).catch((err) => {
-      console.log(err);
-      res.status(500).send(err);
-    });;
+    promise
+      .then((data) => {
+        response = JSON.parse(data);
+        console.log("Respuesta", response.data);
+        res.status(response.code).send(response.data);
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).send(err);
+      });
   },
   getUserById: (req, res) => {
     const promise = findUserByIdPos(req.query.id);
     console.log("paramssss ", req.query.id);
-    promise.then((data) => {
-      response = JSON.parse(data);
-      console.log("Respuesta", response.data);
-      res.status(response.code).send(response.data);
-    }).catch((err) => {
-      console.log(err);
-      res.status(500).send(err);
-    });;
+    promise
+      .then((data) => {
+        response = JSON.parse(data);
+        console.log("Respuesta", response.data);
+        res.status(response.code).send(response.data);
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).send(err);
+      });
   },
   createNewUser: (req, res) => {
     console.log("Body en controller:", req.body);
     const promise = createNewUserPos(req.body);
-    promise.then((data) => {
-      response = JSON.parse(data);
-      console.log(data);
-      res.status(response.code).send(response);
-    }).catch((err) => {
-      console.log(err);
-      res.status(500).send(err);
-    });;
+    promise
+      .then((data) => {
+        response = JSON.parse(data);
+        console.log(data);
+        res.status(response.code).send(response);
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).send(err);
+      });
   },
   getUserBasic: (req, res) => {
     const promise = findUserBasicPos();
-    promise.then((data) => {
-      response = JSON.parse(data);
-      res.status(response.code).send(response.data);
-    }).catch((err) => {
-      console.log(err);
-      res.status(500).send(err);
-    });;
+    promise
+      .then((data) => {
+        response = JSON.parse(data);
+        res.status(response.code).send(response.data);
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).send(err);
+      });
   },
   changeUserPassword: async (req, res) => {
     try {
       const updated = await changePassword(req.body);
       res.status(200).json(updated);
     } catch (err) {
-      res.status(500).json({ error: err || 'No se pudo actualizar la contraseña.' });
+      res
+        .status(500)
+        .json({ error: err || "No se pudo actualizar la contraseña." });
     }
   },
   getUser: async (req, res) => {
     try {
-      const user = await findUser(req.params, req.query)
-      res.status(200).json(...user)
-    }
-    catch (err) {
+      const user = await findUser(req.params, req.query);
+      res.status(200).json(...user);
+    } catch (err) {
       res.status(500).json({
-        error: err || "Error al buscar usuario"
-      })
+        error: err || "Error al buscar usuario",
+      });
     }
   },
   getAll: async (req, res) => {
@@ -85,7 +96,9 @@ module.exports = {
       const users = await getAllUsers(req.query);
       res.status(200).json(users);
     } catch (err) {
-      res.status(500).json({ error: err || 'An error occurred while fetching users.' });
+      res
+        .status(500)
+        .json({ error: err || "An error occurred while fetching users." });
     }
   },
 
@@ -95,7 +108,9 @@ module.exports = {
       const updated = await updateAlmacen(userId, req.body);
       res.status(200).json(updated);
     } catch (err) {
-      res.status(500).json({ error: err || 'An error occurred while updating user.' });
+      res
+        .status(500)
+        .json({ error: err || "An error occurred while updating user." });
     }
   },
 
@@ -105,8 +120,31 @@ module.exports = {
       const updated = await updateAllUser(userId, req.body);
       res.status(200).json(updated);
     } catch (err) {
-      res.status(500).json({ error: err || 'An error occurred while updating user.' });
+      res
+        .status(500)
+        .json({ error: err || "An error occurred while updating user." });
     }
-  }
-
+  },
+  insertAndUpdateGoals: async (req, res) => {
+    try {
+      const users = await insertAndUpdateUserGoals(req.body);
+      res.status(200).json(users);
+    } catch (err) {
+      res
+        .status(500)
+        .json({ error: err || "An error occurred while updating goals." });
+    }
+  },
+  weeklyGoal: async (req, res) => {
+    console.log("ENTRO ACA");
+    const { startDate, endDate } = req.query;
+    try {
+      const users = await getWeeklyGoals(startDate, endDate);
+      res.status(200).json(users);
+    } catch (err) {
+      res
+        .status(500)
+        .json({ error: err || "An error occurred while fetching goals." });
+    }
+  },
 };

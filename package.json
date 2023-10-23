@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server",
-    "dev": " set TYPE=local& set POSTGRES_PASS=1123581321&&set POSTGRES_SERVER=127.0.0.1& nodemon server"
+    "dev": "set TYPE=local& set POSTGRES_PASS=1123581321&&set POSTGRES_SERVER=127.0.0.1& nodemon server"
   },
   "keywords": [],
   "author": "",

@@ -23,4 +23,6 @@ router.get(
   controller.groupedSalesProdSeller
 );
 router.get("/reportes/diario/vendedor", controller.salesByDay);
+router.get("/reportes/diario/metas", controller.monthlyGoals);
+router.get("/reportes/diario/restante", controller.remaingingDayGoal);
 module.exports = router;

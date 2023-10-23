@@ -415,6 +415,49 @@ async function updateAllUser(idUser, data) {
   }
 }
 
+async function insertAndUpdateUserGoals(body) {
+  const queryList = [];
+  return new Promise(async (resolve, reject) => {
+    try {
+      for (const entry of body) {
+        const foundQuery = `select * from metas_diarias where "idUsuario"=${entry.idUsuario} and fecha='${entry.fechaHora}'`;
+        console.log("Query", foundQuery);
+        const found = await client.query(foundQuery);
+        if (found.rows.length > 0) {
+          const updateQuery = `update metas_diarias set meta='${entry.meta}', notas='${entry.obs}' where "idUsuario"=${entry.idUsuario} and fecha='${entry.fechaHora}'`;
+          console.log("Query up", updateQuery);
+          const updated = client.query(updateQuery);
+          queryList.push(updated);
+        } else {
+          const insertQuery = `insert into metas_diarias (fecha, "idUsuario",meta,notas) values ('${entry.fechaHora}',${entry.idUsuario},${entry.meta},'${entry.obs}')`;
+          console.log("Query ins", insertQuery);
+          const inserted = client.query(insertQuery);
+          queryList.push(inserted);
+        }
+      }
+      await Promise.all(queryList);
+      resolve({ data: queryList });
+    } catch (err) {
+      console.log("ERROR", err);
+      reject({ error: err });
+    }
+  });
+}
+
+async function getWeeklyGoals(startDate, endDate) {
+  const getQuery = `select * from metas_diarias where to_date("fecha",'DD/MM/YYYY') between 
+  to_date('${startDate}','DD/MM/YYYY') and to_date('${endDate}','DD/MM/YYYY')`;
+  return new Promise(async (resolve, reject) => {
+    try {
+      const weekData = await client.query(getQuery);
+      resolve(weekData.rows);
+    } catch (err) {
+      console.log("Error", err);
+      reject(err);
+    }
+  });
+}
+
 module.exports = {
   updateAllUser,
   findUserByName,
@@ -429,4 +472,6 @@ module.exports = {
   findUser,
   getAllUsers,
   updateAlmacen,
+  insertAndUpdateUserGoals,
+  getWeeklyGoals,
 };

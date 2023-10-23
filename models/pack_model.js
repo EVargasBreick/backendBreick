@@ -66,8 +66,8 @@ function addIdToPack(params) {
 //ACA EMPIEZA LO DE POSTGRES
 
 function registerPackPos(body) {
-  const packQuery = `insert into Packs ("nombrePack","precioPack","descripcionPack","codigoBarras", "idPackProd") 
-    values ('${body.nombrePack}',${body.precioPack},'${body.descPack}','-',0) returning "idPack"`;
+  const packQuery = `insert into Packs ("nombrePack","precioPack","descripcionPack","codigoBarras", "idPackProd", activo) 
+    values ('${body.nombrePack}',${body.precioPack},'${body.descPack}','-',0,1) returning "idPack"`;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       try {
@@ -89,7 +89,7 @@ function registerPackPos(body) {
               try {
                 const deleted = await client.query(deleteQuery);
                 reject(added);
-              } catch { }
+              } catch {}
             }
           }, 100);
         });
@@ -130,16 +130,23 @@ function addIdToPackPos(params) {
 
 async function updatePack(products, total) {
   try {
-    await client.query('BEGIN');
+    await client.query("BEGIN");
     const { nombrePack, idPack, idPackProd } = products[0];
 
-    const list_of_ids_original = await client.query('SELECT "idProductoPack" FROM productos_pack WHERE "idPack" = $1', [idPack]);
+    const list_of_ids_original = await client.query(
+      'SELECT "idProductoPack" FROM productos_pack WHERE "idPack" = $1',
+      [idPack]
+    );
     const list_of_ids = products.map((product) => product.idProductoPack);
-    const idsToDelete = list_of_ids_original.rows.filter((product) => !list_of_ids.includes(product.idProductoPack)).map((product) => product.idProductoPack);
+    const idsToDelete = list_of_ids_original.rows
+      .filter((product) => !list_of_ids.includes(product.idProductoPack))
+      .map((product) => product.idProductoPack);
     const idsToCreate = products
       .filter((product) => !product.idProductoPack)
       .map((product) => product.idProducto);
-    const productsToUpdate = products.filter((product) => product.idProductoPack);
+    const productsToUpdate = products.filter(
+      (product) => product.idProductoPack
+    );
 
     await client.query(
       'UPDATE packs SET "precioPack" = $1 WHERE "nombrePack" = $2',
@@ -161,16 +168,24 @@ async function updatePack(products, total) {
 
     if (idsToCreate.length > 0) {
       for (const idToCreate of idsToCreate) {
-        const productoAct = products.find((product) => product.idProducto === idToCreate)
+        const productoAct = products.find(
+          (product) => product.idProducto === idToCreate
+        );
         const newProductData = {
           idPack,
           idProducto: idToCreate,
-          cantProducto: Number(productoAct.cantProducto || productoAct.cantidadProducto),
+          cantProducto: Number(
+            productoAct.cantProducto || productoAct.cantidadProducto
+          ),
         };
 
         await client.query(
           'INSERT INTO productos_pack ("idPack", "idProducto", "cantProducto") VALUES ($1, $2, $3)',
-          [newProductData.idPack, newProductData.idProducto, newProductData.cantProducto]
+          [
+            newProductData.idPack,
+            newProductData.idProducto,
+            newProductData.cantProducto,
+          ]
         );
       }
     }
@@ -182,12 +197,11 @@ async function updatePack(products, total) {
           [Number(idToDelete), Number(idPack)]
         );
       }
-
     }
 
-    await client.query('COMMIT');
+    await client.query("COMMIT");
   } catch (error) {
-    await client.query('ROLLBACK');
+    await client.query("ROLLBACK");
     console.log(error);
     throw error;
   }
@@ -200,5 +214,5 @@ module.exports = {
   registerPackPos,
   getPacksPos,
   addIdToPackPos,
-  updatePack
+  updatePack,
 };
