@@ -608,11 +608,13 @@ function changeReady(params) {
 
 //CONECTANDOSE A LA BASE DE DATOS DE POSTGRESS
 
-function registerOrderPos(data) {
-  const imp = data.pedido.impreso != undefined ? data.pedido.impreso : 0;
-  console.log("Notas", data.pedido.ñnotas);
-  var query = `insert into Pedidos 
-    (
+async function registerOrderPos(data) {
+  try {
+    const imp = data.pedido.impreso !== undefined ? data.pedido.impreso : 0;
+    console.log("Notas", data.pedido.notas);
+
+    const orderQuery = `INSERT INTO Pedidos 
+      (
         "idUsuarioCrea",
         "idCliente",
         "fechaCrea",
@@ -627,85 +629,64 @@ function registerOrderPos(data) {
         facturado,
         impreso,
         listo
-    ) values (
-        ${data.pedido.idUsuarioCrea},
-        ${data.pedido.idCliente},
-        '${data.pedido.fechaCrea}',
-        '${data.pedido.fechaActualizacion}',
-        '${data.pedido.estado}',
-        '${data.pedido.montoFacturar}',
-        '${data.pedido.montoTotal}',
-        '${data.pedido.tipo}',
-        '${data.pedido.descuento}',
-        '${data.pedido.descCalculado}',
-        '${data.pedido.notas}',
-        0,
-        ${imp},
-        0
-    ) returning "idPedido"`;
-  console.log("Creacion pedido query", query);
-  return new Promise((resolve, reject) => {
-    setTimeout(async () => {
-      try {
-        const newOrder = await client.query(query);
-        const idCreado = newOrder.rows[0].idPedido;
-        data.productos.map((producto) => {
-          var queryProds = `insert into Pedido_Producto 
-            (
-                "idPedido", 
-                "idProducto", 
-                "cantidadProducto", 
-                "totalProd",
-                "descuentoProducto"
-            ) values (
-                ${idCreado},
-                ${producto.idProducto},
-                '${producto.cantProducto}',
-                ${producto.totalProd},
-                ${producto.descuentoProd}
-            )`;
-          setTimeout(async () => {
-            try {
-              const prods = await client.query(queryProds);
-              resolve(
-                JSON.stringify({
-                  code: 201,
-                  data: {
-                    idCreado: idCreado,
-                  },
-                })
-              );
-            } catch (error) {
-              try {
-                const del = client.query(
-                  `delete from Pedidos where "idPedido"=${idCreado}`
-                );
-                del.then(() => {
-                  resolve(
-                    JSON.stringify({
-                      code: 400,
-                      data: "Error al aumentar los productos",
-                      message: "Products: " + error,
-                    })
-                  );
-                }).catch((err) => {
-                  throw err;
-                });;
-              } catch (err) { }
-            }
-          }, 100);
-        });
-      } catch (err) {
-        resolve(
-          JSON.stringify({
-            code: 400,
-            data: "Error al aumentar los pedidos",
-            message: "Pedido: " + err,
-          })
-        );
-      }
-    }, 100);
-  });
+      ) VALUES (
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
+      ) RETURNING "idPedido"`;
+
+    const orderValues = [
+      data.pedido.idUsuarioCrea,
+      data.pedido.idCliente,
+      data.pedido.fechaCrea,
+      data.pedido.fechaActualizacion,
+      data.pedido.estado,
+      data.pedido.montoFacturar,
+      data.pedido.montoTotal,
+      data.pedido.tipo,
+      data.pedido.descuento,
+      data.pedido.descCalculado,
+      data.pedido.notas,
+      0,
+      imp,
+      0
+    ];
+
+    const newOrder = await client.query(orderQuery, orderValues);
+    const idCreado = newOrder.rows[0].idPedido;
+
+    await Promise.all(
+      data.productos.map(async (producto) => {
+        const queryProds = `INSERT INTO Pedido_Producto 
+          (
+            "idPedido",
+            "idProducto",
+            "cantidadProducto",
+            "totalProd",
+            "descuentoProducto"
+          ) VALUES (
+            $1, $2, $3, $4, $5
+          )`;
+
+        const prodValues = [
+          idCreado,
+          producto.idProducto,
+          producto.cantProducto,
+          producto.totalProd,
+          producto.descuentoProd
+        ];
+
+        await client.query(queryProds, prodValues);
+      })
+    );
+
+    return JSON.stringify({
+      code: 201,
+      data: {
+        idCreado: idCreado,
+      },
+    });
+  } catch (error) {
+    throw error;
+  }
 }
 
 function getOrderStatusPos() {

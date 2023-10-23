@@ -55,16 +55,18 @@ const {
 const app = express();
 app.use(session(sessionParams));
 module.exports = {
-  createNewOrder: (req, res) => {
-    const promise = registerOrderPos(req.body);
-    promise.then((data) => {
-      var resp = JSON.parse(data);
+  createNewOrder: async (req, res) => {
+    try {
+      const data = await registerOrderPos(req.body);
+      const resp = JSON.parse(data);
       console.log(data);
       res.status(resp.code).send(resp);
-    }).catch((err) => {
-      console.log(err);
-      res.status(500).send(err);
-    });;
+    } catch (err) {
+      console.error(err);
+      res.status(500).send({
+        message: err || "Some error occurred while creating the Order.",
+      });
+    }
   },
   getOrderStatus: (req, res) => {
     const orderStatus = getOrderStatusPos();
