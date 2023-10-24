@@ -280,7 +280,7 @@ where us."idUsuario"=${params.id} order by us."tipoUsuario"
 function createProductPos(body) {
   const newProdQuery = `insert into Productos ("codInterno", "nombreProducto", "descProducto", "gramajeProducto", 
     "precioDeFabrica", "codigoBarras", "cantCajon", "unidadDeMedida", "tiempoDeVida", activo, "precioPDV", "cantDisplay", 
-    "aplicaDescuento", "tipoProducto", "precioDescuentoFijo","actividadEconomica","codigoSin","codigoUnidad","origenProducto") values (
+    "aplicaDescuento", "tipoProducto", "precioDescuentoFijo","actividadEconomica","codigoSin","codigoUnidad","origenProducto","precioSuper") values (
       '${body.codInterno}',
       '${body.nombreProducto}',
       '${body.descProducto}',
@@ -299,7 +299,8 @@ function createProductPos(body) {
       ${body.actividadEconomica},
       ${body.codigoSin},
       ${body.codigoUnidad},
-      ${body.origenProducto}
+      ${body.origenProducto},
+      ${body.precioDeFabrica}
     ) returning "idProducto"`;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
