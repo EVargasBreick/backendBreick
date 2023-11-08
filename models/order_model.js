@@ -75,17 +75,19 @@ function registerOrder(data) {
               const del = dbConnection.executeQuery(
                 `delete from Pedidos where idPedido=${idCreado.data[0][0].idCreado}`
               );
-              del.then(() => {
-                resolve(
-                  JSON.stringify({
-                    code: 400,
-                    data: "Error",
-                    message: "Products: " + prods.message,
-                  })
-                );
-              }).catch((err) => {
-                throw err;
-              });;
+              del
+                .then(() => {
+                  resolve(
+                    JSON.stringify({
+                      code: 400,
+                      data: "Error",
+                      message: "Products: " + prods.message,
+                    })
+                  );
+                })
+                .catch((err) => {
+                  throw err;
+                });
             }
           }, 1000);
         });
@@ -647,7 +649,7 @@ async function registerOrderPos(data) {
       data.pedido.notas,
       0,
       imp,
-      0
+      0,
     ];
 
     const newOrder = await client.query(orderQuery, orderValues);
@@ -661,9 +663,10 @@ async function registerOrderPos(data) {
             "idProducto",
             "cantidadProducto",
             "totalProd",
-            "descuentoProducto"
+            "descuentoProducto",
+            "precio_producto"
           ) VALUES (
-            $1, $2, $3, $4, $5
+            $1, $2, $3, $4, $5,$6
           )`;
 
         const prodValues = [
@@ -671,7 +674,8 @@ async function registerOrderPos(data) {
           producto.idProducto,
           producto.cantProducto,
           producto.totalProd,
-          producto.descuentoProd
+          producto.descuentoProd,
+          producto.precioDeFabrica,
         ];
 
         await client.query(queryProds, prodValues);
@@ -699,7 +703,7 @@ function getOrderStatusPos() {
         responseObject.code = 201;
         responseObject.data = statusList.rows;
         resolve(JSON.stringify(responseObject));
-      } catch (err) { }
+      } catch (err) {}
     }, 100);
   });
 }
@@ -773,7 +777,7 @@ function getUserOrderListPos(params) {
             data: orderList.rows,
           })
         );
-      } catch (err) { }
+      } catch (err) {}
     }, 100);
   });
 }
@@ -803,8 +807,8 @@ function approveOrderPos(params) {
 }
 
 function getOrderDetailsPos(params) {
-  var queryDet = `select a.*, b."idProducto", b."cantidadProducto" ,c."nombreProducto", 
-  d.nombre||' '||d."apPaterno" as "nombreVendedor", e.nit, b."descuentoProducto", d.usuario,
+  var queryDet = `select a.*, b.*, b."cantidadProducto" ,c."nombreProducto", 
+  d.nombre||' '||d."apPaterno" as "nombreVendedor", e.nit, d.usuario,
   e."razonSocial", d."idAlmacen", e.issuper,
   substring(d.nombre,1,1) || '' ||d."apPaterno"||'-'||a.tipo||'00'||cast(a."idPedido" as varchar) as "codigoPedido",
   f.zona, d.rol, e."idZona", d."tipoUsuario"
@@ -839,7 +843,7 @@ function getOrderTypePos() {
             data: orderType.rows,
           })
         );
-      } catch (err) { }
+      } catch (err) {}
     }, 100);
   });
 }
@@ -859,7 +863,7 @@ function getOrderProductListPos(params) {
             data: prodList.rows,
           })
         );
-      } catch (err) { }
+      } catch (err) {}
     }, 100);
   });
 }
@@ -898,7 +902,7 @@ function cancelOrderPos(id) {
             data: prodList.rows,
           })
         );
-      } catch (err) { }
+      } catch (err) {}
     }, 100);
   });
 }
@@ -918,7 +922,7 @@ function addProductOrderPos(body) {
                 data: addedProduct.rows,
               })
             );
-          } catch (err) { }
+          } catch (err) {}
         }, 200);
       });
     } else {
@@ -949,7 +953,7 @@ function deleteProductOrderPos(body) {
                 data: deleted.rows,
               })
             );
-          } catch { }
+          } catch {}
         }, 100);
       });
     } else {
