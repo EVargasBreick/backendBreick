@@ -95,7 +95,7 @@ async function anularFactura(cuf_ackTicket_uniqueCode, motivo, req) {
       },
       data: body,
     });
-
+    console.log("RESPONSE ANULAR", response);
     const dateResult = dateString();
     const cancelQuery = `update Facturas set estado=1, "fechaAnulacion"='${dateResult}' where cuf='${cuf_ackTicket_uniqueCode}'`;
     console.log("TCL: cancelQuery", cancelQuery);
@@ -150,7 +150,6 @@ function postFactura(bodyFacturas, bodyFacturasInfo, req) {
       getCodigosLeyenda(req)
         .then(async (codigosLeyendaData) => {
           codigosLeyendaResponse = JSON.parse(codigosLeyendaData);
-          console.log("Codigos leyenda", codigosLeyendaData);
           const random = getRandomNumber(
             codigosLeyendaResponse.data.data.length - 1
           );

@@ -57,24 +57,28 @@ module.exports = {
     );
     anularPromise
       .then(async (anularData) => {
-        const maxRetries = 1;
-        const retry = 0;
         var responseObject = {};
-        while (retry < maxRetries) {
-          try {
-            const updatedStock = await transactionOfUpdateStocks([body]);
-            if (updatedStock.code == 200) {
-              console.log("Stock updateado", updatedStock);
-              const anularDataJSON = JSON.parse(anularData);
-              responseObject.data = anularDataJSON;
-              responseObject.code = anularDataJSON.status;
-              res.status(responseObject.code).send(responseObject);
-              break;
+        const anularDataJSON = JSON.parse(anularData);
+        responseObject.data = anularDataJSON;
+        responseObject.code = anularDataJSON.status;
+        if (anularDataJSON.status == 200) {
+          const maxRetries = 1;
+          const retry = 0;
+          while (retry < maxRetries) {
+            try {
+              const updatedStock = await transactionOfUpdateStocks([body]);
+              if (updatedStock.code == 200) {
+                console.log("Stock updateado", updatedStock);
+                res.status(responseObject.code).send(responseObject);
+                break;
+              }
+            } catch (err) {
+              console.log("Reintentando aumento de stock", err);
+              retry++;
             }
-          } catch (err) {
-            console.log("Reintentando aumento de stock", err);
-            retry++;
           }
+        } else {
+          res.status(anularDataJSON.status).send(anularDataJSON);
         }
       })
       .catch((err) => {

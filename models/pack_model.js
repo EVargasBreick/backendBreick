@@ -207,6 +207,24 @@ async function updatePack(products, total) {
   }
 }
 
+async function changePackStatus(packId, status) {
+  try {
+    const queryUpdate = 'UPDATE packs SET activo = $1 WHERE "idPack" = $2';
+    const queryProd = `update productos pr set activo= $1 from packs pk where pk."idPackProd"=pr."idProducto"
+    and pk."idPack"=$2`;
+    const values = [status, packId];
+    await client.query("BEGIN");
+    const updatedPack = await client.query(queryUpdate, values);
+    const updatedProduct = await client.query(queryProd, values);
+    await client.query("COMMIT");
+    return { pack: updatedPack.rows, producto: updatedProduct.rows };
+  } catch (err) {
+    console.log("ERROR EN EL PUT", err);
+    await client.query("ROLLBACK");
+    throw err;
+  }
+}
+
 module.exports = {
   registerPack,
   getPacks,
@@ -215,4 +233,5 @@ module.exports = {
   getPacksPos,
   addIdToPackPos,
   updatePack,
+  changePackStatus,
 };

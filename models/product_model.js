@@ -198,6 +198,46 @@ function getProductsPos(params) {
 
 function getProductsWithStockPos(params) {
   var query;
+  const idAlmacen = params.idAlmacen;
+  if (params.id === "all") {
+    if (idAlmacen.includes("AG")) {
+      console.log("ES AGENCIA");
+      query = `select  a.*, b."cant_Actual" from Productos a inner join Stock_Agencia b 
+      on a."idProducto"=b."idProducto" where "idAgencia"=$1 order by "nombreProducto"`;
+    } else if (idAlmacen.includes("AL")) {
+      console.log("ES ALMACEN");
+      query = `select a.*, b."cant_Actual" from Productos a inner join Stock_Bodega b 
+      on a."idProducto"=b."idProducto" where "idBodega"=$1 order by "nombreProducto"`;
+    } else {
+      query = ` select  a.*, b."cant_Actual" from Productos a inner join Stock_Agencia_Movil b 
+      on a."idProducto"=b."idProducto" where "idVehiculo"=$1 order by "nombreProducto"`;
+      console.log("ES RUTA");
+    }
+  } else {
+    query = `select a."codInterno", a."nombreProducto", a."codigoBarras", b."cant_Actual", a."precioDeFabrica", 
+    a."tipoProducto", a."precioDescuentoFijo", a."unidadDeMedida" from Productos a inner join Stock_Bodega b 
+    on a."idProducto"=b."idProducto" where "idBodega"=${params.idAlmacen} and a."idProducto"=${params.id} order by "nombreProducto"`;
+  }
+
+  return new Promise((resolve, reject) => {
+    console.log("Query", query);
+    setTimeout(async () => {
+      const products = await client.query(query, [idAlmacen]);
+      resolve(JSON.stringify(products.rows));
+    }, 300);
+  });
+}
+
+function getProductsWithStockPosAlt(params) {
+  var query;
+  const idAlmacen = params.idAlmacen;
+  if (idAlmacen.includes("AG")) {
+    console.log("ES AGENCIA");
+  } else if (idAlmacen.includes("AL")) {
+    console.log("ES ALMACEN");
+  } else {
+    console.log("ES RUTA");
+  }
   if (params.id === "all") {
     query = `select a.*, b."cant_Actual" from Productos a inner join Stock_Bodega b 
     on a."idProducto"=b."idProducto" where "idBodega"='${params.idAlmacen}' union 

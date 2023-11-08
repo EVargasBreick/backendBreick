@@ -543,6 +543,7 @@ async function transactionOfUpdateStocks(bodies) {
     await client.query("BEGIN");
     const results = [];
     for (const body of bodies) {
+      console.log("Body", body);
       const TiposStock = Object.freeze({
         AGENCIA: {
           identificador: "AG",

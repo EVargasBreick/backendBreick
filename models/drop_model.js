@@ -1,5 +1,6 @@
 const { client } = require("../postgressConn");
 const dbConnection = require("../server");
+const { transactionOfUpdateStocks } = require("./store_model");
 
 function createDrop(body) {
   const queryBaja = `insert into Bajas (motivo, fechaBaja, idUsuario, idAlmacen) 
@@ -41,8 +42,8 @@ function createDrop(body) {
 
 function createDropPos(body) {
   console.log("Body recibido", body);
-  const queryBaja = `insert into Bajas (motivo, "fechaBaja", "idUsuario", "idAlmacen", "totalbaja", "vale") 
-    values ('${body.motivo}', '${body.fechaBaja}', ${body.idUsuario},'${body.idAlmacen}', ${body.totalbaja}, ${body.vale}) returning "idBaja"`;
+  const queryBaja = `insert into Bajas (motivo, "fechaBaja", "idUsuario", "idAlmacen", "totalbaja", "vale","estado",ci) 
+    values ('${body.motivo}', '${body.fechaBaja}', ${body.idUsuario},'${body.idAlmacen}', ${body.totalbaja}, ${body.vale},1,${body.ci}) returning "idBaja"`;
   console.log("query baja", queryBaja);
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
@@ -75,4 +76,34 @@ function createDropPos(body) {
   });
 }
 
-module.exports = { createDrop, createDropPos };
+async function cancelDrop(dropId, userId, products) {
+  try {
+    const canceledQuery = `update bajas set estado=0, usuariocancel=$1 where "idBaja"=$2`;
+    await client.query("BEGIN");
+    const canceled = client.query(canceledQuery, [userId, dropId]);
+    const stockReturned = await transactionOfUpdateStocks([products]);
+    await client.query("COMMIT");
+    return { canceled, stockReturned };
+  } catch (err) {
+    await client.query("ROLLBACK");
+    return err;
+  }
+}
+
+async function getDropInfo(dropId) {
+  try {
+    const dropQuery = `select bj.*, bp.*, pr."codInterno",pr."nombreProducto", (select "razonSocial" 
+    from clientes where "nit"=(select ci from bajas where "idBaja"=$1 )limit 1)as "razonSocial" from bajas bj 
+      inner join baja_productos bp on bp."idBaja"=bj."idBaja"
+      inner join productos pr on pr."idProducto"=bp."idProducto" 
+  where bj."idBaja"=$1
+  
+  `;
+    const dropInfo = await client.query(dropQuery, [dropId]);
+    return dropInfo.rows;
+  } catch (err) {
+    return err;
+  }
+}
+
+module.exports = { createDrop, createDropPos, cancelDrop, getDropInfo };
