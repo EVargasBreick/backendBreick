@@ -969,9 +969,11 @@ function updateProductOrderPos(body) {
   return new Promise((resolve) => {
     if (body.productos.length > 0) {
       body.productos.map((pr) => {
+        const { precio_producto, ...pedido } = pr;
+
         setTimeout(async () => {
           var queryAdd = `update Pedido_Producto 
-        set "idPedido"=${body.idPedido}, "idProducto"=${pr.idProducto}, "cantidadProducto"=${pr.cantProducto}, "totalProd"=${pr.totalProd}, "descuentoProducto"=${pr.descuentoProd}
+        set precio_producto = ${precio_producto}, "idPedido"=${body.idPedido}, "idProducto"=${pr.idProducto}, "cantidadProducto"=${pr.cantProducto}, "totalProd"=${pr.totalProd}, "descuentoProducto"=${pr.descuentoProd}
         where "idPedidoProducto"=${pr.idPedidoProducto}`;
           console.log("Query para testear error", queryAdd);
           try {
