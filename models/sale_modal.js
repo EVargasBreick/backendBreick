@@ -137,13 +137,15 @@ function registerSalePos(data, idFactura) {
                   "idProducto", 
                   "cantidadProducto", 
                   "totalProd",
-                  "descuentoProducto"
+                  "descuentoProducto",
+                  "precio_producto"
               ) values (
                   ${idCreado},
                   ${producto.idProducto},
                   '${producto.cantProducto}',
                   ${totalProducto},
-                  ${producto.descuentoProd}
+                  ${producto.descuentoProd},
+                  ${Number(producto.precioDeFabrica)}
               )`;
           console.log("Insertando productos", queryProds);
           setTimeout(async () => {
