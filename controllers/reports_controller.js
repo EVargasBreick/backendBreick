@@ -172,11 +172,27 @@ module.exports = {
     }
   },
   groupedProdReport: async (req, res) => {
-    const { idAgencia, startDate, endDate } = req.query;
+    console.log("Lo que llego aca", req.query);
+    const {
+      idAgencia,
+      startDate,
+      endDate,
+      selectedClient,
+      selectedSalesman,
+      criteria,
+    } = req.query;
     try {
-      const repData = await GroupedProductReport(idAgencia, startDate, endDate);
+      const repData = await GroupedProductReport(
+        idAgencia,
+        startDate,
+        endDate,
+        selectedClient,
+        selectedSalesman,
+        criteria
+      );
       res.status(200).json(repData);
     } catch (err) {
+      console.log("ERROR ACA", err);
       res
         .status(500)
         .json({ error: err || "An error occurred while fetching reports." });
