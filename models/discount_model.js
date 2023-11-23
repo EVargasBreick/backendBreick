@@ -87,9 +87,22 @@ async function disableSeasonalDiscount(id) {
   });
 }
 
+async function getDiscountType() {
+  const query = `select * from tipo_descuento_automatico where activo=1 limit 1`;
+  return new Promise(async (resolve, reject) => {
+    try {
+      const state = await client.query(query);
+      resolve(state.rows[0]);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
 module.exports = {
   getSeasonDiscount,
   currentSeasonDiscount,
   registerSeasonalDiscount,
   disableSeasonalDiscount,
+  getDiscountType,
 };

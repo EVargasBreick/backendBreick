@@ -510,7 +510,7 @@ function virtualStockReport(params) {
 
 async function traspasosAgencyReport(startDate, endDate) {
   const query = `
-  SELECT COUNT(p."idProducto") AS product_count, t."idDestino" , p."nombreProducto" , p."idProducto", COALESCE(a.nombre , b.nombre , v.placa) AS destination_name
+  SELECT sum(tp."cantidadProducto") as product_count, t."idDestino" , p."codInterno", p."nombreProducto" , p."idProducto", COALESCE(a.nombre , b.nombre , v.placa) AS destination_name
   FROM traspaso_producto tp 
   JOIN traspasos t  ON tp."idTraspaso" = t."idTraspaso" 
   JOIN productos p  ON tp."idProducto"  = p."idProducto"
@@ -518,10 +518,11 @@ async function traspasosAgencyReport(startDate, endDate) {
   LEFT JOIN bodegas b on b."idBodega" = t."idDestino" 
   LEFT JOIN vehiculos v ON v.placa = t."idDestino" 
   WHERE TO_TIMESTAMP(t."fechaCrea", 'DD/MM/YYYY HH24.MI.SS')::DATE  BETWEEN ${startDate}::DATE AND ${endDate}::DATE
-  GROUP BY t."idDestino", p."nombreProducto", p."idProducto", COALESCE(a.nombre , b.nombre , v.placa)
+  and t.estado!=2
+  GROUP BY t."idDestino", p."nombreProducto", p."codInterno", p."idProducto", COALESCE(a.nombre , b.nombre , v.placa)
   ORDER BY product_count desc;
   `;
-
+  console.log("ESTE QUERY", query);
   try {
     const res = await client.query(query);
     return res.rows;
@@ -529,8 +530,23 @@ async function traspasosAgencyReport(startDate, endDate) {
     throw err;
   }
 }
-function GroupedProductReport(idAgencia, startDate, endDate) {
-  let query = `select pr."idProducto","codInterno", "nombreProducto",  
+function GroupedProductReport(
+  idAgencia,
+  startDate,
+  endDate,
+  selectedClient,
+  selectedSalesman,
+  criteria
+) {
+  console.log("ID AGENCIAS", idAgencia);
+  const agenciasString = [];
+  if (idAgencia) {
+    for (const agencia of idAgencia) {
+      agenciasString.push(`'${agencia}'`);
+    }
+  }
+
+  let query = `select pr."idProducto","codInterno", "nombreProducto", "unidadDeMedida",
   CASE
   WHEN SUM("cantidadProducto")::numeric % 1 = 0
       THEN CAST(SUM("cantidadProducto") AS integer)
@@ -538,6 +554,7 @@ function GroupedProductReport(idAgencia, startDate, endDate) {
     ROUND(SUM("cantidadProducto")::numeric, 2) 
   END AS "sumaTotal" 
   from Facturas fc inner join Ventas vn on vn."idFactura"=fc."idFactura"
+  inner join clientes cl on cl."idCliente"=vn."idCliente"
   inner join venta_productos vp on vp."idVenta"=vn."idVenta"
   inner join Productos pr on pr."idProducto"=vp."idProducto"
   where estado=0 and 
@@ -545,19 +562,48 @@ function GroupedProductReport(idAgencia, startDate, endDate) {
    to_date(fc."fechaHora", 'DD/MM/YYYY')<=to_date('${endDate}', 'YYYY-MM-DD')
   `;
 
-  if (idAgencia != "") {
-    query += `and "idAgencia"='${idAgencia}'`;
+  let queryMoney = `
+  select pr."idProducto","codInterno", "nombreProducto", "unidadDeMedida",
+  sum("totalProd") AS "sumaTotal"
+  from Facturas fc inner join Ventas vn on vn."idFactura"=fc."idFactura"
+  inner join clientes cl on cl."idCliente"=vn."idCliente"
+  inner join venta_productos vp on vp."idVenta"=vn."idVenta"
+  inner join Productos pr on pr."idProducto"=vp."idProducto"
+  where estado=0 and 
+   to_date(fc."fechaHora", 'DD/,MM/YYYY')>=to_date('${startDate}', 'YYYY-MM-DD') and 
+   to_date(fc."fechaHora", 'DD/MM/YYYY')<=to_date('${endDate}', 'YYYY-MM-DD')
+  `;
+
+  switch (criteria) {
+    case "agencia":
+      if (idAgencia) {
+        query += `and "idAgencia" in (${agenciasString}) `;
+        queryMoney += `and "idAgencia" in (${agenciasString}) `;
+      }
+      break;
+    case "vendedor":
+      query += `and vn."idUsuarioCrea"=${selectedSalesman} `;
+      queryMoney += `and vn."idUsuarioCrea"=${selectedSalesman} `;
+      break;
+    case "cliente":
+      query += `and cl.nit='${selectedClient}' `;
+      queryMoney += `and cl.nit='${selectedClient}' `;
+      break;
   }
 
-  query += `group by (pr."idProducto","codInterno", "nombreProducto")
-  order by "nombreProducto"`;
+  query += `group by (pr."idProducto","codInterno", "nombreProducto", "unidadDeMedida")
+  order by "sumaTotal" desc`;
+  queryMoney += `group by (pr."idProducto","codInterno", "nombreProducto", "unidadDeMedida")
+  order by "sumaTotal" desc`;
   console.log("Query", query);
   return new Promise(async (resolve, reject) => {
     try {
       const data = await client.query(query);
-      resolve(data.rows);
+      const dataMoney = await client.query(queryMoney);
+      resolve({ cantidades: data.rows, facturado: dataMoney.rows });
     } catch (err) {
       reject(err);
+      console.log("Error", err);
     }
   });
 }

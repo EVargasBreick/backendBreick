@@ -6,6 +6,7 @@ const {
   currentSeasonDiscount,
   registerSeasonalDiscount,
   disableSeasonalDiscount,
+  getDiscountType,
 } = require("../models/discount_model");
 const app = express();
 app.use(session(sessionParams));
@@ -43,6 +44,18 @@ module.exports = {
         res.status(200).send(discount);
       })
       .catch((err) => {
+        res.status(500).send(err);
+      });
+  },
+  discountType: (req, res) => {
+    console.log("ENTRO ACA");
+    const dtype = getDiscountType();
+    dtype
+      .then((discount) => {
+        res.status(200).send(discount);
+      })
+      .catch((err) => {
+        console.log("A VER", err);
         res.status(500).send(err);
       });
   },

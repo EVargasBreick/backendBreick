@@ -374,6 +374,17 @@ function updateTheClientMail(body) {
   });
 }
 
+async function getClientSimple(value) {
+  const query = `select "razonSocial","nit" from Clientes where lower("razonSocial") like lower('%${value}%') or "nit"='${value}' limit 1`;
+  console.log("Query", query);
+  try {
+    const data = await client.query(query);
+    return data.rows;
+  } catch (err) {
+    return err;
+  }
+}
+
 module.exports = {
   registerClient,
   getClients,
@@ -388,4 +399,5 @@ module.exports = {
   getFullClientPos,
   getNumberOfClientsPos,
   updateTheClientMail,
+  getClientSimple,
 };

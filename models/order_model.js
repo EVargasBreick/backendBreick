@@ -818,6 +818,7 @@ function getOrderDetailsPos(params) {
   inner join Clientes e on e."idCliente"=a."idCliente"
   inner join Zonas f on f."idZona"=e."idZona"
  where a."idPedido"=${params.id}`;
+  console.log("Test", queryDet);
   return new Promise((resolve) => {
     setTimeout(async () => {
       const orderDetail = await client.query(queryDet);
