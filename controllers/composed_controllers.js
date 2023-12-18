@@ -13,6 +13,8 @@ const {
 } = require("../models/emizor_model");
 const { updateVirtualStock } = require("../models/order_model");
 const logger = require("../logger-pino");
+const { client } = require("../postgressConn");
+const { createTransferPos } = require("../models/transfer_model");
 const app = express();
 
 app.use(session(sessionParams));
@@ -36,6 +38,30 @@ module.exports = {
       })
       .catch((error) => {
         res.status(error.code).send(error);
+      });
+  },
+  onlineInvoiceProcess: (req, res) => {
+    const { invoiceBody, saleBody } = req.body;
+    const onlineCreated = registerOnlineSale(saleBody, invoiceBody);
+    onlineCreated
+      .then((invoice) => {
+        res.status(200).send(invoice);
+      })
+      .catch((error) => {
+        console.log("ERROR AL REGISTRAR FACTURA DE EN LINEA", error);
+        res.status(error.code).send(error);
+      });
+  },
+  composeTransferProcess: (req, res) => {
+    const transferCreated = composedTransferProcess(req.body);
+    transferCreated
+      .then((transfer) => {
+        console.log("DATOS DE TRANSFERENCIA EN 59", transfer);
+        res.status(200).send(transfer);
+      })
+      .catch((error) => {
+        console.log("ERROR AL CREAR EL TRASPASO", error);
+        res.status(500).send(error);
       });
   },
 };
@@ -970,3 +996,65 @@ const createInvoiceAlt = async (body, req) => {
     };
   }
 };
+
+async function registerOnlineSale(saleBody, invoiceBody) {
+  try {
+    const invoiceCreated = await createInvoicePos(invoiceBody);
+    body.venta.idFactura = invoiceCreated.factura.rows[0].idFactura;
+    try {
+      const saleCreated = await registerSalePos(
+        saleBody,
+        invoiceCreated.factura.rows[0].idFactura
+      );
+      const ventaCreada = JSON.parse(saleCreated);
+      return {
+        code: 200,
+        data: { invoiceCreated, ventaCreada },
+        message: "Factura correcta",
+      };
+    } catch {
+      return {
+        code: 500,
+        error: error,
+        message: "Error al crear la venta",
+      };
+    }
+  } catch (error) {
+    return {
+      code: 500,
+      error: error,
+      message: "Error al crear la factura",
+    };
+  }
+}
+
+async function composedTransferProcess(body) {
+  console.log("ENTRA ACA EN EL NUEVO PROCESO", body.stock);
+  const objStock = body.stock;
+  try {
+    await client.query("BEGIN");
+    const transferCreated = await createTransferPos(body.traspaso);
+    console.log("TRANSFER CREATED", JSON.parse(transferCreated));
+    const idCreado = JSON.parse(transferCreated).data.idCreado;
+    console.log("ID CREADO", idCreado);
+    const stockBody = {
+      accion: objStock.accion,
+      idAlmacen: objStock.idAlmacen,
+      productos: objStock.productos,
+      detalle: `SSNTR-${idCreado}`,
+    };
+    const updatedStock = await updateProductStockPos(stockBody);
+    console.log("Traspaso AKI", updatedStock);
+    if (updatedStock.code == 200) {
+      console.log("Devolviendo esto", idCreado);
+      return { data: { idCreado } };
+    } else {
+      await client.query("ROLLBACK");
+      throw new Error(updatedStock.error);
+    }
+  } catch (error) {
+    console.log("HAY UN ERROR EN EL TRASPASO", error);
+    await client.query("ROLLBACK");
+    return error;
+  }
+}

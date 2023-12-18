@@ -688,6 +688,112 @@ async function GetRemainingGoal(date, userId) {
   });
 }
 
+async function GetSamplesReport(startDate, endDate, idAgencia) {
+  const totalQuery = `SELECT *
+  FROM (
+      SELECT "idBaja", 
+             CASE 
+                 WHEN ci='-' THEN 'No disponible' 
+                 ELSE (SELECT "razonSocial" FROM clientes cl WHERE cl.nit = bj.ci LIMIT 1)
+             END AS cliente_razon_social, 
+             ci, 
+             "fechaBaja" AS "fecha", 
+             us."usuario", 
+             motivo as notas,
+             'Baja agencia' as "tipoMuestra",
+             bj."idAlmacen" as "idAgencia",
+             case when bj.estado=1 then 'VALIDO' else 'CANCELADO' end as estado
+      FROM bajas bj 
+      INNER JOIN usuarios us ON bj."idUsuario" = us."idUsuario"  
+      WHERE LOWER(motivo) LIKE '%muestra%' 
+      and to_date("fechaBaja", 'DD/MM/YYYY') between to_date('${startDate}', 'YYYY-MM-DD') and to_date('${endDate}', 'YYYY-MM-DD')
+      and bj."idAlmacen"='${idAgencia}'
+  union 
+      select  "idPedido", 
+          "razonSocial",
+          "nit", 
+          pd."fechaCrea" as "fecha", 
+          us.usuario, 
+          "notas", 
+          'Pedido' as "tipoMuestra",
+          us."idAlmacen" as "idAgencia",
+          case when pd.estado!='2' then 'VALIDO' else 'CANCELADO' end as estado
+  from pedidos pd inner join clientes cl on cl."idCliente" =pd."idCliente"  
+  inner join usuarios us on us."idUsuario" =pd."idUsuarioCrea" 
+  where tipo='muestra' and  to_date(pd."fechaCrea", 'DD/MM/YYYY') between to_date('${startDate}', 'YYYY-MM-DD') and to_date('${endDate}', 'YYYY-MM-DD')
+   and us."idAlmacen"='${idAgencia}'
+  ) subquery
+  ORDER BY TO_DATE(subquery."fecha", 'DD/MM/YYYY');
+  `;
+  console.log("Query muestras", totalQuery);
+  return new Promise(async (resolve, reject) => {
+    try {
+      const reportData = await client.query(totalQuery);
+      resolve(reportData.rows);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
+async function GetProductInSamplesReport(startDate, endDate, idAgencia) {
+  const totalQuery = `SELECT *
+  FROM (
+      SELECT bj."idBaja",
+      "codInterno",
+      "nombreProducto",
+      bp."cantProducto" as "cantidad",
+             CASE 
+                 WHEN ci='-' THEN 'No disponible' 
+                 ELSE (SELECT "razonSocial" FROM clientes cl WHERE cl.nit = bj.ci LIMIT 1)
+             END AS cliente_razon_social, 
+             ci, 
+             "fechaBaja" AS "fecha", 
+             us."usuario", 
+             motivo as notas,
+             'Baja agencia' as "tipoMuestra",
+             bj."idAlmacen" as "idAgencia",
+             case when bj.estado=1 then 'VALIDO' else 'CANCELADO' end as estado
+      FROM bajas bj 
+      INNER JOIN usuarios us ON bj."idUsuario" = us."idUsuario"  
+      inner join baja_productos bp on bp."idBaja"=bj."idBaja"
+      inner join productos p on p."idProducto" =bp."idProducto" 
+      WHERE LOWER(motivo) LIKE '%muestra%' 
+      and to_date("fechaBaja", 'DD/MM/YYYY') between to_date('${startDate}', 'YYYY-MM-DD') and to_date('${endDate}', 'YYYY-MM-DD')
+      and bj."idAlmacen"='${idAgencia}' 
+  union 
+      select  pd."idPedido",
+      "codInterno",
+      		 "nombreProducto",
+      		pp."cantidadProducto" as "cantidad" ,
+          "razonSocial",
+          "nit", 
+          pd."fechaCrea" as "fecha", 
+          us.usuario, 
+          "notas", 
+          'Pedido' as "tipoMuestra",
+          us."idAlmacen" as "idAgencia",
+          case when pd.estado!='2' then 'VALIDO' else 'CANCELADO' end as estado
+  from pedidos pd inner join clientes cl on cl."idCliente" =pd."idCliente"  
+  inner join usuarios us on us."idUsuario" =pd."idUsuarioCrea" 
+  inner join pedido_producto pp on pp."idPedido"=pd."idPedido" 
+  inner join productos p on p."idProducto" =pp."idProducto" 
+  where tipo='muestra' and  to_date(pd."fechaCrea", 'DD/MM/YYYY') between to_date('${startDate}', 'YYYY-MM-DD') and to_date('${endDate}', 'YYYY-MM-DD')
+   and us."idAlmacen"='${idAgencia}'
+  ) subquery
+  ORDER BY TO_TIMESTAMP(subquery."fecha", 'DD/MM/YYYY HH24:MI:SS');
+  `;
+  console.log("Query muestras", totalQuery);
+  return new Promise(async (resolve, reject) => {
+    try {
+      const reportData = await client.query(totalQuery);
+      resolve(reportData.rows);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
 module.exports = {
   GeneralSalesReport,
   ProductsSalesReport,
@@ -709,4 +815,6 @@ module.exports = {
   SalesByDayReport,
   MonthlyGoalReport,
   GetRemainingGoal,
+  GetSamplesReport,
+  GetProductInSamplesReport,
 };

@@ -21,82 +21,96 @@ const {
   getAllProducts,
   updateProduct,
   getVirtualProductsWithStock,
+  getGroupedProducts,
+  registerProductGroup,
+  changeGroupStatus,
+  updateGroupProducts,
 } = require("../models/product_model");
 
 module.exports = {
   findProduct: (req, res) => {
     const productPromise = getProductsPos(req.query);
     var responseObject = {};
-    productPromise.then((productData) => {
-      productResponse = JSON.parse(productData);
+    productPromise
+      .then((productData) => {
+        productResponse = JSON.parse(productData);
 
-      if (productData.length > 0) {
-        responseObject.data = productResponse;
-        responseObject.message = "Producto Encontrado";
-        responseObject.code = 200;
-        res.status(responseObject.code).send(responseObject);
-      } else {
-        responseObject.data = [];
-        responseObject.message = "Producto no encontrado";
-        responseObject.code = 200;
-        res.status(responseObject.code).send(responseObject);
-      }
-    }).catch((err) => {
-      console.log(err);
-      res.status(500).send(err);
-    });;
+        if (productData.length > 0) {
+          responseObject.data = productResponse;
+          responseObject.message = "Producto Encontrado";
+          responseObject.code = 200;
+          res.status(responseObject.code).send(responseObject);
+        } else {
+          responseObject.data = [];
+          responseObject.message = "Producto no encontrado";
+          responseObject.code = 200;
+          res.status(responseObject.code).send(responseObject);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).send(err);
+      });
   },
   getAvailableProduct: (req, res) => {
     const products = getAvailableProductsPos(req.query.id);
     var responseObject = {};
-    products.then((productData) => {
-      productResponse = JSON.parse(productData);
+    products
+      .then((productData) => {
+        productResponse = JSON.parse(productData);
 
-      if (productResponse[0]) {
-        responseObject.data = productResponse;
-        responseObject.message = "Producto Encontrado";
-        responseObject.code = 200;
-        res.status(responseObject.code).send(responseObject);
-      } else {
-        responseObject.data = [];
-        responseObject.message = "Producto no encontrado";
-        responseObject.code = 200;
-        res.status(responseObject.code).send(responseObject);
-      }
-    }).catch((err) => {
-      console.log(err);
-      res.status(500).send(err);
-    });;
+        if (productResponse[0]) {
+          responseObject.data = productResponse;
+          responseObject.message = "Producto Encontrado";
+          responseObject.code = 200;
+          res.status(responseObject.code).send(responseObject);
+        } else {
+          responseObject.data = [];
+          responseObject.message = "Producto no encontrado";
+          responseObject.code = 200;
+          res.status(responseObject.code).send(responseObject);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).send(err);
+      });
   },
   numberOfProducts: (req, res) => {
     const number = getNumberOfProductsPos();
-    number.then((response) => {
-      var resp = JSON.parse(response);
-      res.status(resp.code).send(resp);
-    }).catch((err) => {
-      console.log(err);
-      res.status(500).send(err);
-    });;
+    number
+      .then((response) => {
+        var resp = JSON.parse(response);
+        res.status(resp.code).send(resp);
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).send(err);
+      });
   },
   productsWithStock: (req, res) => {
     const plist = getProductsWithStockPos(req.query);
-    plist.then((response) => {
-      var resp = JSON.parse(response);
-      res.status(200).send(resp);
-    }).catch((err) => {
-      console.log(err);
-      res.status(500).send(err);
-    });;
+    plist
+      .then((response) => {
+        var resp = JSON.parse(response);
+        res.status(200).send(resp);
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).send(err);
+      });
   },
   productsDiscount: (req, res) => {
     const pdisc = getProductsDiscountPos(req.query);
-    pdisc.then((response) => {
-      var resp = JSON.parse(response);
-      res.status(200).send(resp);
-    }).catch((err) => {
-      console.log(err);
-      res.status(500).send(err);
-    });;
+    pdisc
+      .then((response) => {
+        var resp = JSON.parse(response);
+        res.status(200).send(resp);
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).send(err);
+      });
   },
   createProduct: (req, res) => {
     const created = createProductPos(req.body);
@@ -162,6 +176,47 @@ module.exports = {
   getVirtualStock: async (req, res) => {
     try {
       const updated = await getVirtualProductsWithStock(req.query);
+      res.status(200).json(updated);
+    } catch (err) {
+      res
+        .status(500)
+        .json({ error: err || "An error occurred while fetching products." });
+    }
+  },
+  getGroupedProducts: async (req, res) => {
+    try {
+      const updated = await getGroupedProducts();
+      res.status(200).json(updated);
+    } catch (err) {
+      res
+        .status(500)
+        .json({ error: err || "An error occurred while fetching products." });
+    }
+  },
+  registerProductGroup: async (req, res) => {
+    try {
+      const updated = await registerProductGroup(req.body);
+      res.status(200).json(updated);
+    } catch (err) {
+      res
+        .status(500)
+        .json({ error: err || "An error occurred while fetching products." });
+    }
+  },
+  changeGroupStatus: async (req, res) => {
+    const { groupId, status } = req.query;
+    try {
+      const updated = await changeGroupStatus(groupId, status);
+      res.status(200).json(updated);
+    } catch (err) {
+      res
+        .status(500)
+        .json({ error: err || "An error occurred while fetching products." });
+    }
+  },
+  updateGroupProducts: async (req, res) => {
+    try {
+      const updated = await updateGroupProducts(req.body);
       res.status(200).json(updated);
     } catch (err) {
       res

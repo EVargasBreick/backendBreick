@@ -138,26 +138,6 @@ if (serverType === "web") {
         testLogging();
         setInterval(testLogging, 24 * 60 * 60 * 1000);
       }, millisTill4AM);
-
-      var millisTill1040AM =
-        new Date(
-          now.getFullYear(),
-          now.getMonth(),
-          now.getDate(),
-          10,
-          0o0,
-          0,
-          0
-        ) - now;
-      if (millisTill1040AM < 0) {
-        millisTill1040AM += 86400000; // it's after 10:40am, try 10:40am tomorrow.
-      }
-
-      setTimeout(function () {
-        //getInvoicesIncomplete();
-        logIncompleteSales();
-        setInterval(logIncompleteSales, 24 * 60 * 60 * 1000);
-      }, millisTill1040AM);
     }
     setupInterval();
   });

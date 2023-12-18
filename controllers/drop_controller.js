@@ -18,7 +18,6 @@ module.exports = {
   },
   cancelDrop: (req, res) => {
     const { idBaja, idUsuario, productos } = req.body;
-    consosle.log("Test");
     const rej = cancelDrop(idBaja, idUsuario, productos);
     rej
       .then((id) => {

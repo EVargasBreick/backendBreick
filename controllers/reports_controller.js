@@ -23,6 +23,8 @@ const {
   SalesByDayReport,
   MonthlyGoalReport,
   GetRemainingGoal,
+  GetSamplesReport,
+  GetProductInSamplesReport,
 } = require("../models/reports_model.js");
 app.use(session(sessionParams));
 
@@ -238,6 +240,36 @@ module.exports = {
       const repData = await GetRemainingGoal(fecha, idUsuario);
       res.status(200).json(repData);
     } catch (err) {
+      res
+        .status(500)
+        .json({ error: err || "An error occurred while fetching reports." });
+    }
+  },
+  samplesReport: async (req, res) => {
+    console.log("ENTRANDO ACA", req.query);
+    const { startDate, endDate, idAgencia } = req.query;
+    try {
+      const repData = await GetSamplesReport(startDate, endDate, idAgencia);
+      res.status(200).json(repData);
+    } catch (err) {
+      console.log("Error al obtener el reporte", err);
+      res
+        .status(500)
+        .json({ error: err || "An error occurred while fetching reports." });
+    }
+  },
+  samplesProdReport: async (req, res) => {
+    console.log("ENTRANDO ACA", req.query);
+    const { startDate, endDate, idAgencia } = req.query;
+    try {
+      const repData = await GetProductInSamplesReport(
+        startDate,
+        endDate,
+        idAgencia
+      );
+      res.status(200).json(repData);
+    } catch (err) {
+      console.log("Error al obtener el reporte", err);
       res
         .status(500)
         .json({ error: err || "An error occurred while fetching reports." });

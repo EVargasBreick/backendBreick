@@ -447,6 +447,80 @@ function getVirtualProductsWithStock(params) {
   });
 }
 
+function getGroupedProducts() {
+  const prodQuery = `select gr.*, gp.*, pr."codInterno", pr."nombreProducto",pr."precioDeFabrica" from grupos gr inner join grupo_productos gp on gp."idGrupo"=gr."idGrupo" inner join productos pr on pr."idProducto"=gp."idProducto" order by cast(gr."idGrupo" as int) asc`;
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      try {
+        const products = await client.query(prodQuery);
+        resolve(products.rows);
+      } catch (err) {
+        reject(err);
+      }
+    }, 1000);
+  });
+}
+
+async function registerProductGroup(body) {
+  const detail = body.detalles;
+  const products = body.productos;
+  try {
+    await client.query("BEGIN");
+    const queryDetail = `insert into grupos (descripcion, precio, activo) values ('${detail.descripcion}',${detail.precio},1) returning "idGrupo"`;
+    const addedGroup = await client.query(queryDetail);
+    const newId = addedGroup.rows[0].idGrupo;
+    const prodArray = [];
+    for (const product of products) {
+      const queryProd = `insert into grupo_productos ("idGrupo","idProducto") values (${newId},${product.idProducto})`;
+      const addedGroup = await client.query(queryProd);
+      prodArray.push(addedGroup);
+    }
+    client.query("COMMIT");
+    return prodArray;
+  } catch (err) {
+    await client.query("ROLLBACK");
+    throw new Error(err);
+  }
+}
+
+async function changeGroupStatus(groupId, status) {
+  const query = `update grupos set activo=${status} where "idGrupo"=${groupId}`;
+  try {
+    const changed = await client.query(query);
+    return changed;
+  } catch (err) {
+    throw new Error(err);
+  }
+}
+
+async function updateGroupProducts(body) {
+  const original = body.original;
+  const nuevo = body.nuevo;
+  const removed = original.filter(
+    (item) => !nuevo.some((newItem) => newItem.idProducto === item.idProducto)
+  );
+  const added = nuevo.filter(
+    (item) =>
+      !original.some((oldItem) => oldItem.idProducto === item.idProducto)
+  );
+  try {
+    await client.query("BEGIN");
+    for (const item of removed) {
+      const queryRemove = `delete from grupo_productos where "idGrupo"=${item.idGrupo} and "idProducto"=${item.idProducto}`;
+      await client.query(queryRemove);
+    }
+    for (const item of added) {
+      const queryAdd = `insert into grupo_productos ("idGrupo", "idProducto") values (${item.idGrupo},${item.idProducto})`;
+      await client.query(queryAdd);
+    }
+    client.query("COMMIT");
+    return true;
+  } catch (err) {
+    client.query("ROLLBACK");
+    throw new Error(err);
+  }
+}
+
 module.exports = {
   getProducts,
   getNumberOfProducts,
@@ -469,4 +543,8 @@ module.exports = {
   getProdTypesPos,
   updateProduct,
   getVirtualProductsWithStock,
+  getGroupedProducts,
+  registerProductGroup,
+  changeGroupStatus,
+  updateGroupProducts,
 };

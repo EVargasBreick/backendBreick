@@ -15,4 +15,8 @@ router.get("/productos/origen", controller.getProdOrigin);
 router.get("/productos/all", controller.geAllProducts);
 router.put("/productos/editar/:id", controller.updateProduct);
 router.get("/productos/stock/virtual", controller.getVirtualStock);
+router.get("/productos/grupos", controller.getGroupedProducts);
+router.post("/productos/grupos", controller.registerProductGroup);
+router.put("/grupo/status", controller.changeGroupStatus);
+router.put("/productos/grupos/editar", controller.updateGroupProducts);
 module.exports = router;

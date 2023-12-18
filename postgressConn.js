@@ -14,7 +14,7 @@ console.log("Client", client);
 try {
   client.connect();
 } catch (err) {
-  console.log("Erroooor", err);
+  console.log("Error", err);
 }
 
 module.exports = { client };

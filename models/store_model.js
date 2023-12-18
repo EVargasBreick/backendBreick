@@ -280,6 +280,7 @@ function getUserStockPos(params) {
 }
 
 async function updateProductStockPos(body) {
+  console.log("BODY", body);
   if (body.productos.length > 0) {
     const TiposStock = Object.freeze({
       AGENCIA: {

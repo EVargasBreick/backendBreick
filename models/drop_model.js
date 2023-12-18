@@ -79,6 +79,8 @@ function createDropPos(body) {
 async function cancelDrop(dropId, userId, products) {
   try {
     const canceledQuery = `update bajas set estado=0, usuariocancel=$1 where "idBaja"=$2`;
+    console.log("Cancel query", canceledQuery);
+    console.log("Productos", products);
     await client.query("BEGIN");
     const canceled = client.query(canceledQuery, [userId, dropId]);
     const stockReturned = await transactionOfUpdateStocks([products]);

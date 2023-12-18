@@ -308,7 +308,6 @@ function createTransferPos(body) {
   const dateResult = dateString();
   console.log("body del traspaso", body);
   const { listo } = body;
-  console.log("TCL: createTransferPos -> listo", listo);
   const movil = body.movil ? body.movil : 0;
   const imp = body.impreso != undefined ? body.impreso : 0;
   var queryTransfer = `insert into Traspasos ("fechaCrea", "fechaActu", "idOrigen", "idDestino", "idUsuario", estado, movil, listo, impreso, transito)

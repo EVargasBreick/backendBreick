@@ -340,7 +340,7 @@ async function getStockGrupos() {
 }
 
 async function getStockGrupoProductos() {
-  const query = `select * from grupo_productos gp`;
+  const query = `select gp.* from grupo_productos gp inner join grupos gr on gr."idGrupo"=gp."idGrupo" where gr.activo=1`;
   try {
     const data = await client.query(query);
     return data.rows;
@@ -365,5 +365,5 @@ module.exports = {
   getStockCodes,
   getStockLogged,
   getStockGrupos,
-  getStockGrupoProductos
+  getStockGrupoProductos,
 };
