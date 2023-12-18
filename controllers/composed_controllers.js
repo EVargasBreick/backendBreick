@@ -6,12 +6,13 @@ const { registerSalePos } = require("../models/sale_modal");
 const {
   updateProductStockPos,
   updateLogStockDetails,
+  transactionOfUpdateStocks
 } = require("../models/store_model");
 const {
   postFactura: postFacture,
   getEstadoFactura,
 } = require("../models/emizor_model");
-const { updateVirtualStock } = require("../models/order_model");
+const { updateVirtualStock, registerOrderPos } = require("../models/order_model");
 const logger = require("../logger-pino");
 const { client } = require("../postgressConn");
 const { createTransferPos } = require("../models/transfer_model");
@@ -61,6 +62,18 @@ module.exports = {
       })
       .catch((error) => {
         console.log("ERROR AL CREAR EL TRASPASO", error);
+        res.status(500).send(error);
+      });
+  },
+  composedOrderProcess: (req, res) => {
+    const orderCreated = composedOrderProcess(req.body);
+    orderCreated
+      .then((order) => {
+        console.log("DATOS DE ORDEN ", order);
+        res.status(200).send(order);
+      })
+      .catch((error) => {
+        console.log("ERROR AL CREAR LA ORDEN", error);
         res.status(500).send(error);
       });
   },
@@ -1056,5 +1069,38 @@ async function composedTransferProcess(body) {
     console.log("HAY UN ERROR EN EL TRASPASO", error);
     await client.query("ROLLBACK");
     return error;
+  }
+}
+
+async function composedOrderProcess(body) {
+  console.log("ENTRA ACA EN EL NUEVO PROCESO", body);
+  const { objOrder, products, userStore } = body;
+  try {
+    await client.query("BEGIN");
+    const regiteredOrder = await registerOrderPos(objOrder);
+    console.log("TRANSFER CREATED", JSON.parse(regiteredOrder));
+    const idCreado = JSON.parse(regiteredOrder).data.idCreado;
+    console.log("ID CREADO", idCreado);
+    const stockBody = {
+      accion: "take",
+      idAlmacen: userStore,
+      productos: products,
+      detalle: `SPNPD-${idCreado}`,
+    };
+    const updatedStock = await updateProductStockPos(stockBody);
+
+    console.log("Traspaso AKI", updatedStock);
+    if (!updatedStock.code == 200) {
+      await client.query("ROLLBACK");
+      throw new Error(updatedStock.error);
+    }
+
+    console.log("Devolviendo esto", idCreado);
+    await client.query("COMMIT");
+    return { idCreado };
+  } catch (error) {
+    console.log("HAY UN ERROR EN EL ORDER", error);
+    await client.query("ROLLBACK");
+    throw new Error(error);
   }
 }
