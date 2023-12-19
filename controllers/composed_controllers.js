@@ -1135,18 +1135,21 @@ async function composedOrderProcess(body) {
     };
     const updatedStock = await updateProductStockPos(stockBody);
 
-    console.log("Traspaso AKI", updatedStock);
-    if (!updatedStock.code == 200) {
+    console.log("Traspaso AKI", updatedStock, updatedStock.code);
+    if (updatedStock.code == 200) {
+      console.log("Devolviendo esto", idCreado);
+      await client.query("COMMIT");
+      return { idCreado };
+    } else {
+      console.log("Error al crear por stock", JSON.stringify(updatedStock));
       await client.query("ROLLBACK");
-      throw new Error(updatedStock.error);
+      return Promise.reject(updatedStock.error);
     }
 
-    console.log("Devolviendo esto", idCreado);
-    await client.query("COMMIT");
-    return { idCreado };
+
   } catch (error) {
     console.log("HAY UN ERROR EN EL ORDER", error);
     await client.query("ROLLBACK");
-    throw new Error(error);
+    return Promise.reject(error);
   }
 }
