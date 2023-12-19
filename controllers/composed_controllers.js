@@ -15,6 +15,7 @@ const { updateVirtualStock } = require("../models/order_model");
 const logger = require("../logger-pino");
 const { client } = require("../postgressConn");
 const { createTransferPos } = require("../models/transfer_model");
+const { createDropPos } = require("../models/drop_model");
 const app = express();
 
 app.use(session(sessionParams));
@@ -60,8 +61,21 @@ module.exports = {
         res.status(200).send(transfer);
       })
       .catch((error) => {
-        console.log("ERROR AL CREAR EL TRASPASO", error);
-        res.status(500).send(error);
+        console.log("Error al crear traspaso en compuesto", error);
+        res.status(500).json(error);
+      });
+  },
+  composeDropProcess: (req, res) => {
+    const dropCreated = composedDropProcess(req.body);
+    dropCreated
+      .then((drop) => {
+        console.log("DATOS DE LA BAJA EN COMPUESTO", drop);
+        res.status(200).send(drop);
+      })
+      .catch((error) => {
+        const message = error.split("Error");
+        console.log("ERROR AL CREAR LA BAJA", message);
+        res.status(500).send({ data: JSON.stringify(error) });
       });
   },
 };
@@ -1031,30 +1045,62 @@ async function registerOnlineSale(saleBody, invoiceBody) {
 async function composedTransferProcess(body) {
   console.log("ENTRA ACA EN EL NUEVO PROCESO", body.stock);
   const objStock = body.stock;
+  return new Promise(async (resolve, reject) => {
+    try {
+      await client.query("BEGIN");
+      const transferCreated = await createTransferPos(body.traspaso);
+      console.log("TRANSFER CREATED", JSON.parse(transferCreated));
+      const idCreado = JSON.parse(transferCreated).data.idCreado;
+      console.log("ID CREADO", idCreado);
+      const stockBody = {
+        accion: objStock.accion,
+        idAlmacen: objStock.idAlmacen,
+        productos: objStock.productos,
+        detalle: `SSNTR-${idCreado}`,
+      };
+      const updatedStock = await updateProductStockPos(stockBody);
+      console.log("Traspaso AKI", updatedStock);
+      if (updatedStock.code == 200) {
+        console.log("Devolviendo esto", idCreado);
+        resolve({ data: { idCreado } });
+      } else {
+        console.log("Error al crear por stock", JSON.stringify(updatedStock));
+        await client.query("ROLLBACK");
+        reject(updatedStock);
+      }
+    } catch (error) {
+      console.log("HAY UN ERROR EN EL TRASPASO", error);
+      await client.query("ROLLBACK");
+      reject(error);
+    }
+  });
+}
+
+async function composedDropProcess(body) {
+  const objStock = body.stock;
   try {
     await client.query("BEGIN");
-    const transferCreated = await createTransferPos(body.traspaso);
-    console.log("TRANSFER CREATED", JSON.parse(transferCreated));
-    const idCreado = JSON.parse(transferCreated).data.idCreado;
-    console.log("ID CREADO", idCreado);
+    const dropCreated = await createDropPos(body.baja);
+    console.log("BAJA CREADA", dropCreated);
+    const idCreado = dropCreated.id;
     const stockBody = {
       accion: objStock.accion,
       idAlmacen: objStock.idAlmacen,
       productos: objStock.productos,
-      detalle: `SSNTR-${idCreado}`,
+      detalle: `SPRBJ-${idCreado}`,
     };
     const updatedStock = await updateProductStockPos(stockBody);
-    console.log("Traspaso AKI", updatedStock);
     if (updatedStock.code == 200) {
       console.log("Devolviendo esto", idCreado);
-      return { data: { idCreado } };
+      return { idCreado };
     } else {
+      console.log("Updated stock error", updatedStock?.error);
       await client.query("ROLLBACK");
-      throw new Error(updatedStock.error);
+      return Promise.reject(updatedStock.error);
     }
   } catch (error) {
-    console.log("HAY UN ERROR EN EL TRASPASO", error);
+    console.log("HAY UN ERROR EN LA BAJA", error);
     await client.query("ROLLBACK");
-    return error;
+    return Promise.reject(error);
   }
 }
