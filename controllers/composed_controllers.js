@@ -1135,7 +1135,6 @@ async function composedOrderProcess(body) {
     };
     const updatedStock = await updateProductStockPos(stockBody);
 
-    console.log("Traspaso AKI", updatedStock);
     if (!updatedStock.code == 200) {
       await client.query("ROLLBACK");
       throw new Error(updatedStock.error);
