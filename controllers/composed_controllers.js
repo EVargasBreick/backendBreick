@@ -6,13 +6,16 @@ const { registerSalePos } = require("../models/sale_modal");
 const {
   updateProductStockPos,
   updateLogStockDetails,
-  transactionOfUpdateStocks
+  transactionOfUpdateStocks,
 } = require("../models/store_model");
 const {
   postFactura: postFacture,
   getEstadoFactura,
 } = require("../models/emizor_model");
-const { updateVirtualStock, registerOrderPos } = require("../models/order_model");
+const {
+  updateVirtualStock,
+  registerOrderPos,
+} = require("../models/order_model");
 const logger = require("../logger-pino");
 const { client } = require("../postgressConn");
 const { createTransferPos } = require("../models/transfer_model");
@@ -1135,17 +1138,19 @@ async function composedOrderProcess(body) {
     };
     const updatedStock = await updateProductStockPos(stockBody);
 
-    if (!updatedStock.code == 200) {
+    console.log("Traspaso AKI", updatedStock, updatedStock.code);
+    if (updatedStock.code == 200) {
+      console.log("Devolviendo esto", idCreado);
+      await client.query("COMMIT");
+      return { idCreado };
+    } else {
+      console.log("Error al crear por stock", JSON.stringify(updatedStock));
       await client.query("ROLLBACK");
-      throw new Error(updatedStock.error);
+      return Promise.reject(updatedStock.error);
     }
-
-    console.log("Devolviendo esto", idCreado);
-    await client.query("COMMIT");
-    return { idCreado };
   } catch (error) {
     console.log("HAY UN ERROR EN EL ORDER", error);
     await client.query("ROLLBACK");
-    throw new Error(error);
+    return Promise.reject(error);
   }
 }
