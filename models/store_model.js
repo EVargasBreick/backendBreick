@@ -245,7 +245,7 @@ where sc.idString='${params.idAlmacen}'
 //POSTGRES
 
 function getStoresPos() {
-  let storeQuery = `select "idAgencia" || ' ' || nombre as "Nombre", "idAgencia" from Agencias union select placa as Nombre, placa  from Vehiculos union select "idBodega" || ' ' || nombre as "Nombre", "idBodega" from Bodegas order by "Nombre" desc`;
+  let storeQuery = `select "idAgencia" || ' ' || nombre as "Nombre", "idAgencia" from Agencias union select placa as Nombre, placa  from Vehiculos where activo=1 union select "idBodega" || ' ' || nombre as "Nombre", "idBodega" from Bodegas order by "Nombre" desc`;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       const stores = await client.query(storeQuery);

@@ -32,4 +32,6 @@ router.post(
   "/stock/virtual/actualizar/multiple",
   controller.updateMultipleVirtual
 );
+router.get("/listar/pedidos/usuario", controller.userOrders);
+router.post("/pedidos/edicion/log", controller.logOrderUpdate);
 module.exports = router;

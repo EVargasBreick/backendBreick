@@ -1123,7 +1123,7 @@ async function composedDropProcess(body) {
 
 async function composedOrderProcess(body) {
   console.log("ENTRA ACA EN EL NUEVO PROCESO", body);
-  const { objOrder, products, userStore } = body;
+  const { objOrder, userStore } = body;
   try {
     await client.query("BEGIN");
     const regiteredOrder = await registerOrderPos(objOrder);
@@ -1133,7 +1133,41 @@ async function composedOrderProcess(body) {
     const stockBody = {
       accion: "take",
       idAlmacen: userStore,
-      productos: products,
+      productos: objOrder.productos,
+      detalle: `SPNPD-${idCreado}`,
+    };
+    const updatedStock = await updateProductStockPos(stockBody);
+
+    console.log("Traspaso AKI", updatedStock, updatedStock.code);
+    if (updatedStock.code == 200) {
+      console.log("Devolviendo esto", idCreado);
+      await client.query("COMMIT");
+      return { idCreado };
+    } else {
+      console.log("Error al crear por stock", JSON.stringify(updatedStock));
+      await client.query("ROLLBACK");
+      return Promise.reject(updatedStock.error);
+    }
+  } catch (error) {
+    console.log("HAY UN ERROR EN EL ORDER", error);
+    await client.query("ROLLBACK");
+    return Promise.reject(error);
+  }
+}
+
+async function composedInvoiceCancelation(body) {
+  console.log("ENTRA ACA EN EL NUEVO PROCESO", body);
+  const { objOrder, userStore } = body;
+  try {
+    await client.query("BEGIN");
+    const regiteredOrder = await registerOrderPos(objOrder);
+    console.log("TRANSFER CREATED", JSON.parse(regiteredOrder));
+    const idCreado = JSON.parse(regiteredOrder).data.idCreado;
+    console.log("ID CREADO", idCreado);
+    const stockBody = {
+      accion: "take",
+      idAlmacen: userStore,
+      productos: objOrder.productos,
       detalle: `SPNPD-${idCreado}`,
     };
     const updatedStock = await updateProductStockPos(stockBody);
