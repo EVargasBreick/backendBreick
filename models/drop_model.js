@@ -83,7 +83,7 @@ async function cancelDrop(dropId, userId, products) {
     console.log("Productos", products);
     await client.query("BEGIN");
     const canceled = client.query(canceledQuery, [userId, dropId]);
-    const stockReturned = await transactionOfUpdateStocks([products]);
+    const stockReturned = await transactionOfUpdateStocks([products], true);
     await client.query("COMMIT");
     return { canceled, stockReturned };
   } catch (err) {

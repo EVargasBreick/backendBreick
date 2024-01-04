@@ -244,7 +244,7 @@ function initializeStockPos(body) {
   });
 }
 
-function logProductEntry(body) {
+async function logProductEntry(body) {
   const entryQuery = `insert into ingresos ("idUsuarioCrea", "fechaCrea") values (${body.idUsuarioCrea}, '${body.fechaCrea}') returning "idIngreso"`;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {

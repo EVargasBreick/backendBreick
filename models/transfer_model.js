@@ -475,7 +475,7 @@ async function updateTransferPos(body) {
     ]);
 
     if (stock) {
-      const updateProducts = await transactionOfUpdateStocks([stock]);
+      const updateProducts = await transactionOfUpdateStocks([stock], true);
 
       if (updateProducts.code !== 200) {
         throw updateProducts.response;

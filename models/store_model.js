@@ -279,7 +279,7 @@ function getUserStockPos(params) {
   });
 }
 
-async function updateProductStockPos(body) {
+async function updateProductStockPos(body, isTransaction) {
   console.log("BODY", body);
   if (body.productos.length > 0) {
     const TiposStock = Object.freeze({
@@ -326,7 +326,7 @@ async function updateProductStockPos(body) {
     }
 
     try {
-      await client.query("BEGIN");
+      !isTransaction && (await client.query("BEGIN"));
       const resultArray = await Promise.all(
         queries.map((q) => client.query(q))
       );
@@ -341,13 +341,13 @@ async function updateProductStockPos(body) {
         arrayIds.push(filt.rows[0].idStockChange);
       }
       console.log("Array ids", arrayIds);
-      await client.query("COMMIT");
+      !isTransaction && (await client.query("COMMIT"));
       return {
         data: arrayIds,
         code: 200,
       };
     } catch (err) {
-      await client.query("ROLLBACK");
+      !isTransaction && (await client.query("ROLLBACK"));
       console.log("error", err);
       return {
         error: err.message || err,
@@ -539,9 +539,9 @@ function getAllStores() {
   });
 }
 
-async function transactionOfUpdateStocks(bodies) {
+async function transactionOfUpdateStocks(bodies, isTransaction) {
   try {
-    await client.query("BEGIN");
+    !isTransaction && (await client.query("BEGIN"));
     const results = [];
     for (const body of bodies) {
       console.log("Body", body);
@@ -598,13 +598,13 @@ async function transactionOfUpdateStocks(bodies) {
 
       results.push(body);
     }
-    await client.query("COMMIT");
+    !isTransaction && (await client.query("COMMIT"));
     return {
       data: results,
       code: 200,
     };
   } catch (err) {
-    await client.query("ROLLBACK");
+    !isTransaction && (await client.query("ROLLBACK"));
     console.log("error", err);
     // reject(err);
     return {
