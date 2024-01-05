@@ -1,4 +1,4 @@
-const { Client } = require("pg");
+const { Client, Pool } = require("pg");
 const database =
   process.env.TYPE == "local"
     ? process.env.POSTGRES_DATABASE_TEST
@@ -10,11 +10,21 @@ const client = new Client({
   password: process.env.POSTGRES_PASS,
   database: database,
 });
-console.log("Client", client);
+
+const pool = new Pool({
+  host: process.env.POSTGRES_SERVER,
+  user: process.env.POSTGRES_USER,
+  port: process.env.POSTGRES_PORT,
+  password: process.env.POSTGRES_PASS,
+  database: database,
+  max: 400,
+})
+
 try {
+  console.log("Client", client);
   client.connect();
 } catch (err) {
   console.log("Error", err);
 }
 
-module.exports = { client };
+module.exports = { client, pool };

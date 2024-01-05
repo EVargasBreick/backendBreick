@@ -17,13 +17,14 @@ const logger = require("../logger-pino");
 const { client } = require("../postgressConn");
 const { createTransferPos } = require("../models/transfer_model");
 const { createDropPos } = require("../models/drop_model");
+const { createInvoiceAltPlus } = require("../models/invoice_model");
 const app = express();
 
 app.use(session(sessionParams));
 
 module.exports = {
   invoiceProcess: (req, res) => {
-    const createdInvoice = createInvoice(req.body, req);
+    const createdInvoice = createInvoiceAltPlus(req.body, req);
     createdInvoice
       .then((invoice) => {
         res.status(200).send(invoice);
