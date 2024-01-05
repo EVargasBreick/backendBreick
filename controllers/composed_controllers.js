@@ -1117,9 +1117,11 @@ async function composedTransferProcess(body) {
         detalle: `SSNTR-${idCreado}`,
       };
       const updatedStock = await updateProductStockPos(stockBody, true);
+
       console.log("Traspaso AKI", updatedStock);
       if (updatedStock.code == 200) {
         console.log("Devolviendo esto", idCreado);
+        await client.query("COMMIT");
         resolve({ data: { idCreado } });
       } else {
         console.log("Error al crear por stock", JSON.stringify(updatedStock));
