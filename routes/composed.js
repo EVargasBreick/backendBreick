@@ -9,5 +9,7 @@ router.post("/online/facturar", controller.onlineInvoiceProcess);
 router.post("/compuesto/traspaso", controller.composeTransferProcess);
 router.post("/compuesto/order", controller.composedOrderProcess);
 router.post("/compuesto/baja", controller.composeDropProcess);
-
+router.put("/compuesto/pedido/cancelar", controller.composedCancelOrderProcess);
+router.put("/compuesto/ingreso/productos", controller.composedProductEntry);
+router.put("/compuesto/traspaso/aceptar", controller.composedAcceptTramsfer);
 module.exports = router;

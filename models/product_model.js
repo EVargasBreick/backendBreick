@@ -264,15 +264,15 @@ function getAvailableProductsPos(id) {
   var queryProds = `select a.*, b."idBodega", b."cant_Actual" ,c."idUsuario" from Productos a 
   inner join Stock_Bodega b on a."idProducto"=b."idProducto"
   inner join Usuarios c on c."idAlmacen"=b."idBodega"
-  where c."idUsuario"=${id} and b."cant_Actual">=0 union
+  where c."idUsuario"=${id} and b."cant_Actual">=0 and a.activo=1 union
   select a.*, b."idAgencia", b."cant_Actual" ,c."idUsuario" from Productos a 
   inner join Stock_Agencia b on a."idProducto"=b."idProducto"
   inner join Usuarios c on c."idAlmacen"=b."idAgencia"
-  where c."idUsuario"=${id} and b."cant_Actual">=0  union
+  where c."idUsuario"=${id} and b."cant_Actual">=0 and a.activo=1 union
   select a.*, b."idAgencia", b."cant_Actual" ,c."idUsuario" from Productos a 
   inner join Stock_Agencia b on a."idProducto"=b."idProducto"
   inner join Usuarios c on c."idAlmacen"=b."idAgencia"
-  where c."idUsuario"=${id} and b."cant_Actual">=0 order by "codInterno" `;
+  where c."idUsuario"=${id} and b."cant_Actual">=0 and a.activo=1 order by "codInterno" `;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       const products = await client.query(queryProds);
@@ -398,7 +398,7 @@ function getProdOriginPos() {
 }
 
 async function getAllProducts() {
-  const query = `select * from Productos`;
+  const query = `select * from Productos where activo=1`;
   try {
     const ids = await client.query(query);
     return ids.rows;

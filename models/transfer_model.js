@@ -330,6 +330,7 @@ function createTransferPos(body) {
           setTimeout(async () => {
             try {
               const addedProd = await client.query(queryProds);
+
               resolve(
                 JSON.stringify({
                   code: 201,
@@ -340,6 +341,14 @@ function createTransferPos(body) {
                 })
               );
             } catch (err) {
+              reject(
+                JSON.stringify({
+                  code: 400,
+                  data: "Error",
+                  message: "Productos: " + err,
+                })
+              );
+              /*
               const del = await client.query(
                 `delete from Pedidos where "idPedido"=${idCreado}`
               );
@@ -355,7 +364,7 @@ function createTransferPos(body) {
                 })
                 .catch((err) => {
                   throw err;
-                });
+                });*/
             }
           }, 100);
         });
@@ -475,7 +484,7 @@ async function updateTransferPos(body) {
     ]);
 
     if (stock) {
-      const updateProducts = await transactionOfUpdateStocks([stock]);
+      const updateProducts = await transactionOfUpdateStocks([stock], true);
 
       if (updateProducts.code !== 200) {
         throw updateProducts.response;
@@ -576,7 +585,6 @@ function addProductToTransferPos(body) {
 }
 
 function deleteProductFromTransferPos(params) {
-  console.log("Parameters", params.body);
   const body = JSON.parse(params.body);
   console.log("Llego hasta aca, model", body);
   return new Promise((resolve, reject) => {
@@ -600,6 +608,7 @@ function deleteProductFromTransferPos(params) {
 }
 
 function updateProductInTransferPos(body) {
+  console.log("Body", body);
   return new Promise((resolve, reject) => {
     body.productos.map((pr) => {
       setTimeout(async () => {

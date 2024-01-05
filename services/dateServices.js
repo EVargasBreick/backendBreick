@@ -1,18 +1,27 @@
 function dateString() {
   var d = new Date();
-  const dformat =
-    [
-      d.getDate() < 10 ? "0" + d.getDate() : d.getDate(),
-      d.getMonth() + 1 < 10 ? "0" + (d.getMonth() + 1) : d.getMonth() + 1,
-      d.getFullYear(),
-    ].join("/") +
+  // Adjusting for the timezone offset (assuming 4 hours in this case)
+  d.setHours(d.getHours() - 4);
+
+  // Check if adjusted hour is negative and adjust date accordingly
+  if (d.getHours() < 0) {
+    d.setDate(d.getDate() - 1);
+  }
+
+  // Function to add leading zeros
+  function pad(number) {
+    if (number < 10) {
+      return "0" + number;
+    }
+    return number;
+  }
+
+  var dformat =
+    [pad(d.getDate()), pad(d.getMonth() + 1), d.getFullYear()].join("/") +
     " " +
-    [
-      d.getHours() < 10 ? "0" + d.getHours() : d.getHours(),
-      d.getMinutes() < 10 ? "0" + d.getMinutes() : d.getMinutes(),
-      d.getSeconds() < 10 ? "0" + d.getSeconds() : d.getSeconds(),
-    ].join(":");
-  console.log("Hora enviada", dformat);
+    [pad(d.getHours()), pad(d.getMinutes()), pad(d.getSeconds())].join(":");
+
+  console.log(dformat);
   return dformat;
 }
 

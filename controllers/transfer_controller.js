@@ -1,3 +1,4 @@
+const { transactionOfUpdateStocks } = require("../models/store_model.js");
 const {
   createTransfer,
   getTransferList,
@@ -27,6 +28,7 @@ const {
   acceptTransferPos,
   deleteTransferData,
 } = require("../models/transfer_model.js");
+const { client } = require("../postgressConn.js");
 
 module.exports = {
   createTransfer: (req, res) => {
@@ -53,12 +55,13 @@ module.exports = {
   },
   updateTransfer: (req, res) => {
     const update = updateTransferPos(req.body);
-    update.then((resp) => {
-      res.status(200).send(resp);
-    }).catch((error) => {
-      res.status(400).send(error);
-    }
-    );
+    update
+      .then((resp) => {
+        res.status(200).send(resp);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
   },
   transferPrinted: (req, res) => {
     const update = printTransferPos(req.query);
@@ -161,4 +164,37 @@ module.exports = {
         res.status(400).send(error);
       });
   },
+  composedEdit: (req, res) => {
+    const changed = composedEditTransfer(req.body);
+    changed
+      .then((list) => {
+        res.status(200).send(list);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
 };
+
+async function composedEditTransfer(body) {
+  console.log("Body body", body);
+  const { addProduct, deleteProduct, updateProduct, editTransfer, stock } =
+    body;
+  try {
+    await client.query("BEGIN");
+    const stockChanged = transactionOfUpdateStocks(stock, true);
+    console.log("Stock updateado", stockChanged);
+    await addProductToTransferPos(addProduct);
+    await deleteProductFromTransferPos({
+      body: JSON.stringify(deleteProduct),
+    });
+    await updateProductInTransferPos(updateProduct);
+    const updated = await updateChangedTransferPos(editTransfer);
+    await client.query("COMMIT");
+    return updated;
+  } catch (error) {
+    console.log("Error en la edicion compuesta", error);
+    client.query("ROLLBACK");
+    return new Promise.reject(error);
+  }
+}

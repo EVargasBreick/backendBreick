@@ -1,5 +1,6 @@
 const { client } = require("../postgressConn");
 const dbConnection = require("../server");
+const dateString = require("../services/dateServices");
 
 function registerOrder(data) {
   console.log("Pedido", data);
@@ -19,7 +20,8 @@ function registerOrder(data) {
         notas,
         facturado,
         impreso,
-        listo
+        listo,
+        fecha_edicion
     ) values (
         ${data.pedido.idUsuarioCrea},
         ${data.pedido.idCliente},
@@ -34,7 +36,8 @@ function registerOrder(data) {
         '${data.pedido.notas}',
         0,
         ${imp},
-        0
+        0,
+        '-'
     )`;
   console.log("Creacion pedido query", query);
   return new Promise((resolve, reject) => {
@@ -160,12 +163,9 @@ function getUserOrderList(params) {
 }
 
 function approveOrder(params) {
-  var d = new Date(),
-    dformat =
-      [d.getMonth() + 1, d.getDate(), d.getFullYear()].join("/") +
-      " " +
-      [d.getHours(), d.getMinutes(), d.getSeconds()].join(":");
-  var queryUpdate = `update Pedidos set estado=1, fechaActualizacion='${dformat}' where idPedido=${params.id}`;
+  var queryUpdate = `update Pedidos set estado=1, fechaActualizacion='${dateString()}' where idPedido=${
+    params.id
+  }`;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       const approved = await dbConnection.executeQuery(queryUpdate);
@@ -255,13 +255,8 @@ function deleteOrder(id) {
 }
 
 function cancelOrder(id) {
-  var d = new Date(),
-    dformat =
-      [d.getMonth() + 1, d.getDate(), d.getFullYear()].join("/") +
-      " " +
-      [d.getHours(), d.getMinutes(), d.getSeconds()].join(":");
   console.log("Pedido a cancelar desde el back", id);
-  var queryCancelOrder = `update Pedidos set estado=2, fechaActualizacion='${dformat}' where idPedido=${id}`;
+  var queryCancelOrder = `update Pedidos set estado=2, fechaActualizacion='${dateString()}' where idPedido=${id}`;
   return new Promise((resolve) => {
     setTimeout(async () => {
       const prodList = await dbConnection.executeQuery(queryCancelOrder);
@@ -376,12 +371,15 @@ function updateProductOrder(body) {
 function updateOrder(body) {
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
-      var d = new Date(),
-        dformat =
-          [d.getMonth() + 1, d.getDate(), d.getFullYear()].join("/") +
-          " " +
-          [d.getHours(), d.getMinutes(), d.getSeconds()].join(":");
-      var queryUpdate = `Update Pedidos set montoFacturar=${body.montoFacturar}, montoTotal=${body.montoTotal}, fechaActualizacion='${dformat}', descuento=${body.descuento}, descuentoCalculado=${body.descCalculado}, listo=${body.listo}, impreso=${body.impreso} where idPedido=${body.idPedido}`;
+      var queryUpdate = `Update Pedidos set montoFacturar=${
+        body.montoFacturar
+      }, montoTotal=${
+        body.montoTotal
+      }, fecha_edicion='${dateString()}', descuento=${
+        body.descuento
+      }, descuentoCalculado=${body.descCalculado}, listo=${
+        body.listo
+      }, impreso=${body.impreso} where idPedido=${body.idPedido}`;
       console.log("Query ACTUALIZAR", queryUpdate);
       const updatedOrder = await dbConnection.executeQuery(queryUpdate);
       if (updatedOrder.success) {
@@ -611,6 +609,7 @@ function changeReady(params) {
 //CONECTANDOSE A LA BASE DE DATOS DE POSTGRESS
 
 async function registerOrderPos(data) {
+  console.log("DATA ENTRANTE", data);
   try {
     const imp = data.pedido.impreso !== undefined ? data.pedido.impreso : 0;
     console.log("Notas", data.pedido.notas);
@@ -630,9 +629,10 @@ async function registerOrderPos(data) {
         notas,
         facturado,
         impreso,
-        listo
+        listo,
+        fecha_edicion
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, '-'
       ) RETURNING "idPedido"`;
 
     const orderValues = [
@@ -783,12 +783,9 @@ function getUserOrderListPos(params) {
 }
 
 function approveOrderPos(params) {
-  var d = new Date(),
-    dformat =
-      [d.getMonth() + 1, d.getDate(), d.getFullYear()].join("/") +
-      " " +
-      [d.getHours(), d.getMinutes(), d.getSeconds()].join(":");
-  var queryUpdate = `update Pedidos set estado=1, "fechaActualizacion"='${dformat}' where "idPedido"=${params.id}`;
+  var queryUpdate = `update Pedidos set estado=1, "fechaActualizacion"='${dateString()}' where "idPedido"=${
+    params.id
+  }`;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       try {
@@ -887,12 +884,7 @@ function deleteOrderPos(params) {
 }
 
 function cancelOrderPos(id) {
-  var d = new Date(),
-    dformat =
-      [d.getMonth() + 1, d.getDate(), d.getFullYear()].join("/") +
-      " " +
-      [d.getHours(), d.getMinutes(), d.getSeconds()].join(":");
-  var queryCancelOrder = `update Pedidos set estado=2, "fechaActualizacion"='${dformat}' where "idPedido"=${id}`;
+  var queryCancelOrder = `update Pedidos set estado=2, "fechaActualizacion"='${dateString()}' where "idPedido"=${id}`;
   return new Promise((resolve) => {
     setTimeout(async () => {
       try {
@@ -909,12 +901,13 @@ function cancelOrderPos(id) {
 }
 
 function addProductOrderPos(body) {
+  console.log("BODY", body);
   return new Promise((resolve) => {
     if (body.productos.length > 0) {
       body.productos.map((pr) => {
         setTimeout(async () => {
-          var queryAdd = `insert into Pedido_Producto ("idPedido", "idProducto", "cantidadProducto", "totalProd", "descuentoProducto") 
-          values (${body.idPedido},${pr.idProducto},${pr.cantProducto},${pr.totalProd},${pr.descuentoProd})`;
+          var queryAdd = `insert into Pedido_Producto ("idPedido", "idProducto", "cantidadProducto", "totalProd", "descuentoProducto",precio_producto) 
+          values (${body.idPedido},${pr.idProducto},${pr.cantProducto},${pr.totalProd},${pr.descuentoProd},${pr.precio_producto})`;
           try {
             const addedProduct = await client.query(queryAdd);
             resolve(
@@ -1010,12 +1003,17 @@ function updateProductOrderPos(body) {
 function updateOrderPos(body) {
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
-      var d = new Date(),
-        dformat =
-          [d.getMonth() + 1, d.getDate(), d.getFullYear()].join("/") +
-          " " +
-          [d.getHours(), d.getMinutes(), d.getSeconds()].join(":");
-      var queryUpdate = `Update Pedidos set "montoFacturar"=${body.montoFacturar}, "montoTotal"=${body.montoTotal}, "fechaActualizacion"='${dformat}', descuento=${body.descuento}, "descuentoCalculado"=${body.descCalculado}, listo=${body.listo}, impreso=${body.impreso}, estado=${body.estado} where "idPedido"=${body.idPedido}`;
+      var queryUpdate = `Update Pedidos set "montoFacturar"=${
+        body.montoFacturar
+      }, "montoTotal"=${
+        body.montoTotal
+      }, "fecha_edicion"='${dateString()}', descuento=${
+        body.descuento
+      }, "descuentoCalculado"=${body.descCalculado}, listo=${
+        body.listo
+      }, impreso=${body.impreso}, estado=${body.estado} where "idPedido"=${
+        body.idPedido
+      }`;
       console.log("Actualizando pedido", queryUpdate);
       try {
         const updatedOrder = await client.query(queryUpdate);
@@ -1157,7 +1155,7 @@ function numberOfInvoicedPos() {
 function getNotPrintedPos() {
   const query = `select pd."idPedido" as "idOrden", concat(upper(pd.tipo),'0',cast(pd."idPedido" as varchar)) as "nroOrden", us."usuario", pd."fechaCrea", 
   pr."codInterno", pr."nombreProducto", pp."cantidadProducto", 'P' as tipo, pd.notas as "notas",
-  zn."zona" as zona, cl."razonSocial" as "razonSocial", '' as origen, '' as destino
+  zn."zona" as zona, cl."razonSocial" as "razonSocial", '' as origen, '' as destino, pd.fecha_edicion
   from Pedidos pd
   inner join Usuarios us on pd."idUsuarioCrea"=us."idUsuario" 
   inner join Pedido_Producto pp on pp."idPedido"=pd."idPedido"
@@ -1173,7 +1171,7 @@ function getNotPrintedPos() {
    union select placa from Vehiculos where "placa"=tp."idOrigen") as "origen",
    (select nombre from Agencias where "idAgencia"=tp."idDestino" 
    union select nombre from Bodegas where "idBodega"=tp."idDestino"
-   union select placa from Vehiculos where "placa"=tp."idDestino") as "destino"
+   union select placa from Vehiculos where "placa"=tp."idDestino") as "destino" , '-' as fecha_edicion
   from Traspasos tp 
   inner join Usuarios us on us."idUsuario"=tp."idUsuario"
   inner join Traspaso_producto tpr on tpr."idTraspaso"=tp."idTraspaso"
@@ -1187,7 +1185,7 @@ function getNotPrintedPos() {
    union select placa from Vehiculos where "placa"=tp."idOrigen") as "origen",
    (select nombre from Agencias where "idAgencia"=tp."idDestino" 
    union select nombre from Bodegas where "idBodega"=tp."idDestino"
-   union select placa from Vehiculos where "placa"=tp."idDestino") as "destino"
+   union select placa from Vehiculos where "placa"=tp."idDestino") as "destino" , '-' as fecha_edicion
   from Traspasos tp 
   inner join Usuarios us on us."idUsuario"=tp."idUsuario"
   inner join Traspaso_producto tpr on tpr."idTraspaso"=tp."idTraspaso"
@@ -1195,11 +1193,13 @@ function getNotPrintedPos() {
   where tp.movil=0 and tp.listo=0 and tp.impreso=0 and tp.estado='1' and tp."idOrigen"='AL001'
   `;
   return new Promise((resolve, reject) => {
+    console.log("QUERY IMPRIMIR", query);
     setTimeout(async () => {
       try {
         const notPrinted = await client.query(query);
         resolve(notPrinted.rows);
       } catch (err) {
+        console.log("Error", err);
         reject(err);
       }
     }, 100);
@@ -1225,11 +1225,11 @@ function orderToReadyPos(params) {
   console.log("Params del query", params);
   const central = params.idDepto == 1 ? ` and "idOrigen"='AL001' ` : "";
   const query = `
-  select pd."idPedido" as "idOrden", concat(upper(pd.tipo),'0',cast(pd."idPedido" as varchar)) as "nroOrden", pd."fechaCrea",'P' as tipo, us.usuario, us."idDepto"
-  from Pedidos pd inner join Usuarios us on us."idUsuario"=pd."idUsuarioCrea" where pd.impreso=1 and pd.listo=0 and pd.estado!='2' and us."idDepto"=${params.idDepto}
+  select pd."idPedido" as "idOrden", concat(upper(pd.tipo),'0',cast(pd."idPedido" as varchar)) as "nroOrden", pd."fechaCrea",'P' as tipo, us.usuario, us."idDepto",
+  pd.fecha_edicion from Pedidos pd inner join Usuarios us on us."idUsuario"=pd."idUsuarioCrea" where pd.impreso=1 and pd.listo=0 and pd.estado!='2' and us."idDepto"=${params.idDepto}
   union
-  select tp."idTraspaso" as "idOrden", tp."nroOrden", tp."fechaCrea", 'T' as tipo, us.usuario, us."idDepto"
-  from Traspasos tp inner join Usuarios us on us."idUsuario"=tp."idUsuario" where tp.impreso=1 and tp.listo=0 and tp.estado!='2' and us."idDepto"=${params.idDepto} ${central}`;
+  select tp."idTraspaso" as "idOrden", tp."nroOrden", tp."fechaCrea", 'T' as tipo, us.usuario, us."idDepto",
+  '-' as fecha_edicion from Traspasos tp inner join Usuarios us on us."idUsuario"=tp."idUsuario" where tp.impreso=1 and tp.listo=0 and tp.estado!='2' and us."idDepto"=${params.idDepto} ${central}`;
   return new Promise((resolve, reject) => {
     console.log("Query ", query);
     setTimeout(async () => {
@@ -1245,7 +1245,7 @@ function orderToReadyPos(params) {
 
 function toRePrintDetailsPos(params) {
   const query = `select pd."idPedido", pd."fechaCrea",concat(upper(pd.tipo),'0',cast(pd."idPedido" as varchar)) as "nroOrden", 
-  us.usuario, pr."codInterno", pr."nombreProducto" ,tp."cantidadProducto", pd."notas", cl."razonSocial",zn."zona", '' as origen, '' as destino
+  us.usuario, pr."codInterno", pr."nombreProducto" ,tp."cantidadProducto", pd."notas", cl."razonSocial",zn."zona", '' as origen, '' as destino, pd.fecha_edicion
   from Pedidos pd
   inner join Pedido_Producto tp on pd."idPedido"=tp."idPedido"
   inner join Productos pr on pr."idProducto"=tp."idProducto" 
@@ -1386,6 +1386,63 @@ async function updateMultipleVirtualStock(bodies) {
   });
 }
 
+async function getUserOrders(id) {
+  try {
+    const query = `select pd.*, pp.*, pr."nombreProducto", pr."codInterno", pr."precioDeFabrica", cl."nit", cl."razonSocial" from Pedidos pd 
+    inner join pedido_producto pp on pp."idPedido" =pd."idPedido"
+    inner join productos pr on pr."idProducto" =pp."idProducto"
+    inner join clientes cl on cl."idCliente"=pd."idCliente"
+    where pd."idUsuarioCrea"=$1
+    order by cast (pd."idPedido" as int) desc`;
+    console.log("Query", query);
+    const orderList = await client.query(query, [Number(id)]);
+    return orderList.rows;
+  } catch (error) {
+    console.log("Error", error);
+    return Promise.reject(error);
+  }
+}
+
+async function logOrderModification(body) {
+  try {
+    const query = `insert into log_edicion_pedidos ("idPedido", "idUsuario","montoTotal","descuentoCalculado","montoFacturar",fecha_edicion) 
+    values ($1,$2,$3,$4,$5,$6) returning id_log_edicion`;
+    const pedido = body.pedido;
+    const timeStamp = dateString();
+    const params = [
+      pedido.idPedido,
+      pedido.idUsuario,
+      Number(pedido.montoFacturar),
+      Number(pedido.descCalculado),
+      Number(pedido.montoTotal),
+      timeStamp,
+    ];
+    await client.query("BEGIN");
+    const insertedLog = await client.query(query, params);
+    const idCreado = insertedLog.rows[0].id_log_edicion;
+    const insertedArray = [];
+    for (const producto of body.productos) {
+      const queryProds = `insert into productos_log_edicion_pedidos (id_log_edicion, "idProducto", "cantidadProducto", precio_producto, "totalProd")
+      values ($1,$2,$3,$4,$5)`;
+      const paramsProds = [
+        idCreado,
+        producto.idProducto,
+        Number(producto.cantProducto),
+        Number(producto.precioDeFabrica),
+        Number(producto.totalProd),
+      ];
+      const insertedProd = await client.query(queryProds, paramsProds);
+      insertedArray.push(insertedProd);
+    }
+    await client.query("COMMIT");
+    return insertedArray;
+  } catch (error) {
+    console.log("ERROR AL LOGGEAR LA EDICION DE PEDIDOS");
+    await client.query("ROLLBACK");
+    return new Promise.reject(error);
+  }
+}
+
 module.exports = {
   registerOrder,
   getOrderStatus,
@@ -1437,4 +1494,6 @@ module.exports = {
   rejectReadyPos,
   updateVirtualStock,
   updateMultipleVirtualStock,
+  getUserOrders,
+  logOrderModification,
 };

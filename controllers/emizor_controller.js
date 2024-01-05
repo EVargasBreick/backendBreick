@@ -47,6 +47,7 @@ module.exports = {
   },
 
   composedAnularFactura: async (req, res) => {
+    console.log("ENTRANDO AL COMPUESTO DE ANULAR");
     const { cuf_ackTicket_uniqueCode, motivo } = req.params;
     const body = req.body;
     console.log("Datos recibidos", cuf_ackTicket_uniqueCode, motivo, body);

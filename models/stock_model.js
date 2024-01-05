@@ -182,19 +182,20 @@ function getCurrentProductStockPos(params) {
 }
 
 function getCurrentStoreStockPos(params) {
-  let logQuery = `select b."codInterno",  b."nombreProducto", a."cant_Actual" as cantidad , b."precioDeFabrica", c.nombre as "NombreAgencia", b."idProducto" from Stock_Agencia a 
+  let logQuery = `select b."codInterno",  b."nombreProducto", a."cant_Actual" as cantidad , b."precioDeFabrica", 
+  c.nombre as "NombreAgencia", b."idProducto", b."tipoProducto" from Stock_Agencia a 
     inner join Productos b on a."idProducto"=b."idProducto"
     inner join Agencias c on a."idAgencia"=c."idAgencia"
-    where a."idAgencia"='${params.idAgencia}' union 
-    select b."codInterno",  b."nombreProducto", a."cant_Actual" as cantidad, b."precioDeFabrica", c.nombre as "NombreAgencia", b."idProducto" from Stock_Bodega a 
+    where a."idAgencia"='${params.idAgencia}' and b.activo=1 union 
+    select b."codInterno",  b."nombreProducto", a."cant_Actual" as cantidad, b."precioDeFabrica", c.nombre as "NombreAgencia", b."idProducto", b."tipoProducto" from Stock_Bodega a 
     inner join Productos b on a."idProducto"=b."idProducto"
     inner join Bodegas c on a."idBodega"=c."idBodega"
-    where a."idBodega"='${params.idAgencia}' union 
+    where a."idBodega"='${params.idAgencia}' and b.activo=1 union 
     select b."codInterno",  b."nombreProducto", a."cant_Actual" as cantidad, b."precioDeFabrica", 
-    (select am.marca||' '||am.color||' '||am.placa from Vehiculos am where am.placa=a."idVehiculo") as "NombreAgencia", b."idProducto"
+    (select am.marca||' '||am.color||' '||am.placa from Vehiculos am where am.placa=a."idVehiculo") as "NombreAgencia", b."idProducto", b."tipoProducto"
     from Stock_Agencia_Movil a 
     inner join Productos b on a."idProducto"=b."idProducto"
-    where a."idVehiculo"='${params.idAgencia}'
+    where a."idVehiculo"='${params.idAgencia}' and b.activo=1
     `;
   console.log("Query", logQuery);
   return new Promise((resolve, reject) => {
@@ -221,7 +222,7 @@ function initializeStockPos(body) {
     "cant_Actual", 
     diferencia, 
     "fechaActualizacion" 
-  ) select placa, ${body.idProducto}, 0, 0, 0,'${body.fechaHora}' from Vehiculos;
+  ) select placa, ${body.idProducto}, 0, 0, 0,'${body.fechaHora}' from Vehiculos where activo=1;
   insert into Stock_Bodega (
     "idBodega", 
     "idProducto", 
@@ -243,7 +244,7 @@ function initializeStockPos(body) {
   });
 }
 
-function logProductEntry(body) {
+async function logProductEntry(body) {
   const entryQuery = `insert into ingresos ("idUsuarioCrea", "fechaCrea") values (${body.idUsuarioCrea}, '${body.fechaCrea}') returning "idIngreso"`;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {

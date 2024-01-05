@@ -6,17 +6,26 @@ const { registerSalePos } = require("../models/sale_modal");
 const {
   updateProductStockPos,
   updateLogStockDetails,
-  transactionOfUpdateStocks
+  transactionOfUpdateStocks,
 } = require("../models/store_model");
 const {
   postFactura: postFacture,
   getEstadoFactura,
 } = require("../models/emizor_model");
-const { updateVirtualStock, registerOrderPos } = require("../models/order_model");
+const {
+  updateVirtualStock,
+  registerOrderPos,
+  cancelOrderPos,
+} = require("../models/order_model");
 const logger = require("../logger-pino");
 const { client } = require("../postgressConn");
-const { createTransferPos } = require("../models/transfer_model");
+const {
+  createTransferPos,
+  acceptTransferPos,
+} = require("../models/transfer_model");
 const { createDropPos } = require("../models/drop_model");
+const { logProductEntry } = require("../models/stock_model");
+const { logRejectedOrderPos } = require("../models/rejected_model");
 const { createInvoiceAltPlus } = require("../models/invoice_model");
 const app = express();
 
@@ -89,6 +98,42 @@ module.exports = {
       })
       .catch((error) => {
         console.log("ERROR AL CREAR LA ORDEN", error);
+        res.status(500).send(error);
+      });
+  },
+  composedCancelOrderProcess: (req, res) => {
+    const orderCanceled = composedCancelOrder(req.body);
+    orderCanceled
+      .then((order) => {
+        console.log("DATOS DE ORDEN ", order);
+        res.status(200).send(order);
+      })
+      .catch((error) => {
+        console.log("ERROR AL CANCELAR LA ORDEN", error);
+        res.status(500).send(error);
+      });
+  },
+  composedProductEntry: (req, res) => {
+    const productEntered = composedProductEntry(req.body);
+    productEntered
+      .then((order) => {
+        console.log("DATOS DE ORDEN ", order);
+        res.status(200).send(order);
+      })
+      .catch((error) => {
+        console.log("ERROR AL CANCELAR LA ORDEN", error);
+        res.status(500).send(error);
+      });
+  },
+  composedAcceptTramsfer: (req, res) => {
+    const accepted = composedAcceptTransfer(req.body);
+    accepted
+      .then((order) => {
+        console.log("DATOS DE ORDEN ", order);
+        res.status(200).send(order);
+      })
+      .catch((error) => {
+        console.log("ERROR AL CANCELAR LA ORDEN", error);
         res.status(500).send(error);
       });
   },
@@ -1072,10 +1117,12 @@ async function composedTransferProcess(body) {
         productos: objStock.productos,
         detalle: `SSNTR-${idCreado}`,
       };
-      const updatedStock = await updateProductStockPos(stockBody);
+      const updatedStock = await updateProductStockPos(stockBody, true);
+
       console.log("Traspaso AKI", updatedStock);
       if (updatedStock.code == 200) {
         console.log("Devolviendo esto", idCreado);
+        await client.query("COMMIT");
         resolve({ data: { idCreado } });
       } else {
         console.log("Error al crear por stock", JSON.stringify(updatedStock));
@@ -1103,7 +1150,7 @@ async function composedDropProcess(body) {
       productos: objStock.productos,
       detalle: `SPRBJ-${idCreado}`,
     };
-    const updatedStock = await updateProductStockPos(stockBody);
+    const updatedStock = await updateProductStockPos(stockBody, true);
     if (updatedStock.code == 200) {
       console.log("Devolviendo esto", idCreado);
       return { idCreado };
@@ -1121,7 +1168,7 @@ async function composedDropProcess(body) {
 
 async function composedOrderProcess(body) {
   console.log("ENTRA ACA EN EL NUEVO PROCESO", body);
-  const { objOrder, products, userStore } = body;
+  const { objOrder, userStore } = body;
   try {
     await client.query("BEGIN");
     const regiteredOrder = await registerOrderPos(objOrder);
@@ -1131,10 +1178,10 @@ async function composedOrderProcess(body) {
     const stockBody = {
       accion: "take",
       idAlmacen: userStore,
-      productos: products,
+      productos: objOrder.productos,
       detalle: `SPNPD-${idCreado}`,
     };
-    const updatedStock = await updateProductStockPos(stockBody);
+    const updatedStock = await updateProductStockPos(stockBody, true);
 
     console.log("Traspaso AKI", updatedStock, updatedStock.code);
     if (updatedStock.code == 200) {
@@ -1146,10 +1193,67 @@ async function composedOrderProcess(body) {
       await client.query("ROLLBACK");
       return Promise.reject(updatedStock.error);
     }
-
-
   } catch (error) {
     console.log("HAY UN ERROR EN EL ORDER", error);
+    await client.query("ROLLBACK");
+    return Promise.reject(error);
+  }
+}
+
+async function composedCancelOrder(body) {
+  console.log("ENTRO AL COMPUESTO");
+  const { stock, order } = body;
+  try {
+    await client.query("BEGIN");
+    const updatedStock = await updateProductStockPos(stock, true);
+    console.log("Stock updateado", updatedStock);
+    const orderCanceled = await cancelOrderPos(order);
+    await client.query("COMMIT");
+    return orderCanceled;
+  } catch (error) {
+    await client.query("ROLLBACK");
+    return Promise.reject(error);
+  }
+}
+
+async function composedProductEntry(body) {
+  console.log("ENTRO AL COMPUESTO");
+  const { log, stock } = body;
+  try {
+    await client.query("BEGIN");
+    const logged = await logProductEntry(log);
+    const createdId = logged.id;
+    const stockBody = {
+      accion: stock.accion,
+      idAlmacen: stock.idAlmacen,
+      productos: stock.productos,
+      detalle: `NIDPR-${createdId}`,
+    };
+    const updated = await updateProductStockPos(stockBody, true);
+    await client.query("COMMIT");
+    return updated;
+  } catch (error) {
+    await client.query("ROLLBACK");
+    return Promise.reject(error);
+  }
+}
+
+async function composedAcceptTransfer(body) {
+  console.log("Entrando al compuesto", body);
+  const { stock, transfer, condition, logRejected } = body;
+  try {
+    await client.query("BEGIN");
+    if (condition) {
+      console.log("ENTRO A LOGGEAR RECHAZO");
+      await logRejectedOrderPos(logRejected);
+    }
+    await transactionOfUpdateStocks(stock, true);
+    console.log("Actualizo los stocks");
+    const accepted = await acceptTransferPos({ ids: transfer });
+    client.query("COMMIT");
+    return accepted;
+  } catch (error) {
+    console.log("ERROR", error);
     await client.query("ROLLBACK");
     return Promise.reject(error);
   }
