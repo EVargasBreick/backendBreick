@@ -251,25 +251,30 @@ function updateInvoicePos(body) {
 
 function getInvoiceProductsPos(params) {
   const productsQuery = `
-  select fr.*, pr."idProducto", pr."nombreProducto",
+  SELECT fr.*, pr."idProducto", pr."nombreProducto",
   vp."cantidadProducto" as "cantProducto", vn."montoFacturar"
-  from Facturas fr
-  inner join ventas vn on vn."idFactura"=fr."idFactura"
-  inner join Venta_Productos vp on vp."idVenta"=vn."idVenta"
-  inner join Productos pr on pr."idProducto"=vp."idProducto"
-  where fr."idAgencia"=${params.idSucursal} and fr."puntoDeVenta"=${params.pdv} and fr.estado!=1
-  and case when EXTRACT(DAY FROM current_date) BETWEEN 1 AND 9 then
-  	(EXTRACT(MONTH FROM to_date("fechaHora",'DD/MM/YYYY')) = EXTRACT(MONTH FROM current_date) - 1
-       AND EXTRACT(YEAR FROM to_date("fechaHora",'DD/MM/YYYY')) = EXTRACT(YEAR FROM current_date))
-      OR
-      (EXTRACT(MONTH FROM to_date("fechaHora",'DD/MM/YYYY')) = EXTRACT(MONTH FROM current_date)
-       AND EXTRACT(YEAR FROM to_date("fechaHora",'DD/MM/YYYY')) = EXTRACT(YEAR FROM current_date))
-    -- If the date is 10th or later
-    ELSE
-      -- Show only entries for the current month
-      (EXTRACT(MONTH FROM to_date("fechaHora",'DD/MM/YYYY')) = EXTRACT(MONTH FROM current_date)
-       AND EXTRACT(YEAR FROM to_date("fechaHora",'DD/MM/YYYY')) = EXTRACT(YEAR FROM current_date))
-  END;
+FROM Facturas fr
+INNER JOIN ventas vn ON vn."idFactura" = fr."idFactura"
+INNER JOIN Venta_Productos vp ON vp."idVenta" = vn."idVenta"
+INNER JOIN Productos pr ON pr."idProducto" = vp."idProducto"
+WHERE fr."idAgencia" = ${params.idSucursal}
+  AND fr."puntoDeVenta" = ${params.pdv}
+  AND fr.estado != 1
+  AND ((
+    EXTRACT(MONTH FROM to_date("fechaHora", 'DD/MM/YYYY')) = EXTRACT(MONTH FROM current_date)
+    AND EXTRACT(YEAR FROM to_date("fechaHora", 'DD/MM/YYYY')) = EXTRACT(YEAR FROM current_date)
+  )
+  OR (
+    EXTRACT(DAY FROM current_date) <= 9
+    AND (
+      EXTRACT(MONTH FROM to_date("fechaHora", 'DD/MM/YYYY')) = EXTRACT(MONTH FROM current_date) - 1
+      OR (
+        EXTRACT(MONTH FROM to_date("fechaHora", 'DD/MM/YYYY')) = 12
+        AND EXTRACT(MONTH FROM current_date) = 1
+        AND EXTRACT(YEAR FROM to_date("fechaHora", 'DD/MM/YYYY')) = EXTRACT(YEAR FROM current_date) - 1
+      )
+    )
+  ));
   `;
   return new Promise((resolve, reject) => {
     console.log("Query facturitas ", productsQuery);

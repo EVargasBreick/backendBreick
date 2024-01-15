@@ -68,17 +68,19 @@ function registerSale(data) {
               const del = dbConnection.executeQuery(
                 `delete from Ventas where idVenta=${idCreado.data[0][0].idCreado}`
               );
-              del.then(() => {
-                resolve(
-                  JSON.stringify({
-                    code: 400,
-                    data: "Error",
-                    message: "Products: " + prods.message,
-                  })
-                );
-              }).catch((err) => {
-                throw err;
-              });;
+              del
+                .then(() => {
+                  resolve(
+                    JSON.stringify({
+                      code: 400,
+                      data: "Error",
+                      message: "Products: " + prods.message,
+                    })
+                  );
+                })
+                .catch((err) => {
+                  throw err;
+                });
             }
           }, 1000);
         });
@@ -98,6 +100,49 @@ function registerSale(data) {
 function registerSalePos(data, idFactura) {
   console.log("Ventas", data, idFactura);
   const idPedido = data.pedido.idPedido != "" ? data.pedido.idPedido : 0;
+
+  const {
+    idUsuarioCrea,
+    idCliente,
+    fechaCrea,
+    fechaActualizacion,
+    montoTotal,
+    descCalculado,
+    descuento,
+    montoFacturar,
+  } = data.pedido;
+
+  const queryAlt = `
+  INSERT INTO Ventas 
+  (
+      "idUsuarioCrea",
+      "idCliente",
+      "fechaCrea",
+      "fechaActualizacion",
+      "montoTotal",
+      "descuentoCalculado",
+      descuento,
+      "montoFacturar",
+      "idPedido",
+      "idFactura"
+  ) VALUES (
+      $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+  ) RETURNING "idVenta";
+`;
+
+  const values = [
+    idUsuarioCrea,
+    idCliente,
+    fechaCrea,
+    fechaActualizacion,
+    toFixedDecimals(montoTotal),
+    toFixedDecimals(descCalculado),
+    descuento,
+    toFixedDecimals(montoFacturar),
+    idPedido,
+    idFactura ? idFactura : data.pedido.idFactura,
+  ];
+
   var query = `insert into Ventas 
       (
           "idUsuarioCrea",
@@ -122,7 +167,7 @@ function registerSalePos(data, idFactura) {
           '${idPedido}',
           '${idFactura ? idFactura : data.pedido.idFactura}'
       ) returning "idVenta"`;
-  console.log("Creacion pedido query", query);
+  console.log("Creacion pedido query");
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       try {
@@ -147,6 +192,33 @@ function registerSalePos(data, idFactura) {
                   ${producto.descuentoProd},
                   ${Number(producto.precioDeFabrica)}
               )`;
+
+          const { idProducto, cantProducto, descuentoProd, precioDeFabrica } =
+            producto;
+
+          const queryProdsAlt = `
+                INSERT INTO Venta_Productos
+                (
+                   "idVenta", 
+                    "idProducto", 
+                    "cantidadProducto", 
+                    "totalProd",
+                    "descuentoProducto",
+                    "precio_producto"
+                ) VALUES (
+                    $1, $2, $3, $4, $5, $6
+                );
+              `;
+
+          const valuesProds = [
+            idCreado,
+            idProducto,
+            cantProducto,
+            toFixedDecimals(totalProducto),
+            toFixedDecimals(descuentoProd),
+            toFixedDecimals(precioDeFabrica),
+          ];
+
           console.log("Insertando productos", queryProds);
           setTimeout(async () => {
             try {
@@ -164,17 +236,19 @@ function registerSalePos(data, idFactura) {
               const del = client.query(
                 `delete from Ventas where "idVenta"=${idCreado}`
               );
-              del.then(() => {
-                resolve(
-                  JSON.stringify({
-                    code: 400,
-                    data: "Error",
-                    message: "Products: " + err,
-                  })
-                );
-              }).catch((err) => {
-                throw err;
-              });;
+              del
+                .then(() => {
+                  resolve(
+                    JSON.stringify({
+                      code: 400,
+                      data: "Error",
+                      message: "Products: " + err,
+                    })
+                  );
+                })
+                .catch((err) => {
+                  throw err;
+                });
             }
           }, 1000);
         });
@@ -209,5 +283,13 @@ function deleteSale(params) {
     }, 100);
   });
 }
+
+const toFixedDecimals = (value) => {
+  if (typeof value === "number") {
+    return Number(value).toFixed(2);
+  } else {
+    return "0.00";
+  }
+};
 
 module.exports = { registerSale, registerSalePos, deleteSale };
