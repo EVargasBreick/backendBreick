@@ -110,6 +110,7 @@ function registerSalePos(data, idFactura) {
     descCalculado,
     descuento,
     montoFacturar,
+    idFactura: idFacturaPedido,
   } = data.pedido;
 
   const queryAlt = `
@@ -140,61 +141,19 @@ function registerSalePos(data, idFactura) {
     descuento,
     toFixedDecimals(montoFacturar),
     idPedido,
-    idFactura ? idFactura : data.pedido.idFactura,
+    idFactura ? idFactura : idFacturaPedido,
   ];
 
-  var query = `insert into Ventas 
-      (
-          "idUsuarioCrea",
-          "idCliente",
-          "fechaCrea",
-          "fechaActualizacion",
-          "montoTotal",
-          "descuentoCalculado",
-          descuento,
-          "montoFacturar",
-          "idPedido",
-          "idFactura"
-      ) values (
-          ${data.pedido.idUsuarioCrea},
-          ${data.pedido.idCliente},
-          '${data.pedido.fechaCrea}',
-          '${data.pedido.fechaActualizacion}',
-          '${data.pedido.montoTotal}',
-          '${data.pedido.descCalculado}',
-          '${data.pedido.descuento}',
-          '${data.pedido.montoFacturar}',
-          '${idPedido}',
-          '${idFactura ? idFactura : data.pedido.idFactura}'
-      ) returning "idVenta"`;
   console.log("Creacion pedido query");
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       try {
-        const newOrder = await client.query(query);
+        const newOrder = await client.query(queryAlt, values);
         const idCreado = newOrder.rows[0].idVenta;
         data.productos.map((producto) => {
+          const { idProducto, cantProducto, descuentoProd, precioDeFabrica } = producto
           const totalProducto =
             producto.total != undefined ? producto.total : producto.totalProd;
-          var queryProds = `insert into Venta_Productos
-              (
-                 "idVenta", 
-                  "idProducto", 
-                  "cantidadProducto", 
-                  "totalProd",
-                  "descuentoProducto",
-                  "precio_producto"
-              ) values (
-                  ${idCreado},
-                  ${producto.idProducto},
-                  '${producto.cantProducto}',
-                  ${totalProducto},
-                  ${producto.descuentoProd},
-                  ${Number(producto.precioDeFabrica)}
-              )`;
-
-          const { idProducto, cantProducto, descuentoProd, precioDeFabrica } =
-            producto;
 
           const queryProdsAlt = `
                 INSERT INTO Venta_Productos
@@ -219,10 +178,10 @@ function registerSalePos(data, idFactura) {
             toFixedDecimals(precioDeFabrica),
           ];
 
-          console.log("Insertando productos", queryProds);
+          console.log("Insertando productos", queryProdsAlt);
           setTimeout(async () => {
             try {
-              const prods = await client.query(queryProds);
+              const prods = await client.query(queryProdsAlt, valuesProds);
               resolve(
                 JSON.stringify({
                   code: 201,
