@@ -1,6 +1,7 @@
 const { client } = require("../postgressConn");
 const dbConnection = require("../server");
 const dateString = require("../services/dateServices");
+const { toFixedDecimals } = require("../services/toFixedDecimals");
 
 function registerOrder(data) {
   console.log("Pedido", data);
@@ -163,9 +164,8 @@ function getUserOrderList(params) {
 }
 
 function approveOrder(params) {
-  var queryUpdate = `update Pedidos set estado=1, fechaActualizacion='${dateString()}' where idPedido=${
-    params.id
-  }`;
+  var queryUpdate = `update Pedidos set estado=1, fechaActualizacion='${dateString()}' where idPedido=${params.id
+    }`;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       const approved = await dbConnection.executeQuery(queryUpdate);
@@ -371,15 +371,11 @@ function updateProductOrder(body) {
 function updateOrder(body) {
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
-      var queryUpdate = `Update Pedidos set montoFacturar=${
-        body.montoFacturar
-      }, montoTotal=${
-        body.montoTotal
-      }, fecha_edicion='${dateString()}', descuento=${
-        body.descuento
-      }, descuentoCalculado=${body.descCalculado}, listo=${
-        body.listo
-      }, impreso=${body.impreso} where idPedido=${body.idPedido}`;
+      var queryUpdate = `Update Pedidos set montoFacturar=${body.montoFacturar
+        }, montoTotal=${body.montoTotal
+        }, fecha_edicion='${dateString()}', descuento=${body.descuento
+        }, descuentoCalculado=${body.descCalculado}, listo=${body.listo
+        }, impreso=${body.impreso} where idPedido=${body.idPedido}`;
       console.log("Query ACTUALIZAR", queryUpdate);
       const updatedOrder = await dbConnection.executeQuery(queryUpdate);
       if (updatedOrder.success) {
@@ -641,16 +637,18 @@ async function registerOrderPos(data) {
       data.pedido.fechaCrea,
       data.pedido.fechaActualizacion,
       data.pedido.estado,
-      data.pedido.montoFacturar,
-      data.pedido.montoTotal,
+      toFixedDecimals(data.pedido.montoFacturar),
+      toFixedDecimals(data.pedido.montoTotal),
       data.pedido.tipo,
-      data.pedido.descuento,
-      data.pedido.descCalculado,
+      toFixedDecimals(data.pedido.descuento),
+      toFixedDecimals(data.pedido.descCalculado),
       data.pedido.notas,
       0,
       imp,
       0,
     ];
+
+    console.log("Query de creacion de pedido", orderValues), data.pedido;
 
     const newOrder = await client.query(orderQuery, orderValues);
     const idCreado = newOrder.rows[0].idPedido;
@@ -673,10 +671,12 @@ async function registerOrderPos(data) {
           idCreado,
           producto.idProducto,
           producto.cantProducto,
-          producto.totalProd,
-          producto.descuentoProd,
-          producto.precioDeFabrica,
+          toFixedDecimals(producto.totalProd),
+          toFixedDecimals(producto.descuentoProd),
+          toFixedDecimals(producto.precioDeFabrica),
         ];
+
+        console.log("Query de creacion de productos", prodValues, producto);
 
         await client.query(queryProds, prodValues);
       })
@@ -703,7 +703,7 @@ function getOrderStatusPos() {
         responseObject.code = 201;
         responseObject.data = statusList.rows;
         resolve(JSON.stringify(responseObject));
-      } catch (err) {}
+      } catch (err) { }
     }, 100);
   });
 }
@@ -777,15 +777,14 @@ function getUserOrderListPos(params) {
             data: orderList.rows,
           })
         );
-      } catch (err) {}
+      } catch (err) { }
     }, 100);
   });
 }
 
 function approveOrderPos(params) {
-  var queryUpdate = `update Pedidos set estado=1, "fechaActualizacion"='${dateString()}' where "idPedido"=${
-    params.id
-  }`;
+  var queryUpdate = `update Pedidos set estado=1, "fechaActualizacion"='${dateString()}' where "idPedido"=${params.id
+    }`;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       try {
@@ -841,7 +840,7 @@ function getOrderTypePos() {
             data: orderType.rows,
           })
         );
-      } catch (err) {}
+      } catch (err) { }
     }, 100);
   });
 }
@@ -861,7 +860,7 @@ function getOrderProductListPos(params) {
             data: prodList.rows,
           })
         );
-      } catch (err) {}
+      } catch (err) { }
     }, 100);
   });
 }
@@ -895,7 +894,7 @@ function cancelOrderPos(id) {
             data: prodList.rows,
           })
         );
-      } catch (err) {}
+      } catch (err) { }
     }, 100);
   });
 }
@@ -916,7 +915,7 @@ function addProductOrderPos(body) {
                 data: addedProduct.rows,
               })
             );
-          } catch (err) {}
+          } catch (err) { }
         }, 200);
       });
     } else {
@@ -947,7 +946,7 @@ function deleteProductOrderPos(body) {
                 data: deleted.rows,
               })
             );
-          } catch {}
+          } catch { }
         }, 100);
       });
     } else {
@@ -1003,17 +1002,12 @@ function updateProductOrderPos(body) {
 function updateOrderPos(body) {
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
-      var queryUpdate = `Update Pedidos set "montoFacturar"=${
-        body.montoFacturar
-      }, "montoTotal"=${
-        body.montoTotal
-      }, "fecha_edicion"='${dateString()}', descuento=${
-        body.descuento
-      }, "descuentoCalculado"=${body.descCalculado}, listo=${
-        body.listo
-      }, impreso=${body.impreso}, estado=${body.estado} where "idPedido"=${
-        body.idPedido
-      }`;
+      var queryUpdate = `Update Pedidos set "montoFacturar"=${body.montoFacturar
+        }, "montoTotal"=${body.montoTotal
+        }, "fecha_edicion"='${dateString()}', descuento=${body.descuento
+        }, "descuentoCalculado"=${body.descCalculado}, listo=${body.listo
+        }, impreso=${body.impreso}, estado=${body.estado} where "idPedido"=${body.idPedido
+        }`;
       console.log("Actualizando pedido", queryUpdate);
       try {
         const updatedOrder = await client.query(queryUpdate);

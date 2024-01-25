@@ -77,8 +77,8 @@ function getTransferList(params) {
     params.crit === "todo"
       ? ``
       : params.crit === "ac"
-      ? `where estado>0 and movil=0`
-      : `where estado=0 and movil=0`;
+        ? `where estado>0 and movil=0`
+        : `where estado=0 and movil=0`;
   var queryGetList = `select a.estado, a.impreso, a.listo, a.idUsuario, b.nombre as nombreOrigen, a.idOrigen, a.idDestino,
     (select x.nombre from Agencias x where x.idAgencia=a.idDestino union 
     select x.nombre from Bodegas x where x.idBodega=a.idDestino union 
@@ -310,26 +310,40 @@ function createTransferPos(body) {
   const { listo } = body;
   const movil = body.movil ? body.movil : 0;
   const imp = body.impreso != undefined ? body.impreso : 0;
-  var queryTransfer = `insert into Traspasos ("fechaCrea", "fechaActu", "idOrigen", "idDestino", "idUsuario", estado, movil, listo, impreso, transito)
-    values ('${dateResult}','','${body.idOrigen}','${body.idDestino}',${
-    body.idUsuario
-  },0,${movil},${listo === 1 ? listo : 0},${imp},${
-    body.transito
-  }) returning "idTraspaso"`;
+
+  const queryTransfer = `
+  INSERT INTO Traspasos ("fechaCrea", "fechaActu", "idOrigen", "idDestino", "idUsuario", estado, movil, listo, impreso, transito)
+  VALUES ($1, '', $2, $3, $4, 0, $5, $6, $7, $8)
+  RETURNING "idTraspaso";
+`;
+
+  // Assuming you are using a database library like 'pg'
+  const values = [dateResult, body.idOrigen, body.idDestino, body.idUsuario, movil, listo === 1 ? listo : 0, imp, body.transito];
+
   return new Promise((resolve, reject) => {
-    console.log("Query traspaso", queryTransfer);
+    console.log("Query traspaso", queryTransfer, values);
     setTimeout(async () => {
       try {
-        const newTransfer = await client.query(queryTransfer);
+        const newTransfer = await client.query(queryTransfer, values);
         const idCreado = newTransfer.rows[0].idTraspaso;
-        const updatedId = `update Traspasos set "nroOrden"='TRASPASO000${idCreado}' where "idTraspaso"=${idCreado}`;
-        const upd = await client.query(updatedId);
+        const updatedId = `
+          UPDATE Traspasos
+          SET "nroOrden" = 'TRASPASO000' || $2
+          WHERE "idTraspaso" = $1
+        `;
+        const upd = await client.query(updatedId, [idCreado, idCreado]);
+        
         body.productos.map((productos) => {
-          var queryProds = `insert into Traspaso_Producto ("idTraspaso", "idProducto", "cantidadProducto", "cantidadRestante") 
-          values (${idCreado},${productos.idProducto},${productos.cantProducto},${productos.cantidadRestante});`;
+          const queryProds = `
+          INSERT INTO Traspaso_Producto ("idTraspaso", "idProducto", "cantidadProducto", "cantidadRestante")
+          VALUES ($1, $2, $3, $4);
+        `;
+
+          // Assuming you have the values for the insert
+          const values = [idCreado, productos.idProducto, productos.cantProducto, productos.cantidadRestante];
           setTimeout(async () => {
             try {
-              const addedProd = await client.query(queryProds);
+              const addedProd = await client.query(queryProds, values);
 
               resolve(
                 JSON.stringify({
@@ -392,8 +406,8 @@ function getTransferListPos(params) {
     params.crit === "todo"
       ? ``
       : params.crit === "ac"
-      ? `where estado>0 and movil=0`
-      : `where estado='0' and movil=0`;
+        ? `where estado>0 and movil=0`
+        : `where estado='0' and movil=0`;
   var queryGetList = `select a.estado, a.impreso, a.listo, a."idUsuario", b.nombre as "nombreOrigen", a."idOrigen", a."idDestino",
     (select x.nombre from Agencias x where x."idAgencia"=a."idDestino" union 
     select x.nombre from Bodegas x where x."idBodega"=a."idDestino" union 

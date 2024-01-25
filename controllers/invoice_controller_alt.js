@@ -6,6 +6,7 @@ const logger = require("../logger-pino");
 const { client, pool } = require("../postgressConn");
 const dateString = require("../services/dateServices");
 const { default: axios } = require("axios");
+const { toFixedDecimals } = require("../services/toFixedDecimals");
 const app = express();
 
 app.use(session(sessionParams));
@@ -159,7 +160,7 @@ const getEstadoFactura = async (req, ackTicket) => {
 const insertFactura = async (body, clientTemp) => {
     try {
         const invoiceQuery = `
-        insert into Facturas (
+        INSERT INTO Facturas (
             "nroFactura",
             "idSucursal",
             "nitEmpresa",
@@ -186,36 +187,42 @@ const insertFactura = async (body, clientTemp) => {
             "idAgencia",
             voucher,
             pya
-        ) values (
-            '${body.invoice.nroFactura}',
-            ${body.invoice.idSucursal},
-            '${body.invoice.nitEmpresa}',
-            '${body.invoice.fechaHora}',
-            '${body.invoice.nitCliente}',
-            '${body.invoice.razonSocial}',
-            ${body.invoice.tipoPago},
-            ${body.invoice.pagado},
-            ${body.invoice.cambio},
-            '${body.invoice.nroTarjeta}',
-            '${body.invoice.cuf}',
-            '${body.invoice.aPagar}',
-            '${body.invoice.importeBase}',
-            '${body.invoice.debitoFiscal}',
-             '${body.invoice.desembolsada}',
-             '${body.invoice.autorizacion}',
-             '${body.invoice.cufd}',
-             '${body.invoice.fechaEmision}',
-             ${body.invoice.nroTransaccion},
-             '-',
-             ${body.invoice.idOtroPago},
-             ${body.invoice.vale},
-             ${body.invoice.puntoDeVenta},
-             '${body.invoice.idAgencia}',
-             ${body.invoice.voucher},
-             ${body.invoice.pya ? 1 : 0}
-        ) returning "idFactura"`;
+        ) VALUES (
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26
+        ) RETURNING "idFactura"`;
 
-        const added = await clientTemp.query(invoiceQuery);
+        const queryValues = [
+            body.nroFactura,
+            body.idSucursal,
+            body.nitEmpresa,
+            body.fechaHora,
+            body.nitCliente,
+            body.razonSocial,
+            body.tipoPago,
+            toFixedDecimals(body.pagado),
+            toFixedDecimals(body.cambio),
+            body.nroTarjeta,
+            body.cuf,
+            body.aPagar,
+            toFixedDecimals(body.importeBase),
+            toFixedDecimals(body.debitoFiscal),
+            body.desembolsada,
+            body.autorizacion,
+            body.cufd,
+            body.fechaEmision,
+            body.nroTransaccion,
+            '-',
+            body.idOtroPago,
+            body.vale,
+            body.puntoDeVenta,
+            body.idAgencia,
+            body.voucher,
+            body.pya ? 1 : 0
+        ];
+        console.log("Query values", queryValues, queryValues.length);
+        console.log("Body values", body);
+
+        const added = await clientTemp.query(invoiceQuery, queryValues);
         console.log("Se llegooo", added.rows[0].idFactura);
 
 
@@ -233,40 +240,62 @@ const insertFactura = async (body, clientTemp) => {
 
 const registerSalePos = async (data, idFactura, clientTemp) => {
     console.log("Ventas", data, idFactura);
-    const idPedido = data.pedido.idPedido != "" ? data.pedido.idPedido : 0;
-    const query = `insert into Ventas 
-        (
-            "idUsuarioCrea",
-            "idCliente",
-            "fechaCrea",
-            "fechaActualizacion",
-            "montoTotal",
-            "descuentoCalculado",
-            descuento,
-            "montoFacturar",
-            "idPedido",
-            "idFactura"
-        ) values (
-            ${data.pedido.idUsuarioCrea},
-            ${data.pedido.idCliente},
-            '${data.pedido.fechaCrea}',
-            '${data.pedido.fechaActualizacion}',
-            '${data.pedido.montoTotal}',
-            '${data.pedido.descCalculado}',
-            '${data.pedido.descuento}',
-            '${data.pedido.montoFacturar}',
-            '${idPedido}',
-            '${idFactura ? idFactura : data.pedido.idFactura}'
-        ) returning "idVenta"`;
-    console.log("Creacion pedido query", query);
+    const {
+        idUsuarioCrea,
+        idCliente,
+        fechaCrea,
+        fechaActualizacion,
+        montoTotal,
+        descCalculado,
+        descuento,
+        montoFacturar,
+        idFactura: idFacturaPedido,
+        idPedido: idPedidoData,
+    } = data.pedido;
+
+    const idPedido = idPedidoData != "" ? idPedidoData : 0;
+    const queryAlt = `
+      INSERT INTO Ventas 
+      (
+          "idUsuarioCrea",
+          "idCliente",
+          "fechaCrea",
+          "fechaActualizacion",
+          "montoTotal",
+          "descuentoCalculado",
+          descuento,
+          "montoFacturar",
+          "idPedido",
+          "idFactura"
+      ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+      ) RETURNING "idVenta";
+    `;
+
+    const values = [
+        idUsuarioCrea,
+        idCliente,
+        fechaCrea,
+        fechaActualizacion,
+        toFixedDecimals(montoTotal),
+        toFixedDecimals(descCalculado),
+        descuento,
+        toFixedDecimals(montoFacturar),
+        idPedido,
+        idFactura ? idFactura : idFacturaPedido,
+    ];
 
     try {
-        const newOrder = await clientTemp.query(query);
+        const newOrder = await clientTemp.query(queryAlt, values);
         const idCreado = newOrder.rows[0].idVenta;
         data.productos.map(async (producto) => {
+
+            const { idProducto, precioDeFabrica, descuentoProd, total, totalProd, cantProducto } = producto
             const totalProducto =
-                producto.total != undefined ? producto.total : producto.totalProd;
-            var queryProds = `insert into Venta_Productos
+                total != undefined ? total : totalProd;
+
+            const queryProdsAlt = `
+                INSERT INTO Venta_Productos
                 (
                    "idVenta", 
                     "idProducto", 
@@ -274,16 +303,22 @@ const registerSalePos = async (data, idFactura, clientTemp) => {
                     "totalProd",
                     "descuentoProducto",
                     "precio_producto"
-                ) values (
-                    ${idCreado},
-                    ${producto.idProducto},
-                    '${producto.cantProducto}',
-                    ${totalProducto},
-                    ${producto.descuentoProd},
-                    ${Number(producto.precioDeFabrica)}
-                )`;
-            console.log("Insertando productos", queryProds);
-            const prods = await clientTemp.query(queryProds);
+                ) VALUES (
+                    $1, $2, $3, $4, $5, $6
+                );
+              `;
+
+            const valuesProds = [
+                idCreado,
+                idProducto,
+                cantProducto,
+                toFixedDecimals(totalProducto),
+                toFixedDecimals(descuentoProd),
+                toFixedDecimals(precioDeFabrica),
+            ];
+
+            console.log("Insertando productos", queryProdsAlt);
+            const prods = await clientTemp.query(queryProdsAlt, valuesProds);
 
         });
         return JSON.stringify({
@@ -333,7 +368,7 @@ const createInvoicePost = async (body, idsCreados, data, selectedLegend) => {
     const clientTemp = await pool.connect();
     try {
         await clientTemp.query("BEGIN");
-        const invoiceResponse = await insertFactura(body, clientTemp);
+        const invoiceResponse = await insertFactura(body.invoice, clientTemp);
         body.venta.idFactura = invoiceResponse
         console.log("Body de la venta", body.venta);
 
@@ -375,7 +410,7 @@ const createInvoicePost = async (body, idsCreados, data, selectedLegend) => {
         clientTemp.release();
     }
 }
-const createInvoicePostWithRetry = async (body, idsCreados, data, selectedLegend, maxRetries = 4) => {
+const createInvoicePostWithRetry = async (body, idsCreados, data, selectedLegend, maxRetries = 150) => {
     let retryCount = 0;
     while (retryCount < maxRetries) {
         try {

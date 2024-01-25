@@ -1,6 +1,7 @@
 const { client } = require("../postgressConn");
 const dbConnection = require("../server");
 const dateString = require("../services/dateServices");
+const { toFixedDecimals } = require("../services/toFixedDecimals");
 
 function createInvoice(body) {
   const invoiceQuery = `
@@ -179,13 +180,13 @@ function createInvoicePos(body) {
             '${body.nitCliente}',
             '${body.razonSocial}',
             ${body.tipoPago},
-            ${body.pagado},
-            ${body.cambio},
+            ${toFixedDecimals(body.pagado)},
+            ${toFixedDecimals(body.cambio)},
             '${body.nroTarjeta}',
             '${body.cuf}',
             '${body.aPagar}',
-            '${body.importeBase}',
-            '${body.debitoFiscal}',
+            '${toFixedDecimals(body.importeBase)}',
+            '${toFixedDecimals(body.debitoFiscal)}',
              '${body.desembolsada}',
              '${body.autorizacion}',
              '${body.cufd}',
