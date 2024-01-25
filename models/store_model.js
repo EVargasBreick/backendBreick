@@ -541,6 +541,7 @@ function getAllStores() {
 
 async function transactionOfUpdateStocks(bodies, isTransaction) {
   try {
+    console.log("BODIES EN TRANSACTION", bodies);
     !isTransaction && (await client.query("BEGIN"));
     const results = [];
     for (const body of bodies) {

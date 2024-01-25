@@ -139,7 +139,9 @@ module.exports = {
 
   getFacturasDB: async (req, res) => {
     const { nit } = req.params;
-    const facturasPromise = emizor.getFacturasDB(nit);
+    const { userStore, date } = req.query;
+    console.log("req.query", req.query);
+    const facturasPromise = emizor.getFacturasDB(nit, userStore, date);
     var responseObject = {};
     facturasPromise
       .then((facturasData) => {

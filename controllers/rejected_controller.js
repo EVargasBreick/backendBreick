@@ -5,6 +5,7 @@ const {
   logRejectedOrderPos,
   getRejectedPos,
   revisedRejectedPos,
+  getTransferDetail,
 } = require("../models/rejected_model.js");
 
 module.exports = {
@@ -30,6 +31,16 @@ module.exports = {
   },
   reviseRejected: (req, res) => {
     const rej = revisedRejectedPos(req.query);
+    rej
+      .then((id) => {
+        res.status(200).send(id);
+      })
+      .catch((err) => {
+        res.status(400).send(err);
+      });
+  },
+  transferDetail: (req, res) => {
+    const rej = getTransferDetail(req.query);
     rej
       .then((id) => {
         res.status(200).send(id);

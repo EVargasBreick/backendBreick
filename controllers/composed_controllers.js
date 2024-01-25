@@ -1154,6 +1154,7 @@ async function composedDropProcess(body) {
     const updatedStock = await updateProductStockPos(stockBody, true);
     if (updatedStock.code == 200) {
       console.log("Devolviendo esto", idCreado);
+      await client.query("COMMIT");
       return { idCreado };
     } else {
       console.log("Updated stock error", updatedStock?.error);

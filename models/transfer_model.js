@@ -677,16 +677,45 @@ function deleteTransferData(params) {
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       try {
-        client.query("BEGIN");
+        await client.query("BEGIN");
         const updated = await client.query(query);
         resolve(updated.rows);
-        client.query("COMMIT");
+        await client.query("COMMIT");
       } catch (err) {
-        client.query("ROLLBACK");
+        await client.query("ROLLBACK");
         reject(err);
       }
     }, 100);
   });
+}
+
+async function getTransferOrderProducts(params) {
+  const { id, type } = params;
+  try {
+    if (type == "P") {
+      const query = `select *, "cantidadProducto" as "cantProducto" from pedido_producto where "idPedido"=$1`;
+      const products = await client.query(query, [id]);
+      return products.rows;
+    } else {
+      const query = `select *, "cantidadProducto" as "cantProducto" from traspaso_producto where "idTraspaso"=$1`;
+      const products = await client.query(query, [id]);
+      return products.rows;
+    }
+  } catch (err) {
+    console.log("ERROR?", err);
+    return new Promise.reject(err);
+  }
+}
+
+async function getTransferProductList(id) {
+  try {
+    const query = `select "codInterno", "nombreProducto", "cantidadProducto" from traspaso_producto tp 
+    inner join productos pr on pr."idProducto"=tp."idProducto" where tp."idTraspaso"=$1`;
+    const data = await client.query(query, [id]);
+    return data.rows;
+  } catch (error) {
+    return new Promise.reject(error);
+  }
 }
 
 module.exports = {
@@ -717,4 +746,6 @@ module.exports = {
   getTransitTransfersPos,
   acceptTransferPos,
   deleteTransferData,
+  getTransferOrderProducts,
+  getTransferProductList,
 };

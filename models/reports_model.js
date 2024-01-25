@@ -224,20 +224,13 @@ ${isSudo}
 }
 
 function ClosingReportPos(params) {
-  console.log("Es ruta", params.ruta);
-  const generalQuery = params.ruta
-    ? `select  fc."idSucursal", fc."puntoDeVenta", fc."idOtroPago", fc."tipoPago", sum(fc.pagado) as "totalPagado", sum(fc.cambio) as "totalCambio", sum(fc.vale) as "totalVale", sum(fc.voucher) as "totalVoucher"
- from Facturas fc 
- where fc."idSucursal"=${params.idSucursal} and fc."puntoDeVenta"=${params.idPdv} and TO_DATE(SUBSTRING(fc."fechaHora",1,10),'DD/MM/YYYY')=CAST(${params.fecha} AS Date )
- and fc."idAgencia"=${params.idAgencia} and fc.estado!=1 and fc."nroFactura"!='0'
- group by fc."idSucursal", "puntoDeVenta", fc."idOtroPago", fc."tipoPago" `
-    : `select  fc."idSucursal", fc."puntoDeVenta", fc."idOtroPago", fc."tipoPago", sum(fc.pagado) as "totalPagado", sum(fc.cambio) as "totalCambio", sum(fc.vale) as "totalVale", sum(fc.voucher) as "totalVoucher"
- from Facturas fc
- where fc."idSucursal"=${params.idSucursal} and fc.estado!=1 and fc."nroFactura"!='0'and fc."puntoDeVenta"=${params.idPdv} and TO_DATE(SUBSTRING(fc."fechaHora",1,10),'DD/MM/YYYY')=CAST(${params.fecha} AS Date )
- group by fc."idSucursal", "puntoDeVenta", fc."idOtroPago", fc."tipoPago" `;
-  console.log("Query fechas:", generalQuery);
+  const generalQuery = `select  fc."idSucursal", fc."puntoDeVenta", fc."idOtroPago", fc."tipoPago", sum("importeBase") as "totalImporte", sum("pagado") as "totalPagado", sum("cambio") as "totalCambio", sum(fc.vale) as "totalVale", sum(fc.voucher) as "totalVoucher"
+    from Facturas fc 
+    where fc."puntoDeVenta"=${params.idPdv} and TO_DATE(fc."fechaHora",'DD/MM/YYYY')=CAST(${params.fecha} AS Date )
+    and fc."idAgencia"=${params.idAgencia} and fc.estado!=1 and fc."nroFactura"!='0'
+    group by fc."idSucursal", "puntoDeVenta", fc."idOtroPago", fc."tipoPago" `;
+  console.log("Query fechas cierre:", generalQuery);
   return new Promise((resolve, reject) => {
-    console.log("Eod query", generalQuery);
     setTimeout(async () => {
       try {
         const data = await client.query(generalQuery);

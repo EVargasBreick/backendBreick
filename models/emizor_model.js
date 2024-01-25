@@ -254,13 +254,17 @@ async function getFacturaDB(uniqueCode) {
   }
 }
 
-async function getFacturasDB(nit) {
+async function getFacturasDB(nit, userStore, date) {
   try {
+    const params = [nit, userStore, date];
+    console.log("user store", userStore, "date", date);
     const query = `SELECT *
     FROM Facturas
-    WHERE "nitCliente" LIKE '${nit}%' 
+    WHERE "nitCliente"=$1
+    and "idAgencia"=$2 and to_date("fechaHora", 'DD/MM/YYYY') = to_date($3, 'YYYY-MM-DD') 
     ORDER BY "fechaHora" ASC;`;
-    const response = await client.query(query);
+    console.log("Query fac", query);
+    const response = await client.query(query, params);
     return JSON.stringify({ data: response.rows, status: 200 });
   } catch (error) {
     return JSON.stringify({

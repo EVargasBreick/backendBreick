@@ -27,6 +27,8 @@ const {
   getTransitTransfersPos,
   acceptTransferPos,
   deleteTransferData,
+  getTransferOrderProducts,
+  getTransferProductList,
 } = require("../models/transfer_model.js");
 const { client } = require("../postgressConn.js");
 
@@ -174,15 +176,37 @@ module.exports = {
         res.status(400).send(error);
       });
   },
+  transferOrderProducts: (req, res) => {
+    const changed = getTransferOrderProducts(req.query);
+    changed
+      .then((list) => {
+        res.status(200).send(list);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
+  transferProductList: (req, res) => {
+    const { id } = req.query;
+    const changed = getTransferProductList(id);
+    changed
+      .then((list) => {
+        res.status(200).send(list);
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  },
 };
 
 async function composedEditTransfer(body) {
-  console.log("Body body", body);
+  console.log("Body edit transfer", body);
   const { addProduct, deleteProduct, updateProduct, editTransfer, stock } =
     body;
+  const bodiesStock = [stock.updateToreturn, stock.updateToTake];
   try {
     await client.query("BEGIN");
-    const stockChanged = transactionOfUpdateStocks(stock, true);
+    const stockChanged = transactionOfUpdateStocks(bodiesStock, true);
     console.log("Stock updateado", stockChanged);
     await addProductToTransferPos(addProduct);
     await deleteProductFromTransferPos({

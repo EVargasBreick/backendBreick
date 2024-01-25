@@ -17,4 +17,6 @@ router.get("/traspaso/transito", controller.transitTransfers);
 router.put("/traspaso/transito", controller.acceptTransfer);
 router.delete("/traspaso/borrar", controller.deleteTransfer);
 router.put("/compuesto/traspaso/editar", controller.composedEdit);
+router.get("/traspaso/pedido/productos", controller.transferOrderProducts);
+router.get("/traspaso/productos/lista", controller.transferProductList);
 module.exports = router;
