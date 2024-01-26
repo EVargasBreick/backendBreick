@@ -144,68 +144,75 @@ function getOtherPayments() {
 // POSTGRES
 
 function createInvoicePos(body) {
+  const { nroFactura, idSucursal, nitEmpresa, fechaHora, nitCliente, razonSocial, tipoPago, pagado, cambio, nroTarjeta, cuf, aPagar, importeBase, debitoFiscal, desembolsada, autorizacion, cufd, fechaEmision, nroTransaccion, idOtroPago, vale, puntoDeVenta, idAgencia, voucher, pya } = body;
+
   const invoiceQuery = `
-        insert into Facturas (
-            "nroFactura",
-            "idSucursal",
-            "nitEmpresa",
-            "fechaHora",
-            "nitCliente",
-            "razonSocial",
-            "tipoPago",
-            "pagado",
-            "cambio",
-            "nroTarjeta",
-            cuf, 
-            estado,
-            "importeBase",
-            "debitoFiscal",
-            "desembolsada",
-            autorizacion,
-            cufd,
-            "fechaEmision",
-            "nroTransaccion",
-            "fechaAnulacion",
-            "idOtroPago",
-            vale,
-            "puntoDeVenta",
-            "idAgencia",
-            voucher,
-            pya
-        ) values (
-            '${body.nroFactura}',
-            ${body.idSucursal},
-            '${body.nitEmpresa}',
-            '${body.fechaHora}',
-            '${body.nitCliente}',
-            '${body.razonSocial}',
-            ${body.tipoPago},
-            ${toFixedDecimals(body.pagado)},
-            ${toFixedDecimals(body.cambio)},
-            '${body.nroTarjeta}',
-            '${body.cuf}',
-            '${body.aPagar}',
-            '${toFixedDecimals(body.importeBase)}',
-            '${toFixedDecimals(body.debitoFiscal)}',
-             '${body.desembolsada}',
-             '${body.autorizacion}',
-             '${body.cufd}',
-             '${body.fechaEmision}',
-             ${body.nroTransaccion},
-             '-',
-             ${body.idOtroPago},
-             ${body.vale},
-             ${body.puntoDeVenta},
-             '${body.idAgencia}',
-             ${body.voucher},
-             ${body.pya ? 1 : 0}
-        ) returning "idFactura"`;
+    INSERT INTO Facturas (
+        "nroFactura",
+        "idSucursal",
+        "nitEmpresa",
+        "fechaHora",
+        "nitCliente",
+        "razonSocial",
+        "tipoPago",
+        "pagado",
+        "cambio",
+        "nroTarjeta",
+        cuf, 
+        estado,
+        "importeBase",
+        "debitoFiscal",
+        "desembolsada",
+        autorizacion,
+        cufd,
+        "fechaEmision",
+        "nroTransaccion",
+        "fechaAnulacion",
+        "idOtroPago",
+        vale,
+        "puntoDeVenta",
+        "idAgencia",
+        voucher,
+        pya
+    ) VALUES (
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26
+    ) RETURNING "idFactura"`;
+
+  const queryValues = [
+    nroFactura,
+    idSucursal,
+    nitEmpresa,
+    fechaHora,
+    nitCliente,
+    razonSocial,
+    tipoPago,
+    toFixedDecimals(pagado),
+    toFixedDecimals(cambio),
+    nroTarjeta,
+    cuf,
+    aPagar,
+    toFixedDecimals(importeBase),
+    toFixedDecimals(debitoFiscal),
+    desembolsada,
+    autorizacion,
+    cufd,
+    fechaEmision,
+    nroTransaccion,
+    '-',
+    idOtroPago,
+    vale,
+    puntoDeVenta,
+    idAgencia,
+    voucher,
+    pya ? 1 : 0
+  ];
+
 
   return new Promise((resolve, reject) => {
-    console.log("New invoice", invoiceQuery);
+    console.log("New invoice", invoiceQuery, queryValues, body);
     setTimeout(async () => {
       try {
-        const added = await client.query(invoiceQuery);
+        const added = await client.query(invoiceQuery, queryValues);
         console.log("Se llegooo");
         resolve({
           factura: added,

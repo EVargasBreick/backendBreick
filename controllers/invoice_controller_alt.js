@@ -159,66 +159,69 @@ const getEstadoFactura = async (req, ackTicket) => {
 
 const insertFactura = async (body, clientTemp) => {
     try {
+        const { nroFactura, idSucursal, nitEmpresa, fechaHora, nitCliente, razonSocial, tipoPago, pagado, cambio, nroTarjeta, cuf, aPagar, importeBase, debitoFiscal, desembolsada, autorizacion, cufd, fechaEmision, nroTransaccion, idOtroPago, vale, puntoDeVenta, idAgencia, voucher, pya } = body;
+
         const invoiceQuery = `
-        INSERT INTO Facturas (
-            "nroFactura",
-            "idSucursal",
-            "nitEmpresa",
-            "fechaHora",
-            "nitCliente",
-            "razonSocial",
-            "tipoPago",
-            "pagado",
-            "cambio",
-            "nroTarjeta",
-            cuf, 
-            estado,
-            "importeBase",
-            "debitoFiscal",
-            "desembolsada",
-            autorizacion,
-            cufd,
-            "fechaEmision",
-            "nroTransaccion",
-            "fechaAnulacion",
-            "idOtroPago",
-            vale,
-            "puntoDeVenta",
-            "idAgencia",
-            voucher,
-            pya
-        ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26
-        ) RETURNING "idFactura"`;
+          INSERT INTO Facturas (
+              "nroFactura",
+              "idSucursal",
+              "nitEmpresa",
+              "fechaHora",
+              "nitCliente",
+              "razonSocial",
+              "tipoPago",
+              "pagado",
+              "cambio",
+              "nroTarjeta",
+              cuf, 
+              estado,
+              "importeBase",
+              "debitoFiscal",
+              "desembolsada",
+              autorizacion,
+              cufd,
+              "fechaEmision",
+              "nroTransaccion",
+              "fechaAnulacion",
+              "idOtroPago",
+              vale,
+              "puntoDeVenta",
+              "idAgencia",
+              voucher,
+              pya
+          ) VALUES (
+              $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26
+          ) RETURNING "idFactura"`;
 
         const queryValues = [
-            body.nroFactura,
-            body.idSucursal,
-            body.nitEmpresa,
-            body.fechaHora,
-            body.nitCliente,
-            body.razonSocial,
-            body.tipoPago,
-            toFixedDecimals(body.pagado),
-            toFixedDecimals(body.cambio),
-            body.nroTarjeta,
-            body.cuf,
-            body.aPagar,
-            toFixedDecimals(body.importeBase),
-            toFixedDecimals(body.debitoFiscal),
-            body.desembolsada,
-            body.autorizacion,
-            body.cufd,
-            body.fechaEmision,
-            body.nroTransaccion,
+            nroFactura,
+            idSucursal,
+            nitEmpresa,
+            fechaHora,
+            nitCliente,
+            razonSocial,
+            tipoPago,
+            toFixedDecimals(pagado),
+            toFixedDecimals(cambio),
+            nroTarjeta,
+            cuf,
+            aPagar,
+            toFixedDecimals(importeBase),
+            toFixedDecimals(debitoFiscal),
+            desembolsada,
+            autorizacion,
+            cufd,
+            fechaEmision,
+            nroTransaccion,
             '-',
-            body.idOtroPago,
-            body.vale,
-            body.puntoDeVenta,
-            body.idAgencia,
-            body.voucher,
-            body.pya ? 1 : 0
+            idOtroPago,
+            vale,
+            puntoDeVenta,
+            idAgencia,
+            voucher,
+            pya ? 1 : 0
         ];
+
         console.log("Query values", queryValues, queryValues.length);
         console.log("Body values", body);
 

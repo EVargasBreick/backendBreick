@@ -1,6 +1,8 @@
 const toFixedDecimals = (value) => {
-  if (typeof value === "number") {
-    return Number(value).toFixed(2);
+  const numericValue = Number(value);
+
+  if (!isNaN(numericValue)) {
+    return numericValue.toFixed(2);
   } else {
     return "0.00";
   }
