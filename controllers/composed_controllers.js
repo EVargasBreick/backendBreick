@@ -264,7 +264,8 @@ const createInvoice = async (body, req) => {
                                 message: "Factura correcta",
                               };
                             }
-                          } catch {
+                          } catch (error) {
+                            console.log("ERROR CREANDO VENTA", error);
                             if (retriesSale < maxRetries) {
                               retriesSale++;
                               logger.info(
@@ -462,7 +463,8 @@ const createInvoice = async (body, req) => {
                                 message: "Error al actualizar los logs",
                               };
                             }
-                          } catch {
+                          } catch (error) {
+                            console.log("ERROR CREANDO VENTA", error);
                             if (salesRetries < maxRetries) {
                               salesRetries++;
                               logger.info(
@@ -753,10 +755,11 @@ const createInvoiceAlt = async (body, req) => {
                                 message: "Factura correcta",
                               };
                             }
-                          } catch {
+                          } catch (error) {
                             if (retriesSale < maxRetries) {
                               retriesSale++;
                               console.log("Retrying sale creation", retries);
+                              console.log("ERROR CREANDO VENTA", error);
                               await delay(3000); // Delay between retries
                             } else {
                               return {
@@ -772,6 +775,7 @@ const createInvoiceAlt = async (body, req) => {
                       if (invRetries < maxRetries) {
                         invRetries++;
                         console.log("Retrying sale creation", invRetries);
+                        console.log("ERROR CREANDO VENTA", error);
                         await delay(3000); // Delay between retries
                       } else {
                         try {
@@ -1372,10 +1376,11 @@ const composedInvoicing = async (body, req) => {
                                 message: "Factura correcta",
                               };
                             }
-                          } catch {
+                          } catch (error) {
                             if (retriesSale < maxRetries) {
                               retriesSale++;
                               console.log("Retrying sale creation", retries);
+                              console.log("ERROR CREANDO VENTA", error);
                               await delay(3000); // Delay between retries
                             } else {
                               return {
@@ -1391,6 +1396,7 @@ const composedInvoicing = async (body, req) => {
                       if (invRetries < maxRetries) {
                         invRetries++;
                         console.log("Retrying sale creation", invRetries);
+                        console.log("ERROR CREANDO VENTA", error);
                         await delay(3000); // Delay between retries
                       } else {
                         try {

@@ -6,4 +6,4 @@ const toFixedDecimals = (value) => {
   }
 };
 
-module.exports = toFixedDecimals;
+module.exports = { toFixedDecimals };
