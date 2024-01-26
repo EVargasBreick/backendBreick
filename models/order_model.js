@@ -164,8 +164,9 @@ function getUserOrderList(params) {
 }
 
 function approveOrder(params) {
-  var queryUpdate = `update Pedidos set estado=1, fechaActualizacion='${dateString()}' where idPedido=${params.id
-    }`;
+  var queryUpdate = `update Pedidos set estado=1, fechaActualizacion='${dateString()}' where idPedido=${
+    params.id
+  }`;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       const approved = await dbConnection.executeQuery(queryUpdate);
@@ -371,11 +372,15 @@ function updateProductOrder(body) {
 function updateOrder(body) {
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
-      var queryUpdate = `Update Pedidos set montoFacturar=${body.montoFacturar
-        }, montoTotal=${body.montoTotal
-        }, fecha_edicion='${dateString()}', descuento=${body.descuento
-        }, descuentoCalculado=${body.descCalculado}, listo=${body.listo
-        }, impreso=${body.impreso} where idPedido=${body.idPedido}`;
+      var queryUpdate = `Update Pedidos set montoFacturar=${
+        body.montoFacturar
+      }, montoTotal=${
+        body.montoTotal
+      }, fecha_edicion='${dateString()}', descuento=${
+        body.descuento
+      }, descuentoCalculado=${body.descCalculado}, listo=${
+        body.listo
+      }, impreso=${body.impreso} where idPedido=${body.idPedido}`;
       console.log("Query ACTUALIZAR", queryUpdate);
       const updatedOrder = await dbConnection.executeQuery(queryUpdate);
       if (updatedOrder.success) {
@@ -703,7 +708,7 @@ function getOrderStatusPos() {
         responseObject.code = 201;
         responseObject.data = statusList.rows;
         resolve(JSON.stringify(responseObject));
-      } catch (err) { }
+      } catch (err) {}
     }, 100);
   });
 }
@@ -777,14 +782,15 @@ function getUserOrderListPos(params) {
             data: orderList.rows,
           })
         );
-      } catch (err) { }
+      } catch (err) {}
     }, 100);
   });
 }
 
 function approveOrderPos(params) {
-  var queryUpdate = `update Pedidos set estado=1, "fechaActualizacion"='${dateString()}' where "idPedido"=${params.id
-    }`;
+  var queryUpdate = `update Pedidos set estado=1, "fechaActualizacion"='${dateString()}' where "idPedido"=${
+    params.id
+  }`;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       try {
@@ -840,7 +846,7 @@ function getOrderTypePos() {
             data: orderType.rows,
           })
         );
-      } catch (err) { }
+      } catch (err) {}
     }, 100);
   });
 }
@@ -860,7 +866,7 @@ function getOrderProductListPos(params) {
             data: prodList.rows,
           })
         );
-      } catch (err) { }
+      } catch (err) {}
     }, 100);
   });
 }
@@ -894,7 +900,7 @@ function cancelOrderPos(id) {
             data: prodList.rows,
           })
         );
-      } catch (err) { }
+      } catch (err) {}
     }, 100);
   });
 }
@@ -915,7 +921,7 @@ function addProductOrderPos(body) {
                 data: addedProduct.rows,
               })
             );
-          } catch (err) { }
+          } catch (err) {}
         }, 200);
       });
     } else {
@@ -946,7 +952,7 @@ function deleteProductOrderPos(body) {
                 data: deleted.rows,
               })
             );
-          } catch { }
+          } catch {}
         }, 100);
       });
     } else {
@@ -1002,12 +1008,17 @@ function updateProductOrderPos(body) {
 function updateOrderPos(body) {
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
-      var queryUpdate = `Update Pedidos set "montoFacturar"=${body.montoFacturar
-        }, "montoTotal"=${body.montoTotal
-        }, "fecha_edicion"='${dateString()}', descuento=${body.descuento
-        }, "descuentoCalculado"=${body.descCalculado}, listo=${body.listo
-        }, impreso=${body.impreso}, estado=${body.estado} where "idPedido"=${body.idPedido
-        }`;
+      var queryUpdate = `Update Pedidos set "montoFacturar"=${
+        body.montoFacturar
+      }, "montoTotal"=${
+        body.montoTotal
+      }, "fecha_edicion"='${dateString()}', descuento=${
+        body.descuento
+      }, "descuentoCalculado"=${body.descCalculado}, listo=${
+        body.listo
+      }, impreso=${body.impreso}, estado=${body.estado} where "idPedido"=${
+        body.idPedido
+      }`;
       console.log("Actualizando pedido", queryUpdate);
       try {
         const updatedOrder = await client.query(queryUpdate);
