@@ -735,6 +735,8 @@ async function GetProductInSamplesReport(startDate, endDate, idAgencia) {
       SELECT bj."idBaja",
       "codInterno",
       "nombreProducto",
+      p."idProducto",
+      p."precioDeFabrica",
       bp."cantProducto" as "cantidad",
              CASE 
                  WHEN ci='-' THEN 'No disponible' 
@@ -745,6 +747,7 @@ async function GetProductInSamplesReport(startDate, endDate, idAgencia) {
              us."usuario", 
              motivo as notas,
              'Baja agencia' as "tipoMuestra",
+             concat('AGENCIA00', bj."idBaja") as "tipo",
              bj."idAlmacen" as "idAgencia",
              case when bj.estado=1 then 'VALIDO' else 'CANCELADO' end as estado
       FROM bajas bj 
@@ -758,6 +761,8 @@ async function GetProductInSamplesReport(startDate, endDate, idAgencia) {
       select  pd."idPedido",
       "codInterno",
       		 "nombreProducto",
+           p."idProducto",
+           p."precioDeFabrica",
       		pp."cantidadProducto" as "cantidad" ,
           "razonSocial",
           "nit", 
@@ -765,6 +770,7 @@ async function GetProductInSamplesReport(startDate, endDate, idAgencia) {
           us.usuario, 
           "notas", 
           'Pedido' as "tipoMuestra",
+          concat('MUESTRA00',pd."idPedido") as "tipo",
           us."idAlmacen" as "idAgencia",
           case when pd.estado!='2' then 'VALIDO' else 'CANCELADO' end as estado
   from pedidos pd inner join clientes cl on cl."idCliente" =pd."idCliente"  
