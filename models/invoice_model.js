@@ -146,7 +146,33 @@ function getOtherPayments() {
 // POSTGRES
 
 function createInvoicePos(body) {
-  const { nroFactura, idSucursal, nitEmpresa, fechaHora, nitCliente, razonSocial, tipoPago, pagado, cambio, nroTarjeta, cuf, aPagar, importeBase, debitoFiscal, desembolsada, autorizacion, cufd, fechaEmision, nroTransaccion, idOtroPago, vale, puntoDeVenta, idAgencia, voucher, pya } = body;
+  const {
+    nroFactura,
+    idSucursal,
+    nitEmpresa,
+    fechaHora,
+    nitCliente,
+    razonSocial,
+    tipoPago,
+    pagado,
+    cambio,
+    nroTarjeta,
+    cuf,
+    aPagar,
+    importeBase,
+    debitoFiscal,
+    desembolsada,
+    autorizacion,
+    cufd,
+    fechaEmision,
+    nroTransaccion,
+    idOtroPago,
+    vale,
+    puntoDeVenta,
+    idAgencia,
+    voucher,
+    pya,
+  } = body;
 
   const invoiceQuery = `
     INSERT INTO Facturas (
@@ -200,15 +226,14 @@ function createInvoicePos(body) {
     cufd,
     fechaEmision,
     nroTransaccion,
-    '-',
+    "-",
     idOtroPago,
     vale,
     puntoDeVenta,
     idAgencia,
     voucher,
-    pya ? 1 : 0
+    pya ? 1 : 0,
   ];
-
 
   return new Promise((resolve, reject) => {
     console.log("New invoice", invoiceQuery, queryValues, body);
@@ -221,7 +246,7 @@ function createInvoicePos(body) {
           idCreado: added.rows[0].idFactura,
         });
       } catch (err) {
-        logger.error("createInvoicePos: " + formatError(err))
+        logger.error("createInvoicePos: " + formatError(err));
         console.log("Error al facturar", err);
         reject(err);
       }
