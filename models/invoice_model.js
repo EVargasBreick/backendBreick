@@ -1,6 +1,8 @@
+const logger = require("../logger-pino");
 const { client } = require("../postgressConn");
 const dbConnection = require("../server");
 const dateString = require("../services/dateServices");
+const { formatError } = require("../services/formatError");
 const { toFixedDecimals } = require("../services/toFixedDecimals");
 
 function createInvoice(body) {
@@ -219,6 +221,7 @@ function createInvoicePos(body) {
           idCreado: added.rows[0].idFactura,
         });
       } catch (err) {
+        logger.error("createInvoicePos: " + formatError(err))
         console.log("Error al facturar", err);
         reject(err);
       }

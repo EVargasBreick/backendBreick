@@ -7,6 +7,7 @@ const { client, pool } = require("../postgressConn");
 const dateString = require("../services/dateServices");
 const { default: axios } = require("axios");
 const { toFixedDecimals } = require("../services/toFixedDecimals");
+const { formatError } = require("../services/formatError");
 const app = express();
 
 app.use(session(sessionParams));
@@ -119,12 +120,7 @@ const getEstadoFactura = async (req, ackTicket) => {
             });
 
             estadoFactura = responseEstado.data;
-
             console.log('response Estado', estadoFactura);
-
-            logger.info(
-                `ESTADO DE LA FACTURA ${JSON.stringify(estadoFactura)}`
-            );
 
             if (estadoFactura.data.estado === "EN PROCESO") {
                 try {
@@ -139,12 +135,8 @@ const getEstadoFactura = async (req, ackTicket) => {
                         },
                     });
                     estadoFactura = responseEstado.data;
-
-                    logger.info(`REINTENTO ${retries}`);
-                    logger.info(`ESTADO DE LA FACTURA ${JSON.stringify(estadoFactura)}`);
-
                 } catch (error) {
-                    logger.error(JSON.stringify(error));
+                    logger.error('GetEstadoFactura: ' + formatError(error));
                 }
                 retries++;
             }
@@ -230,9 +222,6 @@ const insertFactura = async (body, clientTemp) => {
 
 
         const invoiceCreated = added.rows[0].idFactura
-        logger.info(
-            `Invoice created ${invoiceCreated}`
-        );
         return invoiceCreated
     }
     catch (error) {
@@ -383,9 +372,6 @@ const createInvoicePost = async (body, idsCreados, data, selectedLegend) => {
         );
         console.log("Sale created", JSON.parse(saleCreated));
         const ventaCreada = JSON.parse(saleCreated);
-        logger.info(
-            `Sale created ${JSON.stringify(ventaCreada)}`
-        );
         const updatedLogs = await updateLogStockDetails(
             `NVAG-${ventaCreada.idCreado}`,
             idsCreados,
@@ -445,8 +431,6 @@ const createInvoiceAltPlus = async (body, req) => {
             productos: body.stock.productos,
             detalle: `NVAG-0`,
         };
-
-        logger.info(`Stock body ${JSON.stringify(stockBody)}`);
 
         const dateResult = dateString();
 
@@ -543,12 +527,7 @@ const createInvoiceAltPlus = async (body, req) => {
             const responseEstadoFactura = await getEstadoFactura(req, data.ack_ticket)
             const stateData = responseEstadoFactura.data.estado;
 
-            logger.info(`
-                Estado de la factura no emmision type,
-                ${stateData}`);
-
             const autorizacion = `${body.emizor.extras.facturaTicket}$${data.ack_ticket}`;
-            logger.info(`Resp de la factura, ${JSON.stringify(data)}`);
             body.invoice.nroFactura = data.numeroFactura;
             body.invoice.cuf = data.cuf;
             body.invoice.autorizacion = autorizacion;
@@ -559,7 +538,7 @@ const createInvoiceAltPlus = async (body, req) => {
             return responseFinal;
         }
     } catch (error) {
-        console.log("Error", error);
+        logger.error('CreateInvoiceAltPlus:', formatError(error));
         return {
             code: 500,
             error: error,

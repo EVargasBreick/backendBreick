@@ -1,5 +1,7 @@
+const logger = require("../logger-pino");
 const { client } = require("../postgressConn");
 const dbConnection = require("../server");
+const { formatError } = require("../services/formatError");
 
 function registerSale(data) {
   console.log("Ventas", data);
@@ -192,6 +194,7 @@ function registerSalePos(data, idFactura) {
                 })
               );
             } catch (err) {
+              logger.error("registerSalePos: " + formatError(err));
               const del = client.query(
                 `delete from Ventas where "idVenta"=${idCreado}`
               );
@@ -206,12 +209,15 @@ function registerSalePos(data, idFactura) {
                   );
                 })
                 .catch((err) => {
+                  logger.error("registerSalePos: " + formatError(err));
                   throw err;
                 });
             }
           }, 1000);
         });
       } catch (err) {
+        logger.error("registerSalePos: " + formatError(err));
+
         resolve(
           JSON.stringify({
             code: 400,

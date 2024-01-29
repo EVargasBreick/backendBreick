@@ -4,6 +4,8 @@ const dbConnection = require("../server");
 const { client } = require("../postgressConn");
 const secondsToDate = require("../services/secondsToDate");
 const dateString = require("../services/dateServices");
+const logger = require("../logger-pino");
+const { formatError } = require("../services/formatError");
 
 function updateTableToken(token, fechaHora) {
   return new Promise((resolve, reject) => {
@@ -173,6 +175,7 @@ function postFactura(bodyFacturas, bodyFacturasInfo, req) {
           );
         })
         .catch((error) => {
+          logger.error("postFactura: " + formatError(error) ?? "Error Emizor Factura")
           console.log("Error", error);
           reject(
             JSON.stringify({
@@ -182,6 +185,8 @@ function postFactura(bodyFacturas, bodyFacturasInfo, req) {
           );
         });
     } catch (error) {
+      console.log("Error", error);
+      logger.error("postFactura: " + formatError(error) ?? "Error Emizor Factura")
       reject(
         JSON.stringify({
           data: error?.response?.data ?? "Error Emizor Factura",
@@ -232,6 +237,7 @@ async function getEstadoFactura(req, ack_ticket) {
     });
     return JSON.stringify({ data: response.data, status: response.status });
   } catch (error) {
+    logger.error("getEstadoFactura: " + formatError(error?.response?.data) ?? "Error Obteniendo Estado de Factura")
     return JSON.stringify({
       data: error?.response?.data ?? "Error Obteniendo Estado de Factura",
       status: error?.response?.status ?? 500,

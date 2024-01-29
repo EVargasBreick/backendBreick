@@ -1,6 +1,8 @@
+const logger = require("../logger-pino");
 const { client } = require("../postgressConn");
 const dbConnection = require("../server");
 const dateString = require("../services/dateServices");
+const { formatError } = require("../services/formatError");
 
 function getStores() {
   let storeQuery = `select idAgencia + ' ' + nombre as Nombre, idAgencia from Agencias 
@@ -304,8 +306,8 @@ async function updateProductStockPos(body, isTransaction) {
     const typeStock = body.idAlmacen.includes(TiposStock.AGENCIA.identificador)
       ? TiposStock.AGENCIA
       : body.idAlmacen.includes(TiposStock.BODEGA.identificador)
-      ? TiposStock.BODEGA
-      : TiposStock.MOVIL;
+        ? TiposStock.BODEGA
+        : TiposStock.MOVIL;
 
     const queries = [];
     for (const prod of body.productos) {
@@ -347,6 +349,8 @@ async function updateProductStockPos(body, isTransaction) {
         code: 200,
       };
     } catch (err) {
+      logger.error("updateProductStockPos: " + formatError(err))
+
       !isTransaction && (await client.query("ROLLBACK"));
       console.log("error", err);
       return {
@@ -355,6 +359,8 @@ async function updateProductStockPos(body, isTransaction) {
       };
     }
   } else {
+    logger.error("updateProductStockPos: No product to update")
+
     const arrayIds = [];
     return {
       message: "No product to update",
@@ -571,8 +577,8 @@ async function transactionOfUpdateStocks(bodies, isTransaction) {
       )
         ? TiposStock.AGENCIA
         : body.idAlmacen.includes(TiposStock.BODEGA.identificador)
-        ? TiposStock.BODEGA
-        : TiposStock.MOVIL;
+          ? TiposStock.BODEGA
+          : TiposStock.MOVIL;
 
       const queries = [];
       for (const prod of body.productos) {
