@@ -86,8 +86,9 @@ module.exports = {
         res.status(200).send(drop);
       })
       .catch((error) => {
-        const message = error.split("Error");
-        console.log("ERROR AL CREAR LA BAJA", message);
+        // const message = error.split("Error");
+        console.log("ERROR AL CREAR LA BAJA", error);
+        logger.error("composeDropProcess: " + formatError(error))
         res.status(500).send({ data: JSON.stringify(error) });
       });
   },
@@ -1128,12 +1129,16 @@ async function composedDropProcess(body) {
       await client.query("COMMIT");
       return { idCreado };
     } else {
+      logger.error("composedDropProcess: " + formatError(updatedStock.error))
       console.log("Updated stock error", updatedStock?.error);
       await client.query("ROLLBACK");
       return Promise.reject(updatedStock.error);
     }
   } catch (error) {
-    console.log("HAY UN ERROR EN LA BAJA", error);
+
+    const message = await error
+    logger.error("composedDropProcess: " + formatError(message ?? ''))
+    console.log("HAY UN ERROR EN LA BAJA", message);
     await client.query("ROLLBACK");
     return Promise.reject(error);
   }

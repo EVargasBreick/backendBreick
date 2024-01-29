@@ -1,5 +1,7 @@
+const logger = require("../logger-pino");
 const { client } = require("../postgressConn");
 const dbConnection = require("../server");
+const { formatError } = require("../services/formatError");
 const { transactionOfUpdateStocks } = require("./store_model");
 
 function createDrop(body) {
@@ -57,9 +59,11 @@ function createDropPos(body) {
           setTimeout(async () => {
             try {
               const added = await client.query(queryProd);
+              console.log('query Baja', queryProd)
               console.log("Todo bien al agregar productos", idCreado);
               resolve({ added: added.rows, id: idCreado });
-            } catch {
+            } catch (error) {
+              logger.error('createDropPos: ' + formatError(error));
               const del = client.query(
                 `delete from Bajas where "idBaja"=${idCreado}`
               );
@@ -69,6 +73,7 @@ function createDropPos(body) {
           }, 100);
         });
       } catch (err) {
+        logger.error('createDropPos: ' + formatError(err));
         console.log("error al crear la baja", err);
         reject("Error al crear la baja");
       }

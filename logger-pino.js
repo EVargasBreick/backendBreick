@@ -6,7 +6,8 @@ const build = require("pino-abstract-transport");
 
 const streamPostgres = build(function (source) {
   source.on("data", function (obj) {
-    if (obj.level >= 50) { // Only insert logs with level 50 (error) or above
+    if (obj.level >= 50) { 
+      console.log("Error", obj);
       client.query(
         `INSERT INTO logs (level, time, pid, hostname, name, msg)
           VALUES ($1, to_timestamp($2 / 1000.0), $3, $4, $5, $6);`,
