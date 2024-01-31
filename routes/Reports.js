@@ -27,4 +27,6 @@ router.get("/reportes/diario/metas", controller.monthlyGoals);
 router.get("/reportes/diario/restante", controller.remaingingDayGoal);
 router.get("/reportes/muestras", controller.samplesReport);
 router.get("/reportes/muestras/productos", controller.samplesProdReport);
+router.get("/reportes/traspasos/productos", controller.transferProductsReport);
+router.get("/reportes/traspasos/simple", controller.simpleTransferReport);
 module.exports = router;

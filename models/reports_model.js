@@ -224,11 +224,18 @@ ${isSudo}
 }
 
 function ClosingReportPos(params) {
-  const generalQuery = `select  fc."idSucursal", fc."puntoDeVenta", fc."idOtroPago", fc."tipoPago", sum("importeBase") as "totalImporte", sum("pagado") as "totalPagado", sum("cambio") as "totalCambio", sum(fc.vale) as "totalVale", sum(fc.voucher) as "totalVoucher"
+  console.log("Params", params.fromHour);
+  const { fromHour, toHour } = params;
+  let generalQuery = `select  fc."idSucursal", fc."puntoDeVenta", fc."idOtroPago", fc."tipoPago", sum("importeBase") as "totalImporte", sum("pagado") as "totalPagado", sum("cambio") as "totalCambio", sum(fc.vale) as "totalVale", sum(fc.voucher) as "totalVoucher"
     from Facturas fc 
-    where fc."puntoDeVenta"=${params.idPdv} and TO_DATE(fc."fechaHora",'DD/MM/YYYY')=CAST(${params.fecha} AS Date )
-    and fc."idAgencia"=${params.idAgencia} and fc.estado!=1 and fc."nroFactura"!='0'
-    group by fc."idSucursal", "puntoDeVenta", fc."idOtroPago", fc."tipoPago" `;
+    where fc."puntoDeVenta"=${params.idPdv} and TO_DATE(fc."fechaHora",'DD/MM/YYYY')=CAST('${params.fecha}' AS Date )
+    and fc."idAgencia"=${params.idAgencia} and fc.estado!=1 and fc."nroFactura"!='0' `;
+
+  if (fromHour != "" && toHour != "") {
+    generalQuery += ` AND TO_CHAR(TO_TIMESTAMP(fc."fechaHora", 'DD/MM/YYYY HH24:MI:SS'), 'HH24:MI') BETWEEN '${fromHour}' AND '${toHour}'`;
+  }
+
+  generalQuery += `group by fc."idSucursal", "puntoDeVenta", fc."idOtroPago", fc."tipoPago" ;`;
   console.log("Query fechas cierre:", generalQuery);
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
@@ -236,6 +243,7 @@ function ClosingReportPos(params) {
         const data = await client.query(generalQuery);
         resolve(data.rows);
       } catch (err) {
+        console.log("ERROR", err);
         reject(err);
       }
     }, 200);
@@ -681,7 +689,7 @@ async function GetRemainingGoal(date, userId) {
   });
 }
 
-async function GetSamplesReport(startDate, endDate, idAgencia) {
+async function GetSamplesReport(startDate, endDate, idAgencia, tipo) {
   const totalQuery = `SELECT *
   FROM (
       SELECT "idBaja", 
@@ -713,7 +721,7 @@ async function GetSamplesReport(startDate, endDate, idAgencia) {
           case when pd.estado!='2' then 'VALIDO' else 'CANCELADO' end as estado
   from pedidos pd inner join clientes cl on cl."idCliente" =pd."idCliente"  
   inner join usuarios us on us."idUsuario" =pd."idUsuarioCrea" 
-  where tipo='muestra' and  to_date(pd."fechaCrea", 'DD/MM/YYYY') between to_date('${startDate}', 'YYYY-MM-DD') and to_date('${endDate}', 'YYYY-MM-DD')
+  where tipo='${tipo}' and  to_date(pd."fechaCrea", 'DD/MM/YYYY') between to_date('${startDate}', 'YYYY-MM-DD') and to_date('${endDate}', 'YYYY-MM-DD')
    and us."idAlmacen"='${idAgencia}'
   ) subquery
   ORDER BY TO_DATE(subquery."fecha", 'DD/MM/YYYY');
@@ -729,7 +737,7 @@ async function GetSamplesReport(startDate, endDate, idAgencia) {
   });
 }
 
-async function GetProductInSamplesReport(startDate, endDate, idAgencia) {
+async function GetProductInSamplesReport(startDate, endDate, idAgencia, tipo) {
   const totalQuery = `SELECT *
   FROM (
       SELECT bj."idBaja",
@@ -770,14 +778,14 @@ async function GetProductInSamplesReport(startDate, endDate, idAgencia) {
           us.usuario, 
           "notas", 
           'Pedido' as "tipoMuestra",
-          concat('MUESTRA00',pd."idPedido") as "tipo",
+          concat(upper('${tipo}00'),pd."idPedido") as "tipo",
           us."idAlmacen" as "idAgencia",
           case when pd.estado!='2' then 'VALIDO' else 'CANCELADO' end as estado
   from pedidos pd inner join clientes cl on cl."idCliente" =pd."idCliente"  
   inner join usuarios us on us."idUsuario" =pd."idUsuarioCrea" 
   inner join pedido_producto pp on pp."idPedido"=pd."idPedido" 
   inner join productos p on p."idProducto" =pp."idProducto" 
-  where tipo='muestra' and  to_date(pd."fechaCrea", 'DD/MM/YYYY') between to_date('${startDate}', 'YYYY-MM-DD') and to_date('${endDate}', 'YYYY-MM-DD')
+  where tipo='${tipo}' and  to_date(pd."fechaCrea", 'DD/MM/YYYY') between to_date('${startDate}', 'YYYY-MM-DD') and to_date('${endDate}', 'YYYY-MM-DD')
    and us."idAlmacen"='${idAgencia}'
   ) subquery
   ORDER BY TO_TIMESTAMP(subquery."fecha", 'DD/MM/YYYY HH24:MI:SS');
@@ -791,6 +799,29 @@ async function GetProductInSamplesReport(startDate, endDate, idAgencia) {
       reject(err);
     }
   });
+}
+
+async function getTransferProductsByStore(store, startDate, endDate) {
+  try {
+    const query = `select pr."idProducto","codInterno","nombreProducto", "precioDeFabrica", "cantidadProducto", tr."idTraspaso", concat('TRASPASO00',tr."idTraspaso") as codigo from 
+    traspasos tr inner join traspaso_producto tp on tp."idTraspaso"=tr."idTraspaso" inner join productos pr on pr."idProducto"=tp."idProducto"
+    where tr.estado!=2 and tr."idOrigen"=$1 and to_date(tr."fechaCrea",'DD/MM/YYYY') between to_date($2, 'YYYY-MM-DD') and to_date($3, 'YYYY-MM-DD')`;
+    const reportData = await client.query(query, [store, startDate, endDate]);
+    return reportData.rows;
+  } catch (error) {
+    return Promise.reject(error);
+  }
+}
+
+async function getSimpleTransferReport(store, startDate, endDate) {
+  try {
+    const query = `select "idTraspaso","idOrigen", "idDestino",tr."fechaCrea", usuario from Traspasos tr inner join Usuarios us on tr."idUsuario"=us."idUsuario"
+    where tr."idOrigen"=$1 and to_date(tr."fechaCrea",'DD/MM/YYYY') between to_date($2, 'YYYY-MM-DD') and to_date($3, 'YYYY-MM-DD') order by cast("idTraspaso" as int) desc`;
+    const reportData = await client.query(query, [store, startDate, endDate]);
+    return reportData.rows;
+  } catch (error) {
+    return Promise.reject(error);
+  }
 }
 
 module.exports = {
@@ -816,4 +847,6 @@ module.exports = {
   GetRemainingGoal,
   GetSamplesReport,
   GetProductInSamplesReport,
+  getTransferProductsByStore,
+  getSimpleTransferReport,
 };

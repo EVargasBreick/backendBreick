@@ -25,6 +25,8 @@ const {
   GetRemainingGoal,
   GetSamplesReport,
   GetProductInSamplesReport,
+  getTransferProductsByStore,
+  getSimpleTransferReport,
 } = require("../models/reports_model.js");
 app.use(session(sessionParams));
 
@@ -247,9 +249,14 @@ module.exports = {
   },
   samplesReport: async (req, res) => {
     console.log("ENTRANDO ACA", req.query);
-    const { startDate, endDate, idAgencia } = req.query;
+    const { startDate, endDate, idAgencia, tipo } = req.query;
     try {
-      const repData = await GetSamplesReport(startDate, endDate, idAgencia);
+      const repData = await GetSamplesReport(
+        startDate,
+        endDate,
+        idAgencia,
+        tipo
+      );
       res.status(200).json(repData);
     } catch (err) {
       console.log("Error al obtener el reporte", err);
@@ -260,14 +267,49 @@ module.exports = {
   },
   samplesProdReport: async (req, res) => {
     console.log("ENTRANDO ACA", req.query);
-    const { startDate, endDate, idAgencia } = req.query;
+    const { startDate, endDate, idAgencia, tipo } = req.query;
     try {
       const repData = await GetProductInSamplesReport(
         startDate,
         endDate,
-        idAgencia
+        idAgencia,
+        tipo
       );
       res.status(200).json(repData);
+    } catch (err) {
+      console.log("Error al obtener el reporte", err);
+      res
+        .status(500)
+        .json({ error: err || "An error occurred while fetching reports." });
+    }
+  },
+  transferProductsReport: async (req, res) => {
+    console.log("ENTRANDO ACA", req.query);
+    const { idAgencia, startDate, endDate } = req.query;
+    try {
+      const repData = await getTransferProductsByStore(
+        idAgencia,
+        startDate,
+        endDate
+      );
+      res.status(200).send(repData);
+    } catch (err) {
+      console.log("Error al obtener el reporte", err);
+      res
+        .status(500)
+        .json({ error: err || "An error occurred while fetching reports." });
+    }
+  },
+  simpleTransferReport: async (req, res) => {
+    console.log("ENTRANDO ACA", req.query);
+    const { idAgencia, startDate, endDate } = req.query;
+    try {
+      const repData = await getSimpleTransferReport(
+        idAgencia,
+        startDate,
+        endDate
+      );
+      res.status(200).send(repData);
     } catch (err) {
       console.log("Error al obtener el reporte", err);
       res

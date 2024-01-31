@@ -310,7 +310,7 @@ WHERE fr."idAgencia" = ${params.idSucursal}
         AND EXTRACT(YEAR FROM to_date("fechaHora", 'DD/MM/YYYY')) = EXTRACT(YEAR FROM current_date) - 1
       )
     )
-  ));
+  )) order by cast(fr."idFactura" as int) desc;
   `;
   return new Promise((resolve, reject) => {
     console.log("Query facturitas ", productsQuery);

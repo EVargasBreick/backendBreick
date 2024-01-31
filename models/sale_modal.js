@@ -115,6 +115,8 @@ function registerSalePos(data, idFactura) {
     idFactura: idFacturaPedido,
   } = data.pedido;
 
+  const descControlado = descuento == "" ? 0 : descuento;
+
   const queryAlt = `
   INSERT INTO Ventas 
   (
@@ -140,11 +142,38 @@ function registerSalePos(data, idFactura) {
     fechaActualizacion,
     toFixedDecimals(montoTotal),
     toFixedDecimals(descCalculado),
-    descuento,
+    descControlado,
     toFixedDecimals(montoFacturar),
     idPedido,
     idFactura ? idFactura : idFacturaPedido,
   ];
+
+  const queryToLog = `
+  INSERT INTO Ventas 
+  (
+      "idUsuarioCrea",
+      "idCliente",
+      "fechaCrea",
+      "fechaActualizacion",
+      "montoTotal",
+      "descuentoCalculado",
+      descuento,
+      "montoFacturar",
+      "idPedido",
+      "idFactura"
+  ) VALUES (
+      ${idUsuarioCrea},
+      ${idCliente},
+      '${fechaCrea}',
+      '${fechaActualizacion}',
+      ${toFixedDecimals(montoTotal)},
+      ${toFixedDecimals(descCalculado)},
+      ${descControlado},
+      ${toFixedDecimals(montoFacturar)},
+      ${idPedido},
+      ${idFactura ? idFactura : idFacturaPedido}
+  ) RETURNING "idVenta";
+`;
 
   console.log("Creacion pedido query");
   return new Promise((resolve, reject) => {
@@ -153,7 +182,8 @@ function registerSalePos(data, idFactura) {
         const newOrder = await client.query(queryAlt, values);
         const idCreado = newOrder.rows[0].idVenta;
         data.productos.map((producto) => {
-          const { idProducto, cantProducto, descuentoProd, precioDeFabrica } = producto
+          const { idProducto, cantProducto, descuentoProd, precioDeFabrica } =
+            producto;
           const totalProducto =
             producto.total != undefined ? producto.total : producto.totalProd;
 
@@ -180,6 +210,24 @@ function registerSalePos(data, idFactura) {
             toFixedDecimals(precioDeFabrica),
           ];
 
+          const queryProdsLog = `
+          INSERT INTO Venta_Productos
+          (
+             "idVenta", 
+              "idProducto", 
+              "cantidadProducto", 
+              "totalProd",
+              "descuentoProducto",
+              "precio_producto"
+          ) VALUES (
+              ${idCreado}, ${idProducto}, ${cantProducto}, ${toFixedDecimals(
+            totalProducto
+          )}, ${toFixedDecimals(descuentoProd)}, ${toFixedDecimals(
+            precioDeFabrica
+          )}
+          );
+        `;
+
           console.log("Insertando productos", queryProdsAlt);
           setTimeout(async () => {
             try {
@@ -194,7 +242,12 @@ function registerSalePos(data, idFactura) {
                 })
               );
             } catch (err) {
-              logger.error("registerSalePos: " + formatError(err));
+              logger.error(
+                "registerSalePosInsertProducts: " +
+                  formatError(err) +
+                  " Query prods: " +
+                  queryProdsLog
+              );
               const del = client.query(
                 `delete from Ventas where "idVenta"=${idCreado}`
               );
@@ -209,14 +262,21 @@ function registerSalePos(data, idFactura) {
                   );
                 })
                 .catch((err) => {
-                  logger.error("registerSalePos: " + formatError(err));
+                  logger.error(
+                    `registerSalePos: 
+                      ${formatError(err)} 
+                      "Query: " 
+                     ${queryToLog}`
+                  );
                   throw err;
                 });
             }
           }, 1000);
         });
       } catch (err) {
-        logger.error("registerSalePos: " + formatError(err));
+        logger.error(
+          "registerSalePos: " + formatError(err) + "query: " + queryToLog
+        );
 
         resolve(
           JSON.stringify({

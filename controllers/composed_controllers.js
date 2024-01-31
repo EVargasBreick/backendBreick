@@ -88,7 +88,7 @@ module.exports = {
       .catch((error) => {
         // const message = error.split("Error");
         console.log("ERROR AL CREAR LA BAJA", error);
-        logger.error("composeDropProcess: " + formatError(error))
+        logger.error("composeDropProcess: " + formatError(error));
         res.status(500).send({ data: JSON.stringify(error) });
       });
   },
@@ -173,7 +173,6 @@ const createInvoice = async (body, req) => {
 
     const updatedStock = await updateProductStockPos(stockBody);
     if (updatedStock.code === 200) {
-
       const idsCreados = updatedStock.data;
       try {
         // TODO? : Create factura
@@ -199,7 +198,7 @@ const createInvoice = async (body, req) => {
                 logger.error("createInvoice" + formatError(error));
               }
               retries++;
-              await delay(3000); // Delay between retries
+              await delay(1500); // Delay between retries
               if (stateData === "VALIDA" || stateData === "RECHAZADA") {
                 const autorizacion = `${body.emizor.extras.facturaTicket}$${data.ack_ticket}`;
                 if (stateData === "VALIDA") {
@@ -255,7 +254,7 @@ const createInvoice = async (body, req) => {
                             console.log("ERROR CREANDO VENTA", error);
                             if (retriesSale < maxRetries) {
                               retriesSale++;
-                              await delay(2000); // Delay between retries
+                              await delay(1000); // Delay between retries
                             } else {
                               return {
                                 code: 500,
@@ -268,7 +267,7 @@ const createInvoice = async (body, req) => {
                       } catch (error) {
                         if (invRetries < maxRetries) {
                           invRetries++;
-                          await delay(2000); // Delay between retries
+                          await delay(1000); // Delay between retries
                         } else {
                           try {
                             const stockBody = {
@@ -373,7 +372,7 @@ const createInvoice = async (body, req) => {
                 logger.error("createInvoice" + formatError(error));
               }
               retries++;
-              await delay(3000); // Delay between retries
+              await delay(1500); // Delay between retries
               if (
                 stateData === "VALIDA" ||
                 stateData === "RECHAZADA" ||
@@ -430,7 +429,7 @@ const createInvoice = async (body, req) => {
                             console.log("ERROR CREANDO VENTA", error);
                             if (salesRetries < maxRetries) {
                               salesRetries++;
-                              await delay(2000); // Delay between retries
+                              await delay(1000); // Delay between retries
                             } else {
                               return {
                                 code: 500,
@@ -448,7 +447,7 @@ const createInvoice = async (body, req) => {
                             Retrying invoice creation,
                             ${invRetries}
                           `);
-                          await delay(2000); // Delay between retries
+                          await delay(1000); // Delay between retries
                         } else {
                           try {
                             const stockBody = {
@@ -614,7 +613,7 @@ const createInvoiceAlt = async (body, req) => {
               } catch (error) {
                 console.log("Error", error);
                 console.log("Numero de intento", retries);
-                logger.error('CreateInvoiceAlt: ' + formatError(error))
+                logger.error("CreateInvoiceAlt: " + formatError(error));
                 /* return {
                   code: 500,
                   error: error,
@@ -623,7 +622,7 @@ const createInvoiceAlt = async (body, req) => {
                 };*/
               }
               retries++;
-              await delay(3000); // Delay between retries
+              await delay(1500); // Delay between retries
               if (stateData === "VALIDA" || stateData === "RECHAZADA") {
                 const autorizacion = `${body.emizor.extras.facturaTicket}$${data.ack_ticket}`;
                 console.log("Autorizacion test", autorizacion);
@@ -677,7 +676,9 @@ const createInvoiceAlt = async (body, req) => {
                               };
                             } catch (error) {
                               console.log("Error", error);
-                              logger.error("createInvoiceAlt: " + formatError(error))
+                              logger.error(
+                                "createInvoiceAlt: " + formatError(error)
+                              );
                               return {
                                 code: 200,
                                 data: invoiceResponse,
@@ -688,12 +689,14 @@ const createInvoiceAlt = async (body, req) => {
                               };
                             }
                           } catch (error) {
-                            logger.error("createInvoiceAlt: " + formatError(error))
+                            logger.error(
+                              "createInvoiceAlt: " + formatError(error)
+                            );
                             if (retriesSale < maxRetries) {
                               retriesSale++;
                               console.log("Retrying sale creation", retries);
                               console.log("ERROR CREANDO VENTA", error);
-                              await delay(3000); // Delay between retries
+                              await delay(1500); // Delay between retries
                             } else {
                               console.log("Error", error);
                               return {
@@ -706,12 +709,12 @@ const createInvoiceAlt = async (body, req) => {
                         }
                       }
                     } catch (error) {
-                      logger.error("createInvoiceAlt: " + formatError(error))
+                      logger.error("createInvoiceAlt: " + formatError(error));
                       if (invRetries < maxRetries) {
                         invRetries++;
                         console.log("Retrying sale creation", invRetries);
                         console.log("ERROR CREANDO VENTA", error);
-                        await delay(3000); // Delay between retries
+                        await delay(1500); // Delay between retries
                       } else {
                         try {
                           console.log("Error", error);
@@ -733,7 +736,9 @@ const createInvoiceAlt = async (body, req) => {
                           };
                         } catch (error) {
                           console.log("Error", error);
-                          logger.error("createInvoiceAlt: " + formatError(error))
+                          logger.error(
+                            "createInvoiceAlt: " + formatError(error)
+                          );
 
                           return {
                             code: 500,
@@ -744,7 +749,7 @@ const createInvoiceAlt = async (body, req) => {
                       }
                     }
                   } catch (err) {
-                    logger.error("CreateInvoiceAlt: " + formatError(err))
+                    logger.error("CreateInvoiceAlt: " + formatError(err));
                     const stockBody = {
                       accion: "add",
                       idAlmacen: body.stock.idAlmacen,
@@ -781,7 +786,7 @@ const createInvoiceAlt = async (body, req) => {
                       updatedStock,
                     };
                   } catch (error) {
-                    logger.error("CreateInvoiceAlt: " + formatError(error))
+                    logger.error("CreateInvoiceAlt: " + formatError(error));
 
                     return {
                       code: 500,
@@ -792,7 +797,10 @@ const createInvoiceAlt = async (body, req) => {
                 }
               }
               if (maxRetries === retries) {
-                logger.error("CreateInvoiceAlt: " + formatError('Maximo Intentos Alcanzados'))
+                logger.error(
+                  "CreateInvoiceAlt: " +
+                    formatError("Maximo Intentos Alcanzados")
+                );
 
                 return {
                   code: 500,
@@ -802,7 +810,7 @@ const createInvoiceAlt = async (body, req) => {
               }
             }
           } catch (error) {
-            logger.error("CreateInvoiceAlt: " + formatError(error))
+            logger.error("CreateInvoiceAlt: " + formatError(error));
 
             return {
               code: 500,
@@ -829,7 +837,7 @@ const createInvoiceAlt = async (body, req) => {
                 );
                 stateData = JSON.parse(estadoFactura).data.data.estado;
               } catch (error) {
-                logger.error("CreateInvoiceAlt: " + formatError(error))
+                logger.error("CreateInvoiceAlt: " + formatError(error));
 
                 console.log("Error", error);
                 /*return {
@@ -839,7 +847,7 @@ const createInvoiceAlt = async (body, req) => {
                 };*/
               }
               retries++;
-              await delay(3000); // Delay between retries
+              await delay(1500); // Delay between retries
               if (
                 stateData === "VALIDA" ||
                 stateData === "RECHAZADA" ||
@@ -901,7 +909,7 @@ const createInvoiceAlt = async (body, req) => {
                         };
                       }
                     } catch (error) {
-                      logger.error("CreateInvoiceAlt: " + formatError(error))
+                      logger.error("CreateInvoiceAlt: " + formatError(error));
 
                       try {
                         const stockBody = {
@@ -920,7 +928,7 @@ const createInvoiceAlt = async (body, req) => {
                           message: "Error al crear la factura",
                         };
                       } catch (error) {
-                        logger.error("CreateInvoiceAlt: " + formatError(error))
+                        logger.error("CreateInvoiceAlt: " + formatError(error));
 
                         return {
                           code: 500,
@@ -930,7 +938,7 @@ const createInvoiceAlt = async (body, req) => {
                       }
                     }
                   } catch (err) {
-                    logger.error("CreateInvoiceAlt: " + formatError(err))
+                    logger.error("CreateInvoiceAlt: " + formatError(err));
 
                     return {
                       code: 500,
@@ -962,7 +970,7 @@ const createInvoiceAlt = async (body, req) => {
                         ) + " Factura rechazada, intente nuevamente",
                     };
                   } catch (error) {
-                    logger.error("CreateInvoiceAlt: " + formatError(error))
+                    logger.error("CreateInvoiceAlt: " + formatError(error));
 
                     return {
                       code: 500,
@@ -973,7 +981,10 @@ const createInvoiceAlt = async (body, req) => {
                 }
               }
               if (maxRetries === retries) {
-                logger.error("CreateInvoiceAlt: " + formatError("Maximo Intentos Alcanzados"))
+                logger.error(
+                  "CreateInvoiceAlt: " +
+                    formatError("Maximo Intentos Alcanzados")
+                );
 
                 return {
                   code: 500,
@@ -983,7 +994,7 @@ const createInvoiceAlt = async (body, req) => {
               }
             }
           } catch (error) {
-            logger.error("CreateInvoiceAlt: " + formatError(error))
+            logger.error("CreateInvoiceAlt: " + formatError(error));
 
             return {
               code: 500,
@@ -1004,14 +1015,14 @@ const createInvoiceAlt = async (body, req) => {
           };
           console.log("Stock body", stockBody);
           const updatedStock = await updateProductStockPos(stockBody);
-          logger.error("createInvoiceAlt: " + formatError(error))
+          logger.error("createInvoiceAlt: " + formatError(error));
           return {
             code: JSON.parse(error).status,
             error: error,
             message: "Error al enviar la factura a emizor",
           };
         } catch (error) {
-          logger.error("createInvoiceAlt: " + formatError(error))
+          logger.error("createInvoiceAlt: " + formatError(error));
 
           return {
             code: 500,
@@ -1021,7 +1032,7 @@ const createInvoiceAlt = async (body, req) => {
         }
       }
     } else {
-      logger.error('createInvoiceliceAlt: ' + formatError(updatedStock.error))
+      logger.error("createInvoiceliceAlt: " + formatError(updatedStock.error));
 
       return {
         code: 500,
@@ -1129,15 +1140,14 @@ async function composedDropProcess(body) {
       await client.query("COMMIT");
       return { idCreado };
     } else {
-      logger.error("composedDropProcess: " + formatError(updatedStock.error))
+      logger.error("composedDropProcess: " + formatError(updatedStock.error));
       console.log("Updated stock error", updatedStock?.error);
       await client.query("ROLLBACK");
       return Promise.reject(updatedStock.error);
     }
   } catch (error) {
-
-    const message = await error
-    logger.error("composedDropProcess: " + formatError(message ?? ''))
+    const message = await error;
+    logger.error("composedDropProcess: " + formatError(message ?? ""));
     console.log("HAY UN ERROR EN LA BAJA", message);
     await client.query("ROLLBACK");
     return Promise.reject(error);
@@ -1236,4 +1246,3 @@ async function composedAcceptTransfer(body) {
     return Promise.reject(error);
   }
 }
-
