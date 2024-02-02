@@ -315,7 +315,7 @@ function getStockLogged(params) {
   inner join Productos pr on pr."idProducto"=lsc."idProducto"
   where lsc."idAgencia"='${params.idAgencia}' and
   to_date("fechaHora",'DD/MM/YYYY') between to_date('${params.fromDate}', 'YYYY-MM-DD') and to_date('${params.toDate}', 'YYYY-MM-DD') 
-  
+  order by cast("idStockChange" as int) desc
   `;
   return new Promise((resolve, reject) => {
     console.log("Flag", getQuery);

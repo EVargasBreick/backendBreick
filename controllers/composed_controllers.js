@@ -229,7 +229,7 @@ const createInvoice = async (body, req) => {
                             const ventaCreada = JSON.parse(saleCreated);
                             try {
                               const updatedLogs = await updateLogStockDetails(
-                                `NVAG-${ventaCreada.idCreado}`,
+                                `NVAG-${data.numeroFactura}`,
                                 idsCreados
                               );
                               return {
@@ -407,7 +407,7 @@ const createInvoice = async (body, req) => {
 
                             try {
                               const updatedLogs = await updateLogStockDetails(
-                                `NVAG-${ventaCreada.idCreado}`,
+                                `NVAG-${data.numeroFactura}`,
                                 idsCreados
                               );
                               return {
@@ -555,7 +555,7 @@ const createInvoice = async (body, req) => {
       }
     } else {
       logger.error("createInvoice" + formatError(updatedStock.error));
-
+      console.log("ERROR", updatedStock);
       return {
         code: 500,
         error: updatedStock,
@@ -660,7 +660,7 @@ const createInvoiceAlt = async (body, req) => {
                             console.log("Sale created", ventaCreada);
                             try {
                               const updatedLogs = await updateLogStockDetails(
-                                `NVAG-${ventaCreada.idCreado}`,
+                                `NVAG-${data.numeroFactura}`,
                                 idsCreados
                               );
                               console.log("Updated logs", updatedLogs);
@@ -884,7 +884,7 @@ const createInvoiceAlt = async (body, req) => {
                         console.log("Sale created", ventaCreada);
                         try {
                           const updatedLogs = await updateLogStockDetails(
-                            `NVAG-${ventaCreada.idCreado}`,
+                            `NVAG-${data.numeroFactura}`,
                             idsCreados
                           );
                           return {

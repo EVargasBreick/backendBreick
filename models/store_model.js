@@ -281,7 +281,7 @@ function getUserStockPos(params) {
   });
 }
 
-async function updateProductStockPos(body, isTransaction) {
+async function updateProductStockPosAlt(body, isTransaction) {
   console.log("BODY", body);
   if (body.productos.length > 0) {
     const TiposStock = Object.freeze({
@@ -306,8 +306,8 @@ async function updateProductStockPos(body, isTransaction) {
     const typeStock = body.idAlmacen.includes(TiposStock.AGENCIA.identificador)
       ? TiposStock.AGENCIA
       : body.idAlmacen.includes(TiposStock.BODEGA.identificador)
-        ? TiposStock.BODEGA
-        : TiposStock.MOVIL;
+      ? TiposStock.BODEGA
+      : TiposStock.MOVIL;
 
     const queries = [];
     for (const prod of body.productos) {
@@ -349,7 +349,7 @@ async function updateProductStockPos(body, isTransaction) {
         code: 200,
       };
     } catch (err) {
-      logger.error("updateProductStockPos: " + formatError(err))
+      logger.error("updateProductStockPos: " + formatError(err));
 
       !isTransaction && (await client.query("ROLLBACK"));
       console.log("error", err);
@@ -359,7 +359,7 @@ async function updateProductStockPos(body, isTransaction) {
       };
     }
   } else {
-    logger.error("updateProductStockPos: No product to update")
+    logger.error("updateProductStockPos: No product to update");
 
     const arrayIds = [];
     return {
@@ -370,7 +370,96 @@ async function updateProductStockPos(body, isTransaction) {
   }
 }
 
-async function updateLogStockDetails(detalle, idsCreados) {
+async function updateProductStockPos(body, isTransaction) {
+  console.log("BODY", body);
+  try {
+    if (body.productos.length > 0) {
+      const TiposStock = Object.freeze({
+        AGENCIA: {
+          identificador: "AG",
+          idName: "idAgencia",
+          tableName: "Stock_Agencia",
+        },
+        BODEGA: {
+          identificador: "AL",
+          idName: "idBodega",
+          tableName: "Stock_Bodega",
+        },
+        MOVIL: {
+          identificador: "-",
+          idName: "idVehiculo",
+          tableName: "Stock_Agencia_Movil",
+        },
+      });
+      const dateResult = dateString();
+      const operator = body.accion === "add" ? "+" : "-";
+      const typeStock = body.idAlmacen.includes(
+        TiposStock.AGENCIA.identificador
+      )
+        ? TiposStock.AGENCIA
+        : body.idAlmacen.includes(TiposStock.BODEGA.identificador)
+        ? TiposStock.BODEGA
+        : TiposStock.MOVIL;
+
+      const arrayIds = [];
+      !isTransaction && (await client.query("BEGIN"));
+      for (const prod of body.productos) {
+        const updateStockQueryAlt = `
+        UPDATE ${typeStock.tableName}
+        SET "cant_Anterior" = "cant_Actual",
+            "diferencia" = $1,
+            "cant_Actual" = "cant_Actual" ${operator} $2,
+            "fechaActualizacion" = $3
+        WHERE "idProducto" = $4 AND "${typeStock.idName}" = $5;
+      `;
+        const logQueryAlt = `
+        INSERT INTO log_stock_change ("idProducto", "cantidadProducto", "idAgencia", "fechaHora", "accion", "detalle")
+        VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING "idStockChange";
+      `;
+        await client.query(updateStockQueryAlt, [
+          prod.cantProducto,
+          prod.cantProducto,
+          dateResult,
+          prod.idProducto,
+          body.idAlmacen,
+        ]);
+        const logResult = await client.query(logQueryAlt, [
+          prod.idProducto,
+          prod.cantProducto,
+          body.idAlmacen,
+          dateResult,
+          operator,
+          body.detalle,
+        ]);
+        arrayIds.push(logResult.rows[0].idStockChange);
+      }
+
+      !isTransaction && (await client.query("COMMIT"));
+      return {
+        data: arrayIds,
+        code: 200,
+      };
+    } else {
+      logger.error("updateProductStockPos: No product to update");
+      return {
+        message: "No product to update",
+        data: arrayIds,
+        code: 200,
+      };
+    }
+  } catch (err) {
+    logger.error("updateProductStockPos: " + formatError(err));
+    console.log("error", err);
+    !isTransaction && (await client.query("ROLLBACK"));
+    return {
+      error: err.message || err,
+      code: 500,
+    };
+  }
+}
+
+async function updateLogStockDetailsAlt(detalle, idsCreados) {
   if (idsCreados > 0) {
     console.log("Ids creados", idsCreados);
     const queryArray = [];
@@ -398,6 +487,37 @@ async function updateLogStockDetails(detalle, idsCreados) {
     return {
       data: [],
       code: 200,
+    };
+  }
+}
+
+async function updateLogStockDetails(detalle, idsCreados) {
+  console.log("IDS CREADOS", idsCreados, detalle);
+  try {
+    if (idsCreados.length > 0) {
+      await client.query("BEGIN");
+      for (const id of idsCreados) {
+        const updateQuery = `update log_stock_change set detalle=$1 where "idStockChange"=$2`;
+        console.log("Updateando stock query log", updateQuery);
+        const updated = await client.query(updateQuery, [detalle, id]);
+        console.log("UPDATED ROWS", updated);
+      }
+      await client.query("COMMIT");
+      return {
+        data: [],
+        code: 200,
+      };
+    } else {
+      return {
+        data: [],
+        code: 200,
+      };
+    }
+  } catch (err) {
+    await client.query("ROLLBACK");
+    return {
+      error: err.message || err,
+      code: 500,
     };
   }
 }
@@ -577,8 +697,8 @@ async function transactionOfUpdateStocks(bodies, isTransaction) {
       )
         ? TiposStock.AGENCIA
         : body.idAlmacen.includes(TiposStock.BODEGA.identificador)
-          ? TiposStock.BODEGA
-          : TiposStock.MOVIL;
+        ? TiposStock.BODEGA
+        : TiposStock.MOVIL;
 
       const queries = [];
       for (const prod of body.productos) {
