@@ -286,6 +286,7 @@ function updateInvoicePos(body) {
 }
 
 function getInvoiceProductsPos(params) {
+  console.log("Params params", params);
   const productsQuery = `
   SELECT fr.*, pr."idProducto", pr."nombreProducto",
   vp."cantidadProducto" as "cantProducto", vn."montoFacturar"

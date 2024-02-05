@@ -398,7 +398,7 @@ function getProdOriginPos() {
 }
 
 async function getAllProducts() {
-  const query = `select * from Productos where activo=1`;
+  const query = `select * from Productos`;
   try {
     const ids = await client.query(query);
     return ids.rows;

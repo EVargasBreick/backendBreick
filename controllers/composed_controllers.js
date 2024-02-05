@@ -274,7 +274,11 @@ const createInvoice = async (body, req) => {
                               accion: "add",
                               idAlmacen: body.stock.idAlmacen,
                               productos: body.stock.productos,
-                              detalle: `CVAGN-0`,
+                              detalle: `CVAGN-${
+                                body.invoice?.nitCliente
+                                  ? body.invoice?.nitCliente
+                                  : "0"
+                              }`,
                             };
                             const updatedStock = await updateProductStockPos(
                               stockBody
@@ -300,7 +304,11 @@ const createInvoice = async (body, req) => {
                       accion: "add",
                       idAlmacen: body.stock.idAlmacen,
                       productos: body.stock.productos,
-                      detalle: `CVAGN-0`,
+                      detalle: `CVAGN-${
+                        body.invoice?.nitCliente
+                          ? body.invoice?.nitCliente
+                          : "0"
+                      }`,
                     };
                     logger.error("createInvoice" + formatError(err));
                     const updatedStock = await updateProductStockPos(stockBody);
@@ -317,7 +325,11 @@ const createInvoice = async (body, req) => {
                       accion: "add",
                       idAlmacen: body.stock.idAlmacen,
                       productos: body.stock.productos,
-                      detalle: `CVAGN-0`,
+                      detalle: `CVAGN-${
+                        body.invoice?.nitCliente
+                          ? body.invoice?.nitCliente
+                          : "0"
+                      }`,
                     };
                     const updatedStock = await updateProductStockPos(stockBody);
                     return {
@@ -344,7 +356,9 @@ const createInvoice = async (body, req) => {
                   accion: "add",
                   idAlmacen: body.stock.idAlmacen,
                   productos: body.stock.productos,
-                  detalle: `CVAGN-0`,
+                  detalle: `CVAGN-${
+                    body.invoice?.nitCliente ? body.invoice?.nitCliente : "0"
+                  }`,
                 };
                 const updatedStock = await updateProductStockPos(stockBody);
                 return {
@@ -463,7 +477,11 @@ const createInvoice = async (body, req) => {
                               accion: "add",
                               idAlmacen: body.stock.idAlmacen,
                               productos: body.stock.productos,
-                              detalle: `CVAGN-0`,
+                              detalle: `CVAGN-${
+                                body.invoice?.nitCliente
+                                  ? body.invoice?.nitCliente
+                                  : "0"
+                              }`,
                             };
                             const updatedStock = await updateProductStockPos(
                               stockBody
@@ -496,7 +514,11 @@ const createInvoice = async (body, req) => {
                       accion: "add",
                       idAlmacen: body.stock.idAlmacen,
                       productos: body.stock.productos,
-                      detalle: `CVAGN-0`,
+                      detalle: `CVAGN-${
+                        body.invoice?.nitCliente
+                          ? body.invoice?.nitCliente
+                          : "0"
+                      }`,
                     };
                     const updatedStock = await updateProductStockPos(stockBody);
                     return {
@@ -542,7 +564,9 @@ const createInvoice = async (body, req) => {
             accion: "add",
             idAlmacen: body.stock.idAlmacen,
             productos: body.stock.productos,
-            detalle: `CVAGN-0`,
+            detalle: `CVAGN-${
+              body.invoice?.nitCliente ? body.invoice?.nitCliente : "0"
+            }`,
           };
 
           const updatedStock = await updateProductStockPos(stockBody);
@@ -731,7 +755,11 @@ const createInvoiceAlt = async (body, req) => {
                             accion: "add",
                             idAlmacen: body.stock.idAlmacen,
                             productos: body.stock.productos,
-                            detalle: `CVAGN-0`,
+                            detalle: `CVAGN-${
+                              body.invoice?.nitCliente
+                                ? body.invoice?.nitCliente
+                                : "0"
+                            }`,
                           };
                           console.log("Stock body", stockBody);
                           const updatedStock = await updateProductStockPos(
@@ -763,7 +791,11 @@ const createInvoiceAlt = async (body, req) => {
                       accion: "add",
                       idAlmacen: body.stock.idAlmacen,
                       productos: body.stock.productos,
-                      detalle: `CVAGN-0`,
+                      detalle: `CVAGN-${
+                        body.invoice?.nitCliente
+                          ? body.invoice?.nitCliente
+                          : "0"
+                      }`,
                     };
                     console.log("Stock body", stockBody);
                     const updatedStock = await updateProductStockPos(stockBody);
@@ -780,7 +812,11 @@ const createInvoiceAlt = async (body, req) => {
                       accion: "add",
                       idAlmacen: body.stock.idAlmacen,
                       productos: body.stock.productos,
-                      detalle: `CVAGN-0`,
+                      detalle: `CVAGN-${
+                        body.invoice?.nitCliente
+                          ? body.invoice?.nitCliente
+                          : "0"
+                      }`,
                     };
                     console.log("Stock body", stockBody);
                     const updatedStock = await updateProductStockPos(stockBody);
@@ -806,15 +842,29 @@ const createInvoiceAlt = async (body, req) => {
                 }
               }
               if (maxRetries === retries) {
+                const stockBody = {
+                  accion: "add",
+                  idAlmacen: body.stock.idAlmacen,
+                  productos: body.stock.productos,
+                  detalle: `CVAGN-${
+                    body.invoice?.nitCliente ? body.invoice?.nitCliente : "0"
+                  }`,
+                };
+                console.log("Stock body", stockBody);
+                const updatedStock = await updateProductStockPos(stockBody);
                 logger.error(
                   "CreateInvoiceAlt: " +
-                    formatError("Maximo Intentos Alcanzados")
+                    formatError(
+                      "Maximo de intentos de validar la factura en impuestos alcanzado"
+                    )
                 );
 
                 return {
                   code: 500,
-                  error: "Maximo de intentos alcanzado",
-                  message: "Maximo de intentos alcanzado",
+                  error:
+                    "Maximo de intentos de validar la factura en impuestos alcanzado",
+                  message:
+                    "Maximo de intentos de validar la factura en impuestos alcanzado",
                 };
               }
             }
@@ -925,7 +975,11 @@ const createInvoiceAlt = async (body, req) => {
                           accion: "add",
                           idAlmacen: body.stock.idAlmacen,
                           productos: body.stock.productos,
-                          detalle: `CVAGN-0`,
+                          detalle: `CVAGN-${
+                            body.invoice?.nitCliente
+                              ? body.invoice?.nitCliente
+                              : "0"
+                          }`,
                         };
                         console.log("Stock body", stockBody);
                         const updatedStock = await updateProductStockPos(
@@ -961,7 +1015,11 @@ const createInvoiceAlt = async (body, req) => {
                       accion: "add",
                       idAlmacen: body.stock.idAlmacen,
                       productos: body.stock.productos,
-                      detalle: `CVAGN-0`,
+                      detalle: `CVAGN-${
+                        body.invoice?.nitCliente
+                          ? body.invoice?.nitCliente
+                          : "0"
+                      }`,
                     };
                     console.log("Stock body", stockBody);
                     const updatedStock = await updateProductStockPos(stockBody);
@@ -990,15 +1048,28 @@ const createInvoiceAlt = async (body, req) => {
                 }
               }
               if (maxRetries === retries) {
+                const stockBody = {
+                  accion: "add",
+                  idAlmacen: body.stock.idAlmacen,
+                  productos: body.stock.productos,
+                  detalle: `CVAGN-${
+                    body.invoice?.nitCliente ? body.invoice?.nitCliente : "0"
+                  }`,
+                };
+                console.log("Stock body", stockBody);
+                const updatedStock = await updateProductStockPos(stockBody);
                 logger.error(
                   "CreateInvoiceAlt: " +
-                    formatError("Maximo Intentos Alcanzados")
+                    formatError(
+                      "Maximo de intentos de validar la factura en impuestos alcanzado"
+                    )
                 );
-
                 return {
                   code: 500,
-                  error: "Maximo de intentos alcanzado",
-                  message: "Maximo de intentos alcanzado",
+                  error:
+                    "Maximo de intentos de validar la factura en impuestos alcanzado, intente nuevamente",
+                  message:
+                    "Maximo de intentos de validar la factura en impuestos alcanzado, intente nuevamente",
                 };
               }
             }
@@ -1020,7 +1091,9 @@ const createInvoiceAlt = async (body, req) => {
             accion: "add",
             idAlmacen: body.stock.idAlmacen,
             productos: body.stock.productos,
-            detalle: `CVAGN-0`,
+            detalle: `CVAGN-${
+              body.invoice?.nitCliente ? body.invoice?.nitCliente : "0"
+            }`,
           };
           console.log("Stock body", stockBody);
           const updatedStock = await updateProductStockPos(stockBody);
