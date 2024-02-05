@@ -372,6 +372,7 @@ async function updateProductStockPosAlt(body, isTransaction) {
 
 async function updateProductStockPos(body, isTransaction) {
   console.log("BODY", body);
+  const arrayIds = [];
   try {
     if (body.productos.length > 0) {
       const TiposStock = Object.freeze({
@@ -401,7 +402,6 @@ async function updateProductStockPos(body, isTransaction) {
         ? TiposStock.BODEGA
         : TiposStock.MOVIL;
 
-      const arrayIds = [];
       !isTransaction && (await client.query("BEGIN"));
       for (const prod of body.productos) {
         const updateStockQueryAlt = `
@@ -733,7 +733,6 @@ async function transactionOfUpdateStocks(bodies, isTransaction) {
   } catch (err) {
     !isTransaction && (await client.query("ROLLBACK"));
     console.log("error", err);
-    // reject(err);
     return {
       error: err.message || err,
       code: 400,

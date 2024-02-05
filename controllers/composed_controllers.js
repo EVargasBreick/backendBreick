@@ -340,10 +340,19 @@ const createInvoice = async (body, req) => {
                 }
               }
               if (maxRetries === retries) {
+                const stockBody = {
+                  accion: "add",
+                  idAlmacen: body.stock.idAlmacen,
+                  productos: body.stock.productos,
+                  detalle: `CVAGN-0`,
+                };
+                const updatedStock = await updateProductStockPos(stockBody);
                 return {
                   code: 500,
-                  error: "Maximo de intentos alcanzado",
-                  message: "Maximo de intentos alcanzado",
+                  error:
+                    "Maximo de intentos de validar la factura en impuestos alcanzado",
+                  message:
+                    "Maximo de intentos de validar la factura en impuestos alcanzado",
                 };
               }
             }
