@@ -1,6 +1,7 @@
 //const { updateUser } = require("../controllers/user_controller");
 const { client } = require("../postgressConn");
 const dbConnection = require("../server");
+const dateString = require("../services/dateServices");
 
 function findUserByName(nombre) {
   var queryAll = `select * from Usuarios where nombre='${nombre}'`;
@@ -284,6 +285,7 @@ function findUserBasicPos() {
 
 async function changePassword(data) {
   const { idUser, originalPassword, newPassword } = data;
+
   const checkPassword = `select password from Usuarios where "idUsuario"=${idUser}`;
   const queryChange = `update Usuarios set password='${newPassword}' where "idUsuario"=${idUser}`;
   try {
@@ -339,7 +341,7 @@ async function getAllUsers(queryParams) {
   // roles are send like  /?roles=1,2,3
   const { roles } = queryParams;
   let query = `
-  SELECT *
+  SELECT "idUsuario", nombre, "apPaterno", "apMaterno", cedula, correo, acceso, rol, usuario, "idAlmacen","idDepto","tipoUsuario"
   FROM usuarios u
   `;
   const rols = roles?.split(",");

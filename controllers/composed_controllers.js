@@ -1319,7 +1319,10 @@ async function composedAcceptTransfer(body) {
     }
     await transactionOfUpdateStocks(stock, true);
     console.log("Actualizo los stocks");
-    const accepted = await acceptTransferPos({ id: transfer });
+    const accepted = await acceptTransferPos({
+      id: transfer.id,
+      userId: transfer.userId,
+    });
     client.query("COMMIT");
     return accepted;
   } catch (error) {
