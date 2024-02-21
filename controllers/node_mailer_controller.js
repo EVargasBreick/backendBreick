@@ -13,6 +13,7 @@ module.exports = {
     oAuth2Client.setCredentials({ refresh_token: process.env.REFRESH_TOKEN });
 
     async function sendMail() {
+      const currentYear = new Date().getFullYear();
       const accessToken = await oAuth2Client.getAccessToken();
       const mailBody = `<!DOCTYPE html>
     <html>
@@ -51,7 +52,7 @@ module.exports = {
          
       
         <footer>
-          <p>2023 Incadex S.R.L.</p>
+          <p>${currentYear} Incadex S.R.L.</p>
         </footer>
       </body>
     </html>`;
@@ -108,7 +109,7 @@ module.exports = {
            
         
           <footer>
-            <p>2023 Incadex S.R.L.</p>
+            <p>${currentYear} Incadex S.R.L.</p>
           </footer>
         </body>
       </html>`,
@@ -142,6 +143,7 @@ module.exports = {
     oAuth2Client.setCredentials({ refresh_token: process.env.REFRESH_TOKEN });
     async function sendMail() {
       const accessToken = await oAuth2Client.getAccessToken();
+      const currentYear = new Date().getFullYear();
       var transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
@@ -192,7 +194,7 @@ module.exports = {
           </tr>
         </table>    
           <footer>
-            <p>2023 Incadex S.R.L.</p>
+            <p>${currentYear} Incadex S.R.L.</p>
           </footer>
         </body>
       </html>`,

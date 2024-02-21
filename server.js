@@ -84,6 +84,7 @@ const {
 } = require("./services/stabilizeStocks");
 const { logIncompleteSales } = require("./services/registerErrorSales");
 const logger = require("./logger-pino");
+const logDiscounts = require("./services/notifyDailyDiscounts");
 
 app.use("/", loginRoutes);
 app.use("/", emizorRoutes);
@@ -119,6 +120,7 @@ if (serverType === "web") {
   https.createServer(options, app).listen(443, () => {
     console.log("Server listening on port 443");
     console.log("Hora actual", new Date());
+
     function setupInterval() {
       const now = new Date();
       var millisTill4AM =
@@ -146,6 +148,7 @@ if (serverType === "web") {
     console.log("Cors options", corsOptions);
     console.log("Server listening on port ", 5200);
     console.log("Tipo de corrida", process.env.TYPE);
+    //logDiscounts();
     //logIncompleteSales();
   });
 }
