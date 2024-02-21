@@ -422,7 +422,7 @@ function getTransferListPos(params) {
       : params.crit === "ac"
       ? `where estado>0 and movil=0`
       : `where estado='0' and movil=0`;
-  var queryGetList = `select a.estado, a.impreso, a.listo, a."idUsuario",a.id_usuario_acepta, b.nombre as "nombreOrigen", a."idOrigen", a."idDestino",
+  var queryGetList = `select a.transito, a.estado, a.impreso, a.listo, a."idUsuario",a.id_usuario_acepta, b.nombre as "nombreOrigen", a."idOrigen", a."idDestino",
     (select x.nombre from Agencias x where x."idAgencia"=a."idDestino" union 
     select x.nombre from Bodegas x where x."idBodega"=a."idDestino" union 
     select 'Agencia Movil '||x.placa from Vehiculos x where x.placa=a."idDestino") 
@@ -433,7 +433,7 @@ function getTransferListPos(params) {
     inner join Usuarios f on a."idUsuario"=f."idUsuario"
     ${criteria}
     union
-    select a.estado, a.impreso, a.listo, a."idUsuario",a.id_usuario_acepta, b.nombre as "nombreOrigen", a."idOrigen", a."idDestino",
+    select a.transito, a.estado, a.impreso, a.listo, a."idUsuario",a.id_usuario_acepta, b.nombre as "nombreOrigen", a."idOrigen", a."idDestino",
     (select x.nombre from Agencias x where x."idAgencia"=a."idDestino" union 
     select x.nombre from Bodegas x where x."idBodega"=a."idDestino" union 
     select 'Agencia Movil '||x.placa from Vehiculos x where x.placa=a."idDestino") 
@@ -444,7 +444,7 @@ function getTransferListPos(params) {
     inner join Usuarios f on a."idUsuario"=f."idUsuario"
     ${criteria}
     union 
-    select a.estado, a.impreso, a.listo, a."idUsuario",a.id_usuario_acepta,'Agencia movil '||b.placa as "nombreOrigen", a."idOrigen", a."idDestino",
+    select a.transito, a.estado, a.impreso, a.listo, a."idUsuario",a.id_usuario_acepta,'Agencia movil '||b.placa as "nombreOrigen", a."idOrigen", a."idDestino",
     (select x.nombre from Agencias x where x."idAgencia"=a."idDestino" union 
     select x.nombre from Bodegas x where x."idBodega"=a."idDestino" union 
     select 'Agencia Movil '||x.placa from Vehiculos x where x.placa=a."idDestino") 
