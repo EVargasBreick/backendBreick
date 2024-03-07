@@ -175,7 +175,7 @@ function registerSalePos(data, idFactura) {
   ) RETURNING "idVenta";
 `;
 
-  console.log("Creacion pedido query");
+  console.log("Creacion pedido query", queryToLog);
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       try {
@@ -228,7 +228,7 @@ function registerSalePos(data, idFactura) {
           );
         `;
 
-          console.log("Insertando productos", queryProdsAlt);
+          console.log("Insertando productos", queryProdsLog);
           setTimeout(async () => {
             try {
               const prods = await client.query(queryProdsAlt, valuesProds);
@@ -310,11 +310,10 @@ function deleteSale(params) {
 }
 
 const toFixedDecimals = (value) => {
-  if (typeof value === "number") {
+  if (!isNaN(value) && !isNaN(parseFloat(value))) {
     return Number(value).toFixed(2);
   } else {
     return "0.00";
   }
 };
-
 module.exports = { registerSale, registerSalePos, deleteSale };

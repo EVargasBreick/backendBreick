@@ -237,7 +237,7 @@ function updateClientPos(data, params) {
 function getClientsPos(params) {
   const { search_record } = params;
   const queryGetClient = params.search
-    ? `select a.*, b.zona, c.dias from Clientes a, Zonas b, Dias_Frecuencia c where a."razonSocial" like ('%${params.search}%') 
+    ? `select a.*, b.zona, c.dias from Clientes a, Zonas b, Dias_Frecuencia c where lower(a."razonSocial") like (lower('%${params.search}%')) 
     and a."idZona"=b."idZona" and a.frecuencia=c."idDiasFrec" and a.activo=1 union 
     select a.*, b.zona, c.dias from Clientes a, Zonas b, Dias_Frecuencia c where a.nit='${params.search}' 
     and a."idZona"=b."idZona" and a.frecuencia=c."idDiasFrec" and a.activo=1`
@@ -247,7 +247,7 @@ function getClientsPos(params) {
 
   if (search_record) {
     return new Promise(async (resolve, reject) => {
-      const query = `select distinct a.*, b.zona, c.dias from Clientes a, Zonas b, Dias_Frecuencia c where a."razonSocial" like ('%${search_record}%') 
+      const query = `select distinct a.*, b.zona, c.dias from Clientes a, Zonas b, Dias_Frecuencia c where lower(a."razonSocial") like (lower('%${search_record}%')) 
       and a."idZona"=b."idZona" and a.frecuencia=c."idDiasFrec" and a.activo=1 union 
       select distinct a.*, b.zona, c.dias from Clientes a, Zonas b, Dias_Frecuencia c where a.nit='${search_record}' 
       and a."idZona"=b."idZona" and a.frecuencia=c."idDiasFrec" and a.activo=1`;

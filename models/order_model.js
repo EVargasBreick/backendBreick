@@ -1301,78 +1301,57 @@ function rejectReadyPos(params) {
   });
 }
 
-async function updateVirtualStock(body) {
+async function updateVirtualStock(body, isTransaction) {
   console.log("Funcion de actualizar stock de almacen virtual");
-  return new Promise(async (resolve, reject) => {
+  try {
     const products = body.productos;
     const clientInfo = body.clientInfo;
+    !isTransaction && client.query("BEGIN");
     if (body.accion === "add") {
-      client.query("BEGIN");
-      var errCount = 0;
       for (var product of products) {
-        const verifQuery = `select * from almacen_virtual where "idDepto"=(select "idDepartamento" from Zonas 
-        where "idZona"=${clientInfo.idZona}) and "nitCliente"='${clientInfo.nitCliente}' and "idProducto"=${product.idProducto}`;
+        const verifQuery = `SELECT * FROM almacen_virtual WHERE "idDepto"=(SELECT "idDepartamento" FROM Zonas 
+        WHERE "idZona"=${clientInfo.idZona}) AND "nitCliente"='${clientInfo.nitCliente}' AND "idProducto"=${product.idProducto}`;
         try {
           const verified = await client.query(verifQuery);
           if (verified.rows.length > 0) {
-            const updateQuery = `update almacen_virtual set "cant_Actual"="cant_Actual"+${product.cantProducto} where "nitCliente"='${clientInfo.nitCliente}' and "idDepto"=(select "idDepartamento" from Zonas 
-            where "idZona"=${clientInfo.idZona}) and "idProducto"=${product.idProducto}`;
-            try {
-              const updated = await client.query(updateQuery);
-              console.log("Stock updateado", updated);
-            } catch (error) {
-              errCount += 1;
-              console.log("Error al actualizar stock virtual", error);
-            }
+            const updateQuery = `UPDATE almacen_virtual SET "cant_Actual"="cant_Actual"+${product.cantProducto} WHERE "nitCliente"='${clientInfo.nitCliente}' AND "idDepto"=(SELECT "idDepartamento" FROM Zonas 
+            WHERE "idZona"=${clientInfo.idZona}) AND "idProducto"=${product.idProducto}`;
+            await client.query(updateQuery);
+            console.log("Stock updateado");
           } else {
-            const insertQuery = `insert into almacen_virtual ("idDepto","nitCliente","idProducto","cant_Actual", "idzona") 
-            values ((select "idDepartamento" from Zonas where "idZona"=${clientInfo.idZona}),
+            const insertQuery = `INSERT INTO almacen_virtual ("idDepto","nitCliente","idProducto","cant_Actual", "idzona") 
+            VALUES ((SELECT "idDepartamento" FROM Zonas WHERE "idZona"=${clientInfo.idZona}),
             '${clientInfo.nitCliente}', ${product.idProducto}, ${product.cantProducto}, ${clientInfo.idZona})`;
-            try {
-              const inserted = await client.query(insertQuery);
-              console.log("Producto insertado", inserted);
-            } catch (error) {
-              errCount += 1;
-              console.log("Error al insertar", error);
-            }
+            await client.query(insertQuery);
+            console.log("Producto insertado");
           }
-        } catch (err) {
-          client.query("ROLLBACK");
-          reject(err);
+        } catch (error) {
+          console.log("Error en la transacción:", error);
+          !isTransaction && client.query("ROLLBACK");
+          throw error;
         }
-      }
-      if (errCount > 0) {
-        client.query("ROLLBACK");
-        reject("Error al actualizar o insertar", errCount);
-      } else {
-        client.query("COMMIT");
-        resolve(true);
       }
     } else {
-      client.query("BEGIN");
-      var errCount = 0;
       for (var product of products) {
-        const updateQuery = `update almacen_virtual set "cant_Actual"="cant_Actual"-${product.cantProducto} where "nitCliente"='${clientInfo.nitCliente}' and "idDepto"=(select "idDepartamento" from Zonas 
-        where "idZona"=${clientInfo.idZona}) and "idProducto"=${product.idProducto}`;
+        const updateQuery = `UPDATE almacen_virtual SET "cant_Actual"="cant_Actual"-${product.cantProducto} WHERE "nitCliente"='${clientInfo.nitCliente}' AND "idDepto"=(SELECT "idDepartamento" FROM Zonas 
+        WHERE "idZona"=${clientInfo.idZona}) AND "idProducto"=${product.idProducto}`;
         try {
-          const updated = await client.query(updateQuery);
-          console.log("Stock updateado para restar", updated);
+          await client.query(updateQuery);
+          console.log("Stock updateado para restar");
         } catch (error) {
-          errCount += 1;
-          console.log("Error al actualizar stock virtual", error);
+          console.log("Error en la transacción:", error);
+          !isTransaction && client.query("ROLLBACK");
+          throw error;
         }
       }
-      if (errCount > 0) {
-        client.query("ROLLBACK");
-        reject("Error al actualizar o insertar", errCount);
-      } else {
-        client.query("COMMIT");
-        resolve(true);
-      }
     }
-  });
+    !isTransaction && client.query("COMMIT");
+    return true;
+  } catch (error) {
+    console.log("Error en la transacción:", error);
+    throw error;
+  }
 }
-
 async function updateMultipleVirtualStock(bodies) {
   var errCount = 0;
   for (body of bodies) {

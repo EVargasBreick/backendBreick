@@ -193,6 +193,7 @@ function ProductsSalesReportPos(params) {
     pr."precioDeFabrica",
     vp."totalProd",
     vp."descuentoProducto",
+    vp.precio_producto,
     fc.vale,
     us.nombre||' '||us."apPaterno"||' '||us."apMaterno" as "nombreCompleto",
     (select nombre from Agencias where "idAgencia"=fc."idAgencia" union 
@@ -689,8 +690,6 @@ async function GetRemainingGoal(date, userId) {
         resultado: metaObj - totalData < 0,
       };
 
-      console.log("Total data", totalData, goal.rows[0]);
-
       resolve(respObj);
     } catch (err) {
       reject(err);
@@ -872,6 +871,20 @@ async function getCanceledInvoices(idAgencia, fromDate, toDate) {
   }
 }
 
+async function getPastSalesByProductReport(startDate, endDate) {
+  const query = `select *,  (select nombre from Agencias where "idAgencia"=vp."idAgencia" union 
+  select nombre from Bodegas where "idBodega"=vp."idAgencia" union 
+  select placa from Vehiculos where placa=vp."idAgencia") as "Agencia" from ventas_pasadas vp inner join prod_venta_pasada pvp on vp.id_venta_pasada=pvp.id_venta_pasada 
+  where  to_date("fecha", 'DD/MM/YYYY') between to_date($1, 'YYYY-MM-DD') and to_date($2, 'YYYY-MM-DD')
+  order by to_date("fecha", 'DD/MM/YYYY') asc`;
+  try {
+    const data = await client.query(query, [startDate, endDate]);
+    return data.rows;
+  } catch (error) {
+    return Promise.reject(error);
+  }
+}
+
 module.exports = {
   GeneralSalesReport,
   ProductsSalesReport,
@@ -899,4 +912,5 @@ module.exports = {
   getSimpleTransferReport,
   getDailyDiscountsReport,
   getCanceledInvoices,
+  getPastSalesByProductReport,
 };

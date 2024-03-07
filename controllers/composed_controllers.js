@@ -51,7 +51,7 @@ module.exports = {
         res.status(200).send(invoice.createdInvoice);
       })
       .catch((error) => {
-        res.status(error.code).send(error);
+        res.status(500).send(error);
       });
   },
   onlineInvoiceProcess: (req, res) => {
@@ -143,23 +143,25 @@ module.exports = {
 };
 
 async function recordInvoice(req) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const createdInvoice = await createInvoice(req.body, req);
-      try {
-        const updatedVirtual = await updateVirtualStock(req.body);
-        const responseObject = {
-          createdInvoice,
-          updatedVirtual,
-        };
-        resolve(responseObject);
-      } catch (err) {
-        reject(err);
-      }
-    } catch (error) {
-      reject(error);
+  console.log("Body de la facturacion de estito", req.body);
+  try {
+    client.query("BEGIN");
+    const updatedVirtual = await updateVirtualStock(req.body);
+    const createdInvoice = await createInvoice(req.body, req);
+    if (createdInvoice.code == 500) {
+      client.query("ROLLBACK");
+      return Promise.reject(createdInvoice);
     }
-  });
+    const responseObject = {
+      createdInvoice,
+      updatedVirtual,
+    };
+    client.query("COMMIT");
+    return responseObject;
+  } catch (error) {
+    client.query("ROLLBACK");
+    return Promise.reject(error);
+  }
 }
 
 const createInvoice = async (body, req) => {

@@ -418,8 +418,8 @@ async function updateProductStockPos(body, isTransaction) {
         RETURNING "idStockChange";
       `;
         await client.query(updateStockQueryAlt, [
-          prod.cantProducto,
-          prod.cantProducto,
+          Number(prod.cantProducto),
+          Number(prod.cantProducto),
           dateResult,
           prod.idProducto,
           body.idAlmacen,

@@ -152,7 +152,6 @@ function postFactura(bodyFacturas, bodyFacturasInfo, req) {
       getCodigosLeyenda(req)
         .then(async (codigosLeyendaData) => {
           codigosLeyendaResponse = JSON.parse(codigosLeyendaData);
-          console.log("ERROR ACA", codigosLeyendaResponse);
           const random = getRandomNumber(
             codigosLeyendaResponse.data.data.length - 1
           );

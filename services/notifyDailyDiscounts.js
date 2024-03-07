@@ -7,18 +7,31 @@ const path = require("path");
 async function logDiscounts() {
   try {
     const date = dateString();
-    const dateSplitted = date.split(" ");
-    const dateOnly = dateSplitted[0];
-    //
+    const dateTimeSplitted = date.split(" ");
+    const dateOnly = dateTimeSplitted[0];
+    let dateSpplited = dateOnly.split("/");
+    dateSpplited[0] =
+      dateSpplited[0] - 1 < 10
+        ? `0${dateSpplited[0] - 1}`
+        : dateSpplited[0] - 1;
+    const joined = dateSpplited.join("/");
+    //console.log("Joined", joined);
     const query = `select usuario , concat("nombre",' ',"apPaterno") as nombre_completo, count(descuento), sum(v."descuentoCalculado")  from ventas v 
     inner join usuarios u on u."idUsuario"=v."idUsuarioCrea" 
     inner join facturas f on f."idFactura"=v."idFactura" 
     where descuento>0  and f.estado='0'
-    and f."fechaHora" like '%${dateOnly}%'
+    and f."fechaHora" like '%${joined}%'
     group by ( usuario,concat("nombre",' ',"apPaterno")) 
     order by sum(v."descuentoCalculado") desc`;
+
+    const mailList = await getMails();
+
+    //console.log("Mail list", mailList);
+
     const fullData = await client.query(query);
-    fullData.rows.length > 0 && sendDiscountsMail(fullData.rows, dateOnly);
+    //console.log("Data de descuentos", fullData.rows);
+    fullData.rows.length > 0 &&
+      sendDiscountsMail(fullData.rows, dateOnly, mailList);
   } catch (error) {
     console.log("Error al enviar la info de descuentos", error);
   }
@@ -109,7 +122,7 @@ const htmlStructure = async (data, dateOnly) => {
   return html;
 };
 
-async function sendDiscountsMail(data, dateOnly) {
+async function sendDiscountsMail(data, dateOnly, mailList) {
   try {
     const oAuth2Client = new google.auth.OAuth2(
       process.env.NODEMAILER_CLIENTID,
@@ -132,7 +145,7 @@ async function sendDiscountsMail(data, dateOnly) {
     });
     var mailOptions = {
       from: `Sistema de Ventas Breick <${process.env.INFOMAIL}>`,
-      to: "evargas@breick.com.bo",
+      to: mailList,
       subject: `Reporte diario de descuentos`,
       html: await htmlStructure(data, dateOnly),
       attachments: [
@@ -157,7 +170,18 @@ async function sendDiscountsMail(data, dateOnly) {
   }
 }
 
-/* <td align="center" style="background-color: #f1f1f1; padding: 35px;">
-          
-          </td> */
+async function getMails() {
+  try {
+    const query = `select correo from correos_jefatura where activo=1`;
+    const data = await client.query(query);
+    const mailArray = [];
+    for (const entry of data.rows) {
+      mailArray.push(entry.correo);
+    }
+    return mailArray;
+  } catch (error) {
+    return Promise.reject("Error al cargar los correos");
+  }
+}
+
 module.exports = logDiscounts;
