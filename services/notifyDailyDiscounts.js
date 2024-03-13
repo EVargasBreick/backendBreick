@@ -19,7 +19,7 @@ async function logDiscounts() {
     const query = `select usuario , concat("nombre",' ',"apPaterno") as nombre_completo, count(descuento), sum(v."descuentoCalculado")  from ventas v 
     inner join usuarios u on u."idUsuario"=v."idUsuarioCrea" 
     inner join facturas f on f."idFactura"=v."idFactura" 
-    where descuento>0  and f.estado='0'
+    where descuentoCalculado>0  and f.estado='0'
     and f."fechaHora" like '%${joined}%'
     group by ( usuario,concat("nombre",' ',"apPaterno")) 
     order by sum(v."descuentoCalculado") desc`;
@@ -28,10 +28,11 @@ async function logDiscounts() {
 
     //console.log("Mail list", mailList);
 
+    console.log("Query", query);
     const fullData = await client.query(query);
-    //console.log("Data de descuentos", fullData.rows);
+    console.log("Data de descuentos", fullData.rows);
     fullData.rows.length > 0 &&
-      sendDiscountsMail(fullData.rows, dateOnly, mailList);
+      sendDiscountsMail(fullData.rows, joined, mailList);
   } catch (error) {
     console.log("Error al enviar la info de descuentos", error);
   }

@@ -834,18 +834,18 @@ async function getSimpleTransferReport(store, startDate, endDate) {
 
 async function getDailyDiscountsReport(date) {
   try {
-    const query = `select "idUsuarioCrea",usuario , concat("nombre",' ',"apPaterno") as nombre_completo, count(descuento), sum(v."descuentoCalculado")  from ventas v 
+    const query = `select "idUsuarioCrea",usuario , concat("nombre",' ',"apPaterno") as nombre_completo, count(descuento), sum(v."descuentoCalculado"), sum(f.vale) as total_vale from ventas v 
     inner join usuarios u on u."idUsuario"=v."idUsuarioCrea" 
     inner join facturas f on f."idFactura"=v."idFactura" 
-    where descuento>0  and f.estado='0'
+    where "descuentoCalculado">0  and f.estado='0'
     and to_date(f."fechaHora",'DD/MM/YYYY')=to_date('${date}','YYYY-MM-DD')
     group by ("idUsuarioCrea", usuario,concat("nombre",' ',"apPaterno")) 
     order by sum(v."descuentoCalculado") desc`;
 
-    const queryDetails = `select f."idFactura", f.cuf, f."fechaHora","idUsuarioCrea",usuario , f."nroFactura", concat("nombre",' ',"apPaterno") as nombre_completo, f."nitCliente",f."razonSocial", f."importeBase", v."montoTotal", descuento, v."descuentoCalculado"  from ventas v 
+    const queryDetails = `select f."idFactura", f.cuf, f."fechaHora","idUsuarioCrea",usuario , f."nroFactura", concat("nombre",' ',"apPaterno") as nombre_completo, f."nitCliente",f."razonSocial", f."importeBase", v."montoTotal", descuento, v."descuentoCalculado", f.vale from ventas v 
     inner join usuarios u on u."idUsuario"=v."idUsuarioCrea" 
     inner join facturas f on f."idFactura"=v."idFactura" 
-    where descuento>0  and f.estado='0'
+    where "descuentoCalculado">0  and f.estado='0'
     and to_date(f."fechaHora",'DD/MM/YYYY')=to_date('${date}','YYYY-MM-DD') 
     order by usuario desc`;
 
@@ -854,6 +854,17 @@ async function getDailyDiscountsReport(date) {
     const reportData = await client.query(query);
     const reportDataDetails = await client.query(queryDetails);
     return { general: reportData.rows, details: reportDataDetails.rows };
+  } catch (error) {
+    return Promise.reject(error);
+  }
+}
+
+async function getSaleDetails(idFactura) {
+  try {
+    const queryDetails = `select vp.*, p."nombreProducto", p."codInterno", v.precio_producto from venta_productos vp inner join ventas 
+    v on vp."idVenta"=v."idVenta" inner join productos p on p."idProducto"=vp."idProducto" where v."idFactura"=$1`;
+    const retrievedData = await client.query(queryDetails, [idFactura]);
+    return retrievedData.rows;
   } catch (error) {
     return Promise.reject(error);
   }
@@ -913,4 +924,5 @@ module.exports = {
   getDailyDiscountsReport,
   getCanceledInvoices,
   getPastSalesByProductReport,
+  getSaleDetails,
 };

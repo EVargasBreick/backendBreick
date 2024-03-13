@@ -30,6 +30,7 @@ const {
   getDailyDiscountsReport,
   getCanceledInvoices,
   getPastSalesByProductReport,
+  getSaleDetails,
 } = require("../models/reports_model.js");
 app.use(session(sessionParams));
 
@@ -349,6 +350,18 @@ module.exports = {
     const { fromDate, toDate } = req.query;
     try {
       const repData = await getPastSalesByProductReport(fromDate, toDate);
+      res.status(200).send(repData);
+    } catch (err) {
+      console.log("Error al obtener el reporte", err);
+      res
+        .status(500)
+        .json({ error: err || "An error occurred while fetching reports." });
+    }
+  },
+  saleDetails: async (req, res) => {
+    const { idFactura } = req.query;
+    try {
+      const repData = await getSaleDetails(idFactura);
       res.status(200).send(repData);
     } catch (err) {
       console.log("Error al obtener el reporte", err);
