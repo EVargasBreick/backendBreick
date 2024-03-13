@@ -149,8 +149,13 @@ async function updatePack(products, total) {
     );
 
     await client.query(
-      'UPDATE packs SET "precioPack" = $1 WHERE "nombrePack" = $2',
-      [total, nombrePack]
+      'UPDATE packs SET "precioPack" = $1 WHERE "idPack" = $2',
+      [total, idPack]
+    );
+
+    await client.query(
+      'UPDATE packs SET "nombrePack" = $1 WHERE "idPack" = $2',
+      [nombrePack, idPack]
     );
 
     await client.query(
