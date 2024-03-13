@@ -32,4 +32,5 @@ router.get("/reportes/traspasos/simple", controller.simpleTransferReport);
 router.get("/reportes/descuentos/diario", controller.dailyDiscountReport);
 router.get("/reportes/facturas/canceladas", controller.canceledInvoices);
 router.get("/reportes/ventas/pasadas/producto", controller.pastSalesByProduct);
+router.get("/reportes/ventas/detalle", controller.saleDetails);
 module.exports = router;

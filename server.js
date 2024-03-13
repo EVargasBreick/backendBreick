@@ -85,10 +85,6 @@ const {
 const { logIncompleteSales } = require("./services/registerErrorSales");
 const logger = require("./logger-pino");
 const logDiscounts = require("./services/notifyDailyDiscounts");
-const {
-  readPastSales,
-  mapThroughStores,
-} = require("./services/pastSalesInput");
 
 app.use("/", loginRoutes);
 app.use("/", emizorRoutes);
@@ -174,7 +170,7 @@ if (serverType === "web") {
     console.log("Cors options", corsOptions);
     console.log("Server listening on port ", 5200);
     console.log("Tipo de corrida", process.env.TYPE);
-    //mapThroughStores();
+
     //logDiscounts();
     //logIncompleteSales();
   });
