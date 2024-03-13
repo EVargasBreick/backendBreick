@@ -128,10 +128,10 @@ function addIdToPackPos(params) {
   });
 }
 
-async function updatePack(products, total) {
+async function updatePack(products, total, nombrePack) {
   try {
     await client.query("BEGIN");
-    const { nombrePack, idPack, idPackProd } = products[0];
+    const {  idPack, idPackProd } = products[0];
 
     const list_of_ids_original = await client.query(
       'SELECT "idProductoPack" FROM productos_pack WHERE "idPack" = $1',

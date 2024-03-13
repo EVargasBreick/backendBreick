@@ -41,8 +41,8 @@ module.exports = {
       });
   },
   update_pack: (req, res) => {
-    const { productos = [], total = 0 } = req.body;
-    const updatedPack = updatePack(productos, total);
+    const { productos = [], total = 0, nombrePack = '' } = req.body;
+    const updatedPack = updatePack(productos, total, nombrePack);
     updatedPack
       .then((resp) => {
         res.status(200).send(resp);
