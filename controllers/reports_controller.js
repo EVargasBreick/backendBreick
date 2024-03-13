@@ -27,6 +27,9 @@ const {
   GetProductInSamplesReport,
   getTransferProductsByStore,
   getSimpleTransferReport,
+  getDailyDiscountsReport,
+  getCanceledInvoices,
+  getPastSalesByProductReport,
 } = require("../models/reports_model.js");
 app.use(session(sessionParams));
 
@@ -309,6 +312,43 @@ module.exports = {
         startDate,
         endDate
       );
+      res.status(200).send(repData);
+    } catch (err) {
+      console.log("Error al obtener el reporte", err);
+      res
+        .status(500)
+        .json({ error: err || "An error occurred while fetching reports." });
+    }
+  },
+  dailyDiscountReport: async (req, res) => {
+    console.log("ENTRANDO ACA", req.query);
+    const { date } = req.query;
+    try {
+      const repData = await getDailyDiscountsReport(date);
+      res.status(200).send(repData);
+    } catch (err) {
+      console.log("Error al obtener el reporte", err);
+      res
+        .status(500)
+        .json({ error: err || "An error occurred while fetching reports." });
+    }
+  },
+  canceledInvoices: async (req, res) => {
+    const { idAgencia, fromDate, toDate } = req.query;
+    try {
+      const repData = await getCanceledInvoices(idAgencia, fromDate, toDate);
+      res.status(200).send(repData);
+    } catch (err) {
+      console.log("Error al obtener el reporte", err);
+      res
+        .status(500)
+        .json({ error: err || "An error occurred while fetching reports." });
+    }
+  },
+  pastSalesByProduct: async (req, res) => {
+    const { fromDate, toDate } = req.query;
+    try {
+      const repData = await getPastSalesByProductReport(fromDate, toDate);
       res.status(200).send(repData);
     } catch (err) {
       console.log("Error al obtener el reporte", err);

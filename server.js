@@ -84,6 +84,11 @@ const {
 } = require("./services/stabilizeStocks");
 const { logIncompleteSales } = require("./services/registerErrorSales");
 const logger = require("./logger-pino");
+const logDiscounts = require("./services/notifyDailyDiscounts");
+const {
+  readPastSales,
+  mapThroughStores,
+} = require("./services/pastSalesInput");
 
 app.use("/", loginRoutes);
 app.use("/", emizorRoutes);
@@ -119,6 +124,7 @@ if (serverType === "web") {
   https.createServer(options, app).listen(443, () => {
     console.log("Server listening on port 443");
     console.log("Hora actual", new Date());
+
     function setupInterval() {
       const now = new Date();
       var millisTill4AM =
@@ -131,13 +137,35 @@ if (serverType === "web") {
           0,
           0
         ) - now;
+
+      var millisTill3AM =
+        new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() + 1,
+          3,
+          0,
+          0,
+          0
+        ) - now;
+
       if (millisTill4AM < 0) {
         millisTill4AM += 86400000; // it's after 4am, try 4am tomorrow.
       }
+
+      if (millisTill3AM < 0) {
+        millisTill3AM += 86400000; // it's after 4am, try 4am tomorrow.
+      }
+
       setTimeout(function () {
         testLogging();
         setInterval(testLogging, 24 * 60 * 60 * 1000);
       }, millisTill4AM);
+
+      setTimeout(function () {
+        logDiscounts();
+        setInterval(logDiscounts, 24 * 60 * 60 * 1000);
+      }, millisTill3AM);
     }
     setupInterval();
   });
@@ -146,6 +174,8 @@ if (serverType === "web") {
     console.log("Cors options", corsOptions);
     console.log("Server listening on port ", 5200);
     console.log("Tipo de corrida", process.env.TYPE);
+    //mapThroughStores();
+    //logDiscounts();
     //logIncompleteSales();
   });
 }

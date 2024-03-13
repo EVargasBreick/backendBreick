@@ -10,7 +10,7 @@ async function isAuthEmizor(req, res, next) {
     if (diferenciaDias < 2) {
       console.log("Token vencido");
       const postOauthToken = await emizor.postOauthToken();
-      console.log("Actualizando token");
+      console.log("Actualizando token", postOauthToken);
       console.log(
         "postOauthToken: ",
         JSON.parse(postOauthToken).data.access_token

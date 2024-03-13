@@ -175,7 +175,9 @@ function postFactura(bodyFacturas, bodyFacturasInfo, req) {
           );
         })
         .catch((error) => {
-          logger.error("postFactura: " + formatError(error) ?? "Error Emizor Factura")
+          logger.error(
+            "postFactura: " + formatError(error) ?? "Error Emizor Factura"
+          );
           console.log("Error", error);
           reject(
             JSON.stringify({
@@ -186,7 +188,9 @@ function postFactura(bodyFacturas, bodyFacturasInfo, req) {
         });
     } catch (error) {
       console.log("Error", error);
-      logger.error("postFactura: " + formatError(error) ?? "Error Emizor Factura")
+      logger.error(
+        "postFactura: " + formatError(error) ?? "Error Emizor Factura"
+      );
       reject(
         JSON.stringify({
           data: error?.response?.data ?? "Error Emizor Factura",
@@ -213,6 +217,7 @@ async function getCodigosLeyenda(req) {
     });
     return JSON.stringify({ data: response.data, status: response.status });
   } catch (error) {
+    console.log("ERROR AL OBTENER LEYENDAS", error);
     return JSON.stringify({
       data: error?.response?.data ?? "Error Emizor Codigos Leyenda",
       status: error?.response?.status ?? 500,
@@ -237,7 +242,10 @@ async function getEstadoFactura(req, ack_ticket) {
     });
     return JSON.stringify({ data: response.data, status: response.status });
   } catch (error) {
-    logger.error("getEstadoFactura: " + formatError(error?.response?.data) ?? "Error Obteniendo Estado de Factura")
+    logger.error(
+      "getEstadoFactura: " + formatError(error?.response?.data) ??
+        "Error Obteniendo Estado de Factura"
+    );
     return JSON.stringify({
       data: error?.response?.data ?? "Error Obteniendo Estado de Factura",
       status: error?.response?.status ?? 500,

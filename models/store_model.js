@@ -359,7 +359,7 @@ async function updateProductStockPosAlt(body, isTransaction) {
       };
     }
   } else {
-    logger.error("updateProductStockPos: No product to update");
+    //logger.error("updateProductStockPos: No product to update");
 
     const arrayIds = [];
     return {
@@ -418,8 +418,8 @@ async function updateProductStockPos(body, isTransaction) {
         RETURNING "idStockChange";
       `;
         await client.query(updateStockQueryAlt, [
-          prod.cantProducto,
-          prod.cantProducto,
+          Number(prod.cantProducto),
+          Number(prod.cantProducto),
           dateResult,
           prod.idProducto,
           body.idAlmacen,
@@ -441,7 +441,7 @@ async function updateProductStockPos(body, isTransaction) {
         code: 200,
       };
     } else {
-      logger.error("updateProductStockPos: No product to update");
+      //logger.error("updateProductStockPos: No product to update");
       return {
         message: "No product to update",
         data: arrayIds,

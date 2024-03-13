@@ -193,6 +193,7 @@ function ProductsSalesReportPos(params) {
     pr."precioDeFabrica",
     vp."totalProd",
     vp."descuentoProducto",
+    vp.precio_producto,
     fc.vale,
     us.nombre||' '||us."apPaterno"||' '||us."apMaterno" as "nombreCompleto",
     (select nombre from Agencias where "idAgencia"=fc."idAgencia" union 
@@ -236,12 +237,21 @@ function ClosingReportPos(params) {
   }
 
   generalQuery += `group by fc."idSucursal", "puntoDeVenta", fc."idOtroPago", fc."tipoPago" ;`;
+
+  let canceledQuery = `select "nitCliente", "razonSocial", "nroFactura", "importeBase", "fechaAnulacion", "fechaHora" from facturas where estado='1' and "puntoDeVenta"=${params.idPdv} and TO_DATE("fechaHora",'DD/MM/YYYY')=CAST('${params.fecha}' AS Date )
+  and "idAgencia"=${params.idAgencia}`;
+
+  if (fromHour != "" && toHour != "") {
+    canceledQuery += ` AND TO_CHAR(TO_TIMESTAMP("fechaHora", 'DD/MM/YYYY HH24:MI:SS'), 'HH24:MI') BETWEEN '${fromHour}' AND '${toHour}'`;
+  }
+
   console.log("Query fechas cierre:", generalQuery);
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       try {
         const data = await client.query(generalQuery);
-        resolve(data.rows);
+        const canceled = await client.query(canceledQuery);
+        resolve({ totales: data.rows, anulados: canceled.rows });
       } catch (err) {
         console.log("ERROR", err);
         reject(err);
@@ -680,8 +690,6 @@ async function GetRemainingGoal(date, userId) {
         resultado: metaObj - totalData < 0,
       };
 
-      console.log("Total data", totalData, goal.rows[0]);
-
       resolve(respObj);
     } catch (err) {
       reject(err);
@@ -815,10 +823,63 @@ async function getTransferProductsByStore(store, startDate, endDate) {
 
 async function getSimpleTransferReport(store, startDate, endDate) {
   try {
-    const query = `select "idTraspaso","idOrigen", "idDestino",tr."fechaCrea", usuario from Traspasos tr inner join Usuarios us on tr."idUsuario"=us."idUsuario"
+    const query = `select "idTraspaso","idOrigen", "idDestino",tr."fechaCrea", usuario, tr.estado, tr.movil from Traspasos tr inner join Usuarios us on tr."idUsuario"=us."idUsuario"
     where tr."idOrigen"=$1 and to_date(tr."fechaCrea",'DD/MM/YYYY') between to_date($2, 'YYYY-MM-DD') and to_date($3, 'YYYY-MM-DD') order by cast("idTraspaso" as int) desc`;
     const reportData = await client.query(query, [store, startDate, endDate]);
     return reportData.rows;
+  } catch (error) {
+    return Promise.reject(error);
+  }
+}
+
+async function getDailyDiscountsReport(date) {
+  try {
+    const query = `select "idUsuarioCrea",usuario , concat("nombre",' ',"apPaterno") as nombre_completo, count(descuento), sum(v."descuentoCalculado")  from ventas v 
+    inner join usuarios u on u."idUsuario"=v."idUsuarioCrea" 
+    inner join facturas f on f."idFactura"=v."idFactura" 
+    where descuento>0  and f.estado='0'
+    and to_date(f."fechaHora",'DD/MM/YYYY')=to_date('${date}','YYYY-MM-DD')
+    group by ("idUsuarioCrea", usuario,concat("nombre",' ',"apPaterno")) 
+    order by sum(v."descuentoCalculado") desc`;
+
+    const queryDetails = `select f."idFactura", f.cuf, f."fechaHora","idUsuarioCrea",usuario , f."nroFactura", concat("nombre",' ',"apPaterno") as nombre_completo, f."nitCliente",f."razonSocial", f."importeBase", v."montoTotal", descuento, v."descuentoCalculado"  from ventas v 
+    inner join usuarios u on u."idUsuario"=v."idUsuarioCrea" 
+    inner join facturas f on f."idFactura"=v."idFactura" 
+    where descuento>0  and f.estado='0'
+    and to_date(f."fechaHora",'DD/MM/YYYY')=to_date('${date}','YYYY-MM-DD') 
+    order by usuario desc`;
+
+    console.log("Query details", queryDetails);
+
+    const reportData = await client.query(query);
+    const reportDataDetails = await client.query(queryDetails);
+    return { general: reportData.rows, details: reportDataDetails.rows };
+  } catch (error) {
+    return Promise.reject(error);
+  }
+}
+
+async function getCanceledInvoices(idAgencia, fromDate, toDate) {
+  const query = `select "nitCliente", "razonSocial", cuf, "fechaHora", "fechaAnulacion", "nroFactura", "puntoDeVenta", "importeBase" from Facturas
+    where "idAgencia"=$1 and to_date("fechaAnulacion", 'DD/MM/YYYY') between to_date($2, 'YYYY-MM-DD') and to_date($3, 'YYYY-MM-DD') and estado=1
+    order by cast("idFactura" as int) desc`;
+  try {
+    const data = await client.query(query, [idAgencia, fromDate, toDate]);
+    return data.rows;
+  } catch (error) {
+    return Promise.reject(error);
+  }
+}
+
+async function getPastSalesByProductReport(startDate, endDate) {
+  const query = `select *,  (select nombre from Agencias where "idAgencia"=vp."idAgencia" union 
+  select nombre from Bodegas where "idBodega"=vp."idAgencia" union 
+  select placa from Vehiculos where placa=vp."idAgencia") as "Agencia" from ventas_pasadas vp inner join prod_venta_pasada pvp on vp.id_venta_pasada=pvp.id_venta_pasada 
+  where  to_date("fecha", 'DD/MM/YYYY') between to_date($1, 'YYYY-MM-DD') and to_date($2, 'YYYY-MM-DD')
+  order by to_date("fecha", 'DD/MM/YYYY') asc`;
+  try {
+    const data = await client.query(query, [startDate, endDate]);
+    return data.rows;
   } catch (error) {
     return Promise.reject(error);
   }
@@ -849,4 +910,7 @@ module.exports = {
   GetProductInSamplesReport,
   getTransferProductsByStore,
   getSimpleTransferReport,
+  getDailyDiscountsReport,
+  getCanceledInvoices,
+  getPastSalesByProductReport,
 };
