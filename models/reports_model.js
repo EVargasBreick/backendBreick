@@ -585,20 +585,59 @@ function GroupedProductReport(
    to_date(fc."fechaHora", 'DD/MM/YYYY')<=to_date('${endDate}', 'YYYY-MM-DD')
   `;
 
+  let queryByMonth = `
+  SELECT pr."idProducto", "codInterno", "nombreProducto", "unidadDeMedida",
+  EXTRACT(MONTH FROM TO_DATE(fc."fechaHora", 'DD/MM/YYYY')) AS "month",
+  EXTRACT(year FROM TO_DATE(fc."fechaHora", 'DD/MM/YYYY')) AS "year",
+  CASE
+    WHEN SUM("cantidadProducto")::numeric % 1 = 0
+      THEN CAST(SUM("cantidadProducto") AS integer)
+    ELSE
+      ROUND(SUM("cantidadProducto")::numeric, 2) 
+  END AS "sumaTotal"
+  FROM Facturas fc
+  INNER JOIN Ventas vn ON vn."idFactura" = fc."idFactura"
+  INNER JOIN clientes cl ON cl."idCliente" = vn."idCliente"
+  INNER JOIN venta_productos vp ON vp."idVenta" = vn."idVenta"
+  INNER JOIN Productos pr ON pr."idProducto" = vp."idProducto"
+  WHERE estado = 0 AND 
+    TO_DATE(fc."fechaHora", 'DD/MM/YYYY') >= TO_DATE('${startDate}', 'YYYY-MM-DD') AND 
+    TO_DATE(fc."fechaHora", 'DD/MM/YYYY') <= TO_DATE('${endDate}', 'YYYY-MM-DD')`;
+
+  let queryMoneyByMonth = `
+  SELECT pr."idProducto", "codInterno", "nombreProducto", "unidadDeMedida",
+  EXTRACT(MONTH FROM TO_DATE(fc."fechaHora", 'DD/MM/YYYY')) AS "month",
+  EXTRACT(year FROM TO_DATE(fc."fechaHora", 'DD/MM/YYYY')) AS "year",
+  SUM("totalProd") AS "sumaTotal"
+  FROM Facturas fc
+  INNER JOIN Ventas vn ON vn."idFactura" = fc."idFactura"
+  INNER JOIN clientes cl ON cl."idCliente" = vn."idCliente"
+  INNER JOIN venta_productos vp ON vp."idVenta" = vn."idVenta"
+  INNER JOIN Productos pr ON pr."idProducto" = vp."idProducto"
+  WHERE estado = 0 AND 
+    TO_DATE(fc."fechaHora", 'DD/MM/YYYY') >= TO_DATE('${startDate}', 'YYYY-MM-DD') AND 
+    TO_DATE(fc."fechaHora", 'DD/MM/YYYY') <= TO_DATE('${endDate}', 'YYYY-MM-DD')`;
+
   switch (criteria) {
     case "agencia":
       if (idAgencia) {
         query += `and "idAgencia" in (${agenciasString}) `;
         queryMoney += `and "idAgencia" in (${agenciasString}) `;
+        queryByMonth += ` AND "idAgencia" IN (${agenciasString})`;
+        queryMoneyByMonth += ` AND "idAgencia" IN (${agenciasString})`;
       }
       break;
     case "vendedor":
       query += `and vn."idUsuarioCrea"=${selectedSalesman} `;
       queryMoney += `and vn."idUsuarioCrea"=${selectedSalesman} `;
+      queryByMonth += ` AND vn."idUsuarioCrea" = ${selectedSalesman}`;
+      queryMoneyByMonth += ` AND vn."idUsuarioCrea" = ${selectedSalesman}`;
       break;
     case "cliente":
       query += `and cl.nit='${selectedClient}' `;
       queryMoney += `and cl.nit='${selectedClient}' `;
+      queryByMonth += ` AND cl.nit = '${selectedClient}'`;
+      queryMoneyByMonth += ` AND cl.nit = '${selectedClient}'`;
       break;
   }
 
@@ -606,12 +645,29 @@ function GroupedProductReport(
   order by "sumaTotal" desc`;
   queryMoney += `group by (pr."idProducto","codInterno", "nombreProducto", "unidadDeMedida")
   order by "sumaTotal" desc`;
-  console.log("Query", query);
+
+  queryByMonth += `
+  GROUP BY pr."idProducto", "codInterno", "nombreProducto", "unidadDeMedida", EXTRACT(MONTH FROM TO_DATE(fc."fechaHora", 'DD/MM/YYYY')), EXTRACT(YEAR FROM TO_DATE(fc."fechaHora", 'DD/MM/YYYY'))
+  ORDER BY "month", "sumaTotal" DESC`;
+
+  queryMoneyByMonth += `
+  GROUP BY pr."idProducto", "codInterno", "nombreProducto", "unidadDeMedida", EXTRACT(MONTH FROM TO_DATE(fc."fechaHora", 'DD/MM/YYYY')), EXTRACT(YEAR FROM TO_DATE(fc."fechaHora", 'DD/MM/YYYY'))
+  ORDER BY "month", "sumaTotal" DESC`;
+
+  console.log("Query cantidades mes", queryByMonth);
+  console.log("Query facturado mes", queryMoneyByMonth);
   return new Promise(async (resolve, reject) => {
     try {
       const data = await client.query(query);
       const dataMoney = await client.query(queryMoney);
-      resolve({ cantidades: data.rows, facturado: dataMoney.rows });
+      const dataByMonth = await client.query(queryByMonth);
+      const dataMoneyByMonth = await client.query(queryMoneyByMonth);
+      resolve({
+        cantidades: data.rows,
+        facturado: dataMoney.rows,
+        cantidadesMes: dataByMonth.rows,
+        facturadoMes: dataMoneyByMonth.rows,
+      });
     } catch (err) {
       reject(err);
       console.log("Error", err);
@@ -861,7 +917,7 @@ async function getDailyDiscountsReport(date) {
 
 async function getSaleDetails(idFactura) {
   try {
-    const queryDetails = `select vp.*, p."nombreProducto", p."codInterno", v.precio_producto from venta_productos vp inner join ventas 
+    const queryDetails = `select vp.*, p."nombreProducto", p."codInterno", vp.precio_producto, v."idFactura" from venta_productos vp inner join ventas 
     v on vp."idVenta"=v."idVenta" inner join productos p on p."idProducto"=vp."idProducto" where v."idFactura"=$1`;
     const retrievedData = await client.query(queryDetails, [idFactura]);
     return retrievedData.rows;
