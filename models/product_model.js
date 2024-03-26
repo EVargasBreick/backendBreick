@@ -187,12 +187,15 @@ function getProductsPos(params) {
   } else {
     query = `select * from Productos where "idProducto"=${params.id}`;
   }
-
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
-      const products = await client.query(query);
-      resolve(JSON.stringify(products.rows));
-    }, 1000);
+      try {
+        const products = await client.query(query);
+        resolve(JSON.stringify(products.rows));
+      } catch (error) {
+        reject(error);
+      }
+    }, 200);
   });
 }
 
@@ -222,41 +225,13 @@ function getProductsWithStockPos(params) {
   return new Promise((resolve, reject) => {
     console.log("Query", query);
     setTimeout(async () => {
-      const products = await client.query(query, [idAlmacen]);
-      resolve(JSON.stringify(products.rows));
+      try {
+        const products = await client.query(query, [idAlmacen]);
+        resolve(JSON.stringify(products.rows));
+      } catch (error) {
+        reject(error);
+      }
     }, 300);
-  });
-}
-
-function getProductsWithStockPosAlt(params) {
-  var query;
-  const idAlmacen = params.idAlmacen;
-  if (idAlmacen.includes("AG")) {
-    console.log("ES AGENCIA");
-  } else if (idAlmacen.includes("AL")) {
-    console.log("ES ALMACEN");
-  } else {
-    console.log("ES RUTA");
-  }
-  if (params.id === "all") {
-    query = `select a.*, b."cant_Actual" from Productos a inner join Stock_Bodega b 
-    on a."idProducto"=b."idProducto" where "idBodega"='${params.idAlmacen}' union 
-    select  a.*, b."cant_Actual" from Productos a inner join Stock_Agencia b 
-    on a."idProducto"=b."idProducto" where "idAgencia"='${params.idAlmacen}' union 
-    select  a.*, b."cant_Actual" from Productos a inner join Stock_Agencia_Movil b 
-    on a."idProducto"=b."idProducto" where "idVehiculo"='${params.idAlmacen}' order by "nombreProducto"`;
-  } else {
-    query = `select a."codInterno", a."nombreProducto", a."codigoBarras", b."cant_Actual", a."precioDeFabrica", 
-    a."tipoProducto", a."precioDescuentoFijo", a."unidadDeMedida" from Productos a inner join Stock_Bodega b 
-    on a."idProducto"=b."idProducto" where "idBodega"=${params.idAlmacen} and a."idProducto"=${params.id} order by "nombreProducto"`;
-  }
-
-  return new Promise((resolve, reject) => {
-    console.log("Query", query);
-    setTimeout(async () => {
-      const products = await client.query(query);
-      resolve(JSON.stringify(products.rows));
-    }, 1000);
   });
 }
 
@@ -275,24 +250,32 @@ function getAvailableProductsPos(id) {
   where c."idUsuario"=${id} and b."cant_Actual">=0 and a.activo=1 order by "codInterno" `;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
-      const products = await client.query(queryProds);
-      resolve(JSON.stringify(products.rows));
+      try {
+        const products = await client.query(queryProds);
+        resolve(JSON.stringify(products.rows));
+      } catch (error) {
+        reject(error);
+      }
     }, 1000);
   });
 }
 
 function getNumberOfProductsPos() {
   const countQuery = `select count(*) as "NumeroProductos" from Productos`;
-  return new Promise((resolve) => {
-    setTimeout(async () => {
-      const prods = await client.query(countQuery);
-      resolve(
-        JSON.stringify({
-          code: 200,
-          data: prods.rows,
-        })
-      );
-    }, 1000);
+  return new Promise((resolve, reject) => {
+    try {
+      setTimeout(async () => {
+        const prods = await client.query(countQuery);
+        resolve(
+          JSON.stringify({
+            code: 200,
+            data: prods.rows,
+          })
+        );
+      }, 100);
+    } catch (error) {
+      reject(error);
+    }
   });
 }
 
@@ -302,23 +285,26 @@ function getProductsDiscountPos(params) {
 inner join Rangos rn on rn."idRango"=ld."idRango"
 inner join Usuarios us on ld."idTipoVendedor"=us."tipoUsuario"
 where us."idUsuario"=${params.id} order by us."tipoUsuario"
-
   `;
-  return new Promise((resolve) => {
-    setTimeout(async () => {
-      const prods = await client.query(discQuery);
-      resolve(
-        JSON.stringify({
-          code: 200,
-          data: prods.rows,
-        })
-      );
-    }, 1000);
+  return new Promise((resolve, reject) => {
+    try {
+      setTimeout(async () => {
+        const prods = await client.query(discQuery);
+        resolve(
+          JSON.stringify({
+            code: 200,
+            data: prods.rows,
+          })
+        );
+      }, 200);
+    } catch (error) {
+      reject(error);
+    }
   });
 }
 
 function createProductPos(body) {
-  const newProdQuery = `insert into Productos ("codInterno", "nombreProducto", "descProducto", "gramajeProducto", 
+  const newProdQueryLog = `insert into Productos ("codInterno", "nombreProducto", "descProducto", "gramajeProducto", 
     "precioDeFabrica", "codigoBarras", "cantCajon", "unidadDeMedida", "tiempoDeVida", activo, "precioPDV", "cantDisplay", 
     "aplicaDescuento", "tipoProducto", "precioDescuentoFijo","actividadEconomica","codigoSin","codigoUnidad","origenProducto","precioSuper") values (
       '${body.codInterno}',
@@ -342,10 +328,42 @@ function createProductPos(body) {
       ${body.origenProducto},
       ${body.precioDeFabrica}
     ) returning "idProducto"`;
+
+  const newProdQuery = `insert into Productos ("codInterno", "nombreProducto", "descProducto", "gramajeProducto", 
+    "precioDeFabrica", "codigoBarras", "cantCajon", "unidadDeMedida", "tiempoDeVida", activo, "precioPDV", "cantDisplay", 
+    "aplicaDescuento", "tipoProducto", "precioDescuentoFijo","actividadEconomica","codigoSin","codigoUnidad","origenProducto","precioSuper") values (
+      $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
+    ) returning "idProducto"`;
+
+  // Create an array of parameter values
+  const params = [
+    body.codInterno,
+    body.nombreProducto,
+    body.descProducto,
+    body.gramajeProducto,
+    body.precioDeFabrica,
+    body.codigoBarras,
+    body.cantCajon,
+    body.unidadDeMedida,
+    body.tiempoDeVida,
+    body.activo,
+    body.precioPDV,
+    body.cantDisplay,
+    body.aplicaDescuento,
+    body.tipoProducto,
+    body.precioDescuentoFijo,
+    body.actividadEconomica,
+    body.codigoSin,
+    body.codigoUnidad,
+    body.origenProducto,
+    body.precioDeFabrica,
+  ];
+
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       try {
-        const added = await client.query(newProdQuery);
+        console.log("New product query", newProdQueryLog);
+        const added = await client.query(newProdQuery, params);
         const id = added.rows[0].idProducto;
         resolve({ added, id: id });
       } catch (err) {
@@ -421,13 +439,13 @@ async function updateProduct(id, body) {
 
     const query = `
     UPDATE productos
-    SET "nombreProducto" = '${nombreProducto}', 
+    SET "nombreProducto" = $1, 
     "activo" = ${activo}, "aplicaDescuento" = '${aplicaDescuento}', 
     "codigoBarras" = '${codigoBarras}', "gramajeProducto" = ${gramajeProducto}, 
-    "precioDeFabrica" = ${precioDeFabrica}, "precioPDV" = ${precioPDV}
+    "precioDeFabrica" = ${precioDeFabrica}, "precioPDV" = ${precioPDV}, "precioDescuentoFijo" = ${precioDeFabrica} , "precioSuper"=${precioDeFabrica}
     WHERE "idProducto" = ${id}
   `;
-    const data = await client.query(query);
+    const data = await client.query(query, [nombreProducto]);
     return data.rows;
   } catch (err) {
     throw err;
@@ -441,8 +459,12 @@ function getVirtualProductsWithStock(params) {
   console.log("Query prod consig", prodQuery);
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
-      const products = await client.query(prodQuery);
-      resolve(JSON.stringify(products.rows));
+      try {
+        const products = await client.query(prodQuery);
+        resolve(JSON.stringify(products.rows));
+      } catch (error) {
+        reject(error);
+      }
     }, 1000);
   });
 }

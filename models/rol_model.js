@@ -21,7 +21,9 @@ function getRolesPos() {
         const roles = await client.query(rolQuery);
         resolve(JSON.stringify(roles.rows));
         console.log("Almacenes", JSON.stringify(roles.rows));
-      } catch {}
+      } catch {
+        reject(error);
+      }
     }, 100);
   });
 }

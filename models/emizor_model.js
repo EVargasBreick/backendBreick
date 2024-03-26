@@ -137,7 +137,12 @@ async function getPuntosVenta(req) {
 }
 
 function getRandomNumber(n) {
-  return Math.floor(Math.random() * (n + 1));
+  try{
+    return Math.floor(Math.random() * (n + 1));
+  } catch(error){
+    return 1;
+  }
+ 
 }
 
 function postFactura(bodyFacturas, bodyFacturasInfo, req) {
