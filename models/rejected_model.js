@@ -51,17 +51,31 @@ function revisedRejected(params) {
 //Postgres
 
 function logRejectedOrderPos(body) {
-  const query = `insert into Log_Rechazos (motivo, "idOrden", "fechaRegistro", "idUsuario", "intId", tipo, revisado) 
+  const queryLog = `insert into Log_Rechazos (motivo, "idOrden", "fechaRegistro", "idUsuario", "intId", tipo, revisado) 
   values ('${body.motivo}', '${body.idOrden}', '${body.fechaRegistro}', ${body.idUsuario}, ${body.intId}, '${body.tipo}',0)`;
+
+  const query = `insert into Log_Rechazos (motivo, "idOrden", "fechaRegistro", "idUsuario", "intId", tipo, revisado) 
+  values ($1, $2, $3, $4, $5, $6, 0)`;
+
+  // Create an array of parameter values
+  const paramsLR = [
+    body.motivo,
+    body.idOrden,
+    body.fechaRegistro,
+    body.idUsuario,
+    body.intId,
+    body.tipo,
+  ];
+
   const queryNew = `insert into traspaso_rechazado ("idTraspaso","idUsuario","fechaHora",revisado) values ($1,$2,$3,0) returning "idTraspasoRechazado"`;
   const params = [body.intId, body.idUsuario, body.fechaRegistro];
   const products = body.productos;
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
-      console.log("Query de loggeo", query);
+      console.log("Query de loggeo", queryLog);
       try {
         await client.query("BEGIN");
-        const logged = await client.query(query);
+        const logged = await client.query(query, paramsLR);
         const loggedNew = await client.query(queryNew, params);
         const idCreado = loggedNew.rows[0].idTraspasoRechazado;
         for (const product of products) {

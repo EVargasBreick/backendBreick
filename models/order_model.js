@@ -819,17 +819,21 @@ function getOrderDetailsPos(params) {
   inner join Usuarios d on d."idUsuario"=a."idUsuarioCrea"
   inner join Clientes e on e."idCliente"=a."idCliente"
   inner join Zonas f on f."idZona"=e."idZona"
- where a."idPedido"=${params.id}`;
+ where a."idPedido"=$1`;
   console.log("Test", queryDet);
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     setTimeout(async () => {
-      const orderDetail = await client.query(queryDet);
-      resolve(
-        JSON.stringify({
-          code: 200,
-          data: orderDetail.rows,
-        })
-      );
+      try {
+        const orderDetail = await client.query(queryDet, [params.id]);
+        resolve(
+          JSON.stringify({
+            code: 200,
+            data: orderDetail.rows,
+          })
+        );
+      } catch (error) {
+        reject(error);
+      }
     }, 1000);
   });
 }
@@ -1087,10 +1091,10 @@ function getOrderToInvoiceDetailsPos(params) {
     inner join Clientes cl on pd."idCliente"=cl."idCliente"
     inner join Usuarios us on pd."idUsuarioCrea"=us."idUsuario"
     inner join Productos pr on pr."idProducto"=pp."idProducto"
-    where pd."idPedido"=${params.id}`;
+    where pd."idPedido"=$1`;
     setTimeout(async () => {
       try {
-        const orderDetails = await client.query(query);
+        const orderDetails = await client.query(query, [params.id]);
         resolve(
           JSON.stringify({
             code: 200,

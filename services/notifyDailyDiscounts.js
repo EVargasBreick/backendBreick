@@ -3,6 +3,7 @@ const dateString = require("./dateServices");
 var nodemailer = require("nodemailer");
 const { google } = require("googleapis");
 const path = require("path");
+const logger = require("../logger-pino");
 
 async function logDiscounts() {
   try {
@@ -167,6 +168,7 @@ async function sendDiscountsMail(data, dateOnly, mailList) {
     });
   } catch (error) {
     console.log("ERROR FATAL AL ENVIAR EL EMAIL", error);
+    logger.error("Error al enviar el correo");
     return Promise.reject(error);
   }
 }

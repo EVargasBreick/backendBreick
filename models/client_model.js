@@ -165,7 +165,7 @@ function getNumberOfClients() {
 
 function registerClientPos(data) {
   console.log("Data cliente", data);
-  var queryNewClient = `insert into Clientes ("razonSocial", 
+  var queryNewClientLog = `insert into Clientes ("razonSocial", 
     nit, correo, direccion, "codPostal", telefono, activo, lenguaje, frecuencia, 
    "notasAdicionales", "idZona", "tipoPrecio", "usuarioCrea", "idVendedor", "fechaCrea", "tipoDocumento")
     values (
@@ -187,12 +187,35 @@ function registerClientPos(data) {
         ${data.tipoDocumento}
     ) returning "idCliente"`;
 
+  var queryNewClient = `insert into Clientes ("razonSocial", "nit", correo, direccion, "codPostal", telefono, activo, lenguaje, frecuencia, "notasAdicionales", "idZona", "tipoPrecio", "usuarioCrea", "idVendedor", "fechaCrea", "tipoDocumento")
+    values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) returning "idCliente"`;
+
+  // Create an array of parameter values
+  var params = [
+    data.razonSocial,
+    data.nit,
+    data.correo,
+    data.direccion,
+    data.codPostal,
+    data.telefono,
+    data.activo,
+    data.lenguaje,
+    data.frecuencia,
+    data.notas,
+    data.idZona,
+    data.tipoPrecio,
+    data.usuarioCrea,
+    data.idVendedor,
+    data.fechaCrea,
+    data.tipoDocumento,
+  ];
+
   return new Promise((resolve, reject) => {
     const responseObject = {};
     setTimeout(async () => {
-      console.log("Client query:", queryNewClient);
+      console.log("Client query:", queryNewClientLog);
       try {
-        const newClient = await client.query(queryNewClient);
+        const newClient = await client.query(queryNewClient, params);
         responseObject.createdId = newClient.rows[0].idCliente;
         responseObject.code = 201;
         responseObject.data = "Sucess";
@@ -208,7 +231,7 @@ function registerClientPos(data) {
 
 function updateClientPos(data, params) {
   console.log("Data cliente", data);
-  var queryNewClient = `update Clientes set "razonSocial"= '${data.razonSocial}', 
+  var queryEditClientLog = `update Clientes set "razonSocial"= '${data.razonSocial}', 
       nit='${data.nit}', correo='${data.correo}', direccion='${data.direccion}', 
       "codPostal"='${data.codPostal}', telefono='${data.telefono}', activo= '${data.activo}', 
       lenguaje= '${data.lenguaje}', frecuencia='${data.frecuencia}',
@@ -216,12 +239,42 @@ function updateClientPos(data, params) {
       "usuarioCrea"= '${data.usuarioCrea}', "idVendedor"='${data.idVendedor}', "fechaCrea"='${data.fechaCrea}',
       "tipoDocumento"=${data.tipoDocumento}
       where "idCliente"=${params.id}`;
+
+  var queryEditClient = `update Clientes set "razonSocial"=$1, 
+      nit=$2, correo=$3, direccion=$4, 
+      "codPostal"=$5, telefono=$6, activo=$7, 
+      lenguaje=$8, frecuencia=$9,
+      "notasAdicionales"=$10, "idZona"=$11, "tipoPrecio"=$12, 
+      "usuarioCrea"=$13, "idVendedor"=$14, "fechaCrea"=$15,
+      "tipoDocumento"=$16
+      where "idCliente"=$17`;
+
+  // Create an array of parameter values
+  var paramsArray = [
+    data.razonSocial,
+    data.nit,
+    data.correo,
+    data.direccion,
+    data.codPostal,
+    data.telefono,
+    data.activo,
+    data.lenguaje,
+    data.frecuencia,
+    data.notas,
+    data.idZona,
+    data.tipoPrecio,
+    data.usuarioCrea,
+    data.idVendedor,
+    data.fechaCrea,
+    data.tipoDocumento,
+    params.id,
+  ];
   return new Promise((resolve, reject) => {
     const responseObject = {};
     setTimeout(async () => {
-      console.log("Client:", queryNewClient);
+      console.log("Client:", queryEditClientLog);
       try {
-        const newClient = await client.query(queryNewClient);
+        const newClient = await client.query(queryEditClient, paramsArray);
         responseObject.code = 201;
         responseObject.data = newClient.rows;
       } catch (err) {

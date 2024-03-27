@@ -1094,8 +1094,8 @@ async function composedDropProcess(body) {
     }
   } catch (error) {
     const message = await error;
-    logger.error("composedDropProcess: " + formatError(message ?? ""));
     console.log("HAY UN ERROR EN LA BAJA", message);
+    logger.error("composedDropProcess: " + formatError(message ?? ""));
     await client.query("ROLLBACK");
     return Promise.reject(error);
   }

@@ -135,10 +135,14 @@ function getStockFromDateAndProductPos(params) {
   `;
   console.log("Query", logQuery);
   return new Promise((resolve, reject) => {
-    setTimeout(async () => {
-      const log = await client.query(logQuery);
-      resolve(JSON.stringify(log.rows));
-    }, 1000);
+    try {
+      setTimeout(async () => {
+        const log = await client.query(logQuery);
+        resolve(JSON.stringify(log.rows));
+      }, 1000);
+    } catch (error) {
+      reject(error);
+    }
   });
 }
 
@@ -151,10 +155,14 @@ function getStockFromDateAndStorePos(params) {
     where fecha=${params.fecha}::date and "idAgencia"='${params.idAgencia}'`;
   console.log("Query", logQuery);
   return new Promise((resolve, reject) => {
-    setTimeout(async () => {
-      const log = await client.query(logQuery);
-      resolve(JSON.stringify(log.rows));
-    }, 1000);
+    try {
+      setTimeout(async () => {
+        const log = await client.query(logQuery);
+        resolve(JSON.stringify(log.rows));
+      }, 1000);
+    } catch (error) {
+      reject(error);
+    }
   });
 }
 
@@ -174,10 +182,14 @@ function getCurrentProductStockPos(params) {
     where b."idProducto"=${params.idProducto} `;
   console.log("Query", logQuery);
   return new Promise((resolve, reject) => {
-    setTimeout(async () => {
-      const log = await client.query(logQuery);
-      resolve(JSON.stringify(log.rows));
-    }, 1000);
+    try {
+      setTimeout(async () => {
+        const log = await client.query(logQuery);
+        resolve(JSON.stringify(log.rows));
+      }, 1000);
+    } catch (error) {
+      reject(error);
+    }
   });
 }
 
@@ -200,9 +212,13 @@ function getCurrentStoreStockPos(params) {
   console.log("Query", logQuery);
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
-      const log = await client.query(logQuery);
-      resolve(JSON.stringify(log.rows));
-    }, 1000);
+      try {
+        const log = await client.query(logQuery);
+        resolve(JSON.stringify(log.rows));
+      } catch (error) {
+        reject(error);
+      }
+    }, 200);
   });
 }
 

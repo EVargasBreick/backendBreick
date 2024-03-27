@@ -16,10 +16,14 @@ function getBranches() {
 function getBranchesPostgres() {
   let dpQuery = `select a."idImpuestos", a.leyenda, c.ciudad , b.* from Sucursales a inner join Agencias b on a."idString"=b."idAgencia" inner join Zonas c on b."idZona"=c."idZona" union
   select a."idImpuestos", a.leyenda, c.ciudad , b.* from Sucursales a inner join Bodegas b on a."idString"=b."idBodega" inner join Zonas c on b."idZona"=c."idZona"`;
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     setTimeout(async () => {
-      const result = await client.query(dpQuery);
-      resolve(JSON.stringify(result.rows));
+      try {
+        const result = await client.query(dpQuery);
+        resolve(JSON.stringify(result.rows));
+      } catch (error) {
+        reject(error);
+      }
     }, 100);
   });
 }
