@@ -634,7 +634,7 @@ const createInvoiceAlt = async (body, req) => {
         const data = JSON.parse(invoiceResponse).data.data;
         if (Number(data.emission_type_code) === 1) {
           try {
-            const maxRetries = 50;
+            const maxRetries = 25;
             let retries = 0;
             let stateData = null;
             const delay = (ms) =>
@@ -658,35 +658,26 @@ const createInvoiceAlt = async (body, req) => {
               }
               retries++;
               await delay(1500); // Delay between retries
-              if (stateData === "VALIDA" || stateData === "RECHAZADA") {
+          
+              if (maxRetries === retries) {
                 const autorizacion = `${body.emizor.extras.facturaTicket}$${data.ack_ticket}`;
-                console.log("Autorizacion test", autorizacion);
-                if (stateData === "VALIDA") {
-                  try {
-                    console.log("Resp de la factura", data);
-                    body.invoice.nroFactura = data.numeroFactura;
-                    body.invoice.cuf = data.cuf;
-                    body.invoice.autorizacion = autorizacion;
-                    body.invoice.cufd = data.shortLink;
-                    body.invoice.fechaEmision = data.fechaEmision;
-                    let invRetries = 0;
-                    try {
-                      while (invRetries < maxRetries) {
-                        const invoiceCreated = await createInvoicePos(
-                          body.invoice
-                        );
-                        console.log(
-                          "Invoice created",
-                          invoiceCreated.factura.rows[0].idFactura
-                        );
-                        body.venta.idFactura =
-                          invoiceCreated.factura.rows[0].idFactura;
-                        const maxRetries = 50;
-                        let retriesSale = 0;
-                        const delay = (ms) =>
-                          new Promise((resolve) => setTimeout(resolve, ms));
-                        while (retriesSale < maxRetries) {
-                          try {
+                console.log("Resp de la factura", data);
+                body.invoice.nroFactura = data.numeroFactura;
+                body.invoice.cuf = data.cuf;
+                body.invoice.autorizacion = autorizacion;
+                body.invoice.cufd = data.shortLink;
+                body.invoice.fechaEmision = data.fechaEmision;
+                const invoiceCreated = await createInvoicePos(
+                  body.invoice
+                );
+                console.log(
+                  "Invoice created",
+                  invoiceCreated.factura.rows[0].idFactura
+                );
+                body.venta.idFactura =
+                  invoiceCreated.factura.rows[0].idFactura;
+
+                   try {
                             const saleCreated = await registerSalePos(
                               body.venta,
                               invoiceCreated.factura.rows[0].idFactura
@@ -700,7 +691,6 @@ const createInvoiceAlt = async (body, req) => {
                               );
                               console.log("Updated logs", updatedLogs);
                               console.log("Invoice response", invoiceResponse);
-                              console.log("retries", retriesSale);
                               return {
                                 code: 200,
                                 data: invoiceResponse,
@@ -726,134 +716,7 @@ const createInvoiceAlt = async (body, req) => {
                           } catch (error) {
                             logger.error(
                               "createInvoiceAlt: " + formatError(error)
-                            );
-                            if (retriesSale < maxRetries) {
-                              retriesSale++;
-                              console.log("Retrying sale creation", retries);
-                              console.log("ERROR CREANDO VENTA", error);
-                              await delay(1500); // Delay between retries
-                            } else {
-                              console.log("Error", error);
-                              return {
-                                code: 500,
-                                error: error,
-                                message: "Error al crear la venta",
-                              };
-                            }
-                          }
-                        }
-                      }
-                    } catch (error) {
-                      logger.error("createInvoiceAlt: " + formatError(error));
-                      if (invRetries < maxRetries) {
-                        invRetries++;
-                        console.log("Retrying sale creation", invRetries);
-                        console.log("ERROR CREANDO VENTA", error);
-                        await delay(1500); // Delay between retries
-                      } else {
-                        try {
-                          console.log("Error", error);
-                          const stockBody = {
-                            accion: "add",
-                            idAlmacen: body.stock.idAlmacen,
-                            productos: body.stock.productos,
-                            detalle: `CVAGN-${
-                              body.invoice?.nitCliente
-                                ? body.invoice?.nitCliente
-                                : "0"
-                            }`,
-                          };
-                          console.log("Stock body", stockBody);
-                          const updatedStock = await updateProductStockPos(
-                            stockBody
-                          );
-                          return {
-                            code: 500,
-                            error: error,
-                            message: "Error al crear la factura",
-                            updatedStock,
-                          };
-                        } catch (error) {
-                          console.log("Error", error);
-                          logger.error(
-                            "createInvoiceAlt: " + formatError(error)
-                          );
-
-                          return {
-                            code: 500,
-                            error: error,
-                            message: "Error al devolver el stock 6",
-                          };
-                        }
-                      }
-                    }
-                  } catch (err) {
-                    logger.error("CreateInvoiceAlt: " + formatError(err));
-                    const stockBody = {
-                      accion: "add",
-                      idAlmacen: body.stock.idAlmacen,
-                      productos: body.stock.productos,
-                      detalle: `CVAGN-${
-                        body.invoice?.nitCliente
-                          ? body.invoice?.nitCliente
-                          : "0"
-                      }`,
-                    };
-                    console.log("Stock body", stockBody);
-                    const updatedStock = await updateProductStockPos(stockBody);
-                    return {
-                      code: 500,
-                      error: err,
-                      message: "Error en el proceso de facturacion",
-                      updatedStock,
-                    };
-                  }
-                } else {
-                  try {
-                    const stockBody = {
-                      accion: "add",
-                      idAlmacen: body.stock.idAlmacen,
-                      productos: body.stock.productos,
-                      detalle: `CVAGN-${
-                        body.invoice?.nitCliente
-                          ? body.invoice?.nitCliente
-                          : "0"
-                      }`,
-                    };
-                    console.log("Stock body", stockBody);
-                    const updatedStock = await updateProductStockPos(stockBody);
-                    return {
-                      code: 500,
-                      error: estadoFactura,
-                      message:
-                        JSON.stringify(
-                          JSON.parse(estadoFactura)?.data?.data?.errores[0]
-                            ?.description
-                        ) + " Factura rechazada, intente nuevamente",
-                      updatedStock,
-                    };
-                  } catch (error) {
-                    logger.error("CreateInvoiceAlt: " + formatError(error));
-
-                    return {
-                      code: 500,
-                      error: error,
-                      message: "Error al devolver el stock 7",
-                    };
-                  }
-                }
-              }
-              if (maxRetries === retries) {
-                const stockBody = {
-                  accion: "add",
-                  idAlmacen: body.stock.idAlmacen,
-                  productos: body.stock.productos,
-                  detalle: `CVAGN-${
-                    body.invoice?.nitCliente ? body.invoice?.nitCliente : "0"
-                  }`,
-                };
-                console.log("Stock body", stockBody);
-                const updatedStock = await updateProductStockPos(stockBody);
+                            );}
                 logger.error(
                   "CreateInvoiceAlt: " +
                     formatError(
@@ -884,7 +747,7 @@ const createInvoiceAlt = async (body, req) => {
           console.log("Is not online invoice");
           let estadoFactura = "";
           try {
-            const maxRetries = 50;
+            const maxRetries = 25;
             let retries = 0;
             let stateData = null;
             const delay = (ms) =>
