@@ -3,7 +3,6 @@ const sessionParams = require("../server");
 const session = require("express-session");
 const emizor = require("../models/emizor_model");
 const secondsToDate = require("../services/secondsToDate");
-const { use } = require("../routes/user");
 const { transactionOfUpdateStocks } = require("../models/store_model");
 const app = express();
 app.use(session(sessionParams));
